@@ -114,7 +114,7 @@ async def delete_token(
     for user in await hass.auth.async_get_users():
         for token in list(user.refresh_tokens.values()):
             if (token.id == msg.get("token_id")):
-                await hass.auth.async_remove_refresh_token(token)
+                hass.auth.async_remove_refresh_token(token)
                 connection.send_result(msg["id"], True)
                 return
     
