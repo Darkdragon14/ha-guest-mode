@@ -16,6 +16,14 @@ function humanSeconds(seconds) {
   }).join(' ');
 }
 
+function differenceInMinutes(targetDateStr) {
+  const now = new Date();
+  const targetDate = new Date(targetDateStr);
+  const diffInMilliseconds = targetDate - now;
+  const diffInMinutes = Math.floor(diffInMilliseconds / 1000 / 60);
+  return diffInMinutes;
+}
+
 class VirtualKeysPanel extends LitElement {
   static get properties() {
     return {
@@ -34,11 +42,14 @@ class VirtualKeysPanel extends LitElement {
     this.users = [];
     this.tokens = [];
     this.alert = '';
+    this.alertType = '';
 
     // form inputs
-    this.name = '';
-    this.user = '';
-    this.expire = 60;
+    this.name = null;
+    this.user = null;
+    this.expire = 0;
+    this.expirationDate = "";
+    this.datetimeLabel = "Expiration Date";
   }
 
   fetchUsers() {
@@ -84,6 +95,10 @@ class VirtualKeysPanel extends LitElement {
     this.expire = e.target.value;
   }
 
+  expirationDateChanged(e) {
+    this.expirationDate = e.detail.value;
+  }
+
   toggleSideBar() {
     this.dispatchEvent(new Event('hass-toggle-menu', { bubbles: true, composed: true}));
   }
@@ -93,11 +108,27 @@ class VirtualKeysPanel extends LitElement {
       type: 'virtual_keys/create_token',
       name: this.name,
       user_id: this.user,
-      minutes: parseInt(this.expire, 10),
+      minutes: this.expire ? parseInt(this.expire, 10) : differenceInMinutes(this.expirationDate)
     }).then(() => {
       this.fetchUsers();
     }).catch(err => {
-      this.showAlert(err.message);
+      this.alertType="warning";
+      let messageDisplay = err.message;
+      if (err.code === 'invalid_format') {
+        const errorMessage = err.message;
+        messageDisplay= 'Element(s) missing to create a token:';
+        if (errorMessage.includes('name')) {
+          messageDisplay += ' an Name,'
+        }
+        if (errorMessage.includes('user_id')) {
+          messageDisplay += ' an User,'
+        }
+        if (errorMessage.includes('minutes')) {
+          messageDisplay += ' an Expiration,'
+        }
+        messageDisplay.slice(0, -1) + '.';
+      }
+      this.showAlert(messageDisplay);
     });
   }
 
@@ -123,6 +154,7 @@ class VirtualKeysPanel extends LitElement {
     }).then(() => {
       this.fetchUsers();
     }).catch(err => {
+      this.alertType="warning";
       this.showAlert(err.message);
     });
   }
@@ -133,6 +165,7 @@ class VirtualKeysPanel extends LitElement {
 
   listItemClick(e, token) {
     navigator.clipboard.writeText(this.getLoginUrl(token));
+    this.alertType="info";
     this.showAlert('Copied to clipboard ' + token.name);
   }
 
@@ -173,26 +206,55 @@ class VirtualKeysPanel extends LitElement {
               @value-changed=${this.userChanged}
             >
             </ha-combo-box>
+            <span>:</span>
 
-            <ha-textfield label="Expire (minutes)" type="number" value="${this.expire}"" @input="${this.expireChanged}"></ha-textfield>
+            <ha-textfield label="Expire (minutes)" type="number" value="${this.expire}" @input="${this.expireChanged}"></ha-textfield>
+            <span>or</span>
+            <ha-selector
+              .selector=${{
+                datetime: {
+                  mode: "both",
+                }
+              }}
+              .label=${this.datetimeLabel}
+              .hass=${this.hass}
+              .required=${false}
+              @value-changed=${this.expirationDateChanged}
+            >
+            </ha-selector>
+
 
             <mwc-button raised label="Add" @click=${this.addClick}></mwc-button>
           </div>
 
-          <ha-card>
-            <mwc-list>
-              ${this.tokens.map(token => html`
-                <mwc-list-item hasMeta twoline @click=${e => this.listItemClick(e, token)}>
-                  <a href="${this.getLoginUrl(token)}">${token.name}</a>
-                  <span slot="secondary">${token.user}, Expire: ${humanSeconds(token.remaining)}</span>
-                  <mwc-icon slot="meta" @click=${e => this.deleteClick(e, token)}>${this.deleteButton()}</mwc-icon>
-                </mwc-list-item>
-              `)}
-            </mwc-list>
-          </ha-card>
-        </div>
+          ${this.alert.length ? 
+            html`
+              <div class="container-alert">
+                <ha-alert
+                  alert-type=${this.alertType}
+                >
+                  ${this.alert}
+                </ha-alert>
+              </div>` 
+            : ''
+          }
 
-      ${this.alert.length ? html`<ha-alert>${this.alert}</ha-alert>` : ''}
+          ${this.tokens.length ?
+            html`
+            <ha-card class="container-list">
+              <mwc-list>
+                ${this.tokens.map(token => html`
+                  <mwc-list-item hasMeta twoline @click=${e => this.listItemClick(e, token)}>
+                    <a href="${this.getLoginUrl(token)}">${token.name}</a>
+                    <span slot="secondary">${token.user}, Expire: ${humanSeconds(token.remaining)}</span>
+                    <mwc-icon slot="meta" @click=${e => this.deleteClick(e, token)}>${this.deleteButton()}</mwc-icon>
+                  </mwc-list-item>
+                `)}
+              </mwc-list>
+            </ha-card>`
+            : null
+          }
+        </div>
 
       </div>
     `;
@@ -294,6 +356,16 @@ class VirtualKeysPanel extends LitElement {
       .filters > * {
         margin-right: 8px;
       }
+
+      .container-alert {
+        margin-top: 15px;
+        padding: 0 2%;
+      }
+
+      .container-list {
+        margin-top: 15px;
+      }
+      
       @media (min-width: 870px) {
         mwc-icon-button {
           display: none;
