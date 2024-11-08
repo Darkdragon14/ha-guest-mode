@@ -5,20 +5,18 @@ from aiohttp import web
 from homeassistant.components.http import HomeAssistantView
 
 DATABASE = "/config/custom_components/virtual_keys/virtual_keys.db"
-SECRET_KEY = "information"  # Clé de signature pour le JWT
+SECRET_KEY = "information"
 
 class ValidateTokenView(HomeAssistantView):
     url = "/virtual_keys/login"
     name = "virtual_keys:login"
-    requires_auth = False  # Pas besoin d'authentification Home Assistant pour cette route
+    requires_auth = False
 
     async def get(self, request):
-        # Récupérer le paramètre token de l'URL
         token_param = request.query.get("token")
         if not token_param:
             return web.Response(status=400, text="Token is missing")
 
-        # Décoder le token JWT
         try:
             decoded_token = jwt.decode(token_param, SECRET_KEY, algorithms=["HS256"])
             user_id = decoded_token.get("userId")
@@ -36,7 +34,6 @@ class ValidateTokenView(HomeAssistantView):
         if now < start_date or now > end_date:
             return web.Response(status=403, text="Token not yet valid or expired")
 
-        # Rechercher dans la base de données si le token existe pour l'utilisateur
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute(
@@ -53,7 +50,6 @@ class ValidateTokenView(HomeAssistantView):
         if result[6] == "":
           a = 2 
 
-        # Générer la page HTML si le token est valide
         html_content = f"""
         <!DOCTYPE html>
         <html>
