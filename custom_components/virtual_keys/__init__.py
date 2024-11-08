@@ -1,4 +1,5 @@
-from datetime import timedelta
+import sqlite3
+from datetime import timedelta, datetime, timezone
 from typing import Any
 import voluptuous as vol
 import jwt
@@ -8,7 +9,11 @@ from homeassistant.helpers.typing import ConfigType
 from homeassistant.components import websocket_api
 from homeassistant.util import dt as dt_util
 
+from .validateTokenView import ValidateTokenView
+
 DOMAIN = "virtual_keys"
+
+DATABASE = "/config/custom_components/virtual_keys/virtual_keys.db"
 
 
 @websocket_api.websocket_command({vol.Required("type"): "virtual_keys/list_users"})
@@ -20,30 +25,30 @@ async def list_users(
     result = []
     now = dt_util.utcnow()
 
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM tokens')
+    tokenLists = cursor.fetchall()    
+
     for user in await hass.auth.async_get_users():
         ha_username = next((cred.data.get("username") for cred in user.credentials if cred.auth_provider_type == "homeassistant"), None)
 
         tokens = []
-        for token in list(user.refresh_tokens.values()):
-            expiration_seconds = token.access_token_expiration.total_seconds()
-            if (token.token_type == TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN
-                    and token.created_at + timedelta(seconds=expiration_seconds) < now):
-                await hass.auth.async_remove_refresh_token(token)
-            else:
-                jwt_token = jwt.encode(
-                    { "iss": token.id, "iat": now, "exp": now + token.access_token_expiration },
-                    token.jwt_key,
-                    algorithm="HS256",
-                )
-
+        for token in tokenLists:
+            if  datetime.fromisoformat(token[4]).replace(tzinfo=timezone.utc) < now:
+                if token[6] != "":
+                    tokenHa = hass.auth.async_get_refresh_token(token[5])
+                    hass.auth.async_remove_refresh_token(tokenHa)
+                cursor.execute('DELETE FROM tokens WHERE id = ?', (token[0]))
+            if token[1] == user.id:
                 tokens.append({
-                    "id": token.id,
-                    "name": token.client_name,
-                    "jwt_token": jwt_token,
-                    "type": token.token_type,
-                    "expiration": expiration_seconds,
-                    "remaining": round((token.created_at + timedelta(seconds=expiration_seconds) - now).total_seconds()),
-                    "created_at": token.created_at.isoformat()
+                    "id": token[0],
+                    "name": token[2],
+                    "jwt_token": token[7],
+                    "type": TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN,
+                    "expiration": token[4],
+                    "remaining": int((datetime.fromisoformat(token[4]).replace(tzinfo=timezone.utc) - now).total_seconds()),
+                    "start_at": token[3]
                 })
 
         result.append({
@@ -59,6 +64,8 @@ async def list_users(
             "tokens": tokens,
         })
 
+    conn.commit()
+    conn.close()
     connection.send_result(msg["id"], result)
 
 
@@ -92,6 +99,22 @@ async def create_token(
             access_token_expiration=timedelta(minutes=msg["minutes"]),
         )
         access_token = hass.auth.async_create_access_token(refresh_token)
+
+        startDate = datetime.now()
+        endDate = startDate + timedelta(minutes=msg["minutes"])
+        # @Todo Generate jwt with private key so with the aglo RS256 to avoir decrypt element in jwt from another system
+        tokenGenerated = jwt.encode({"id": msg["id"],"startDate": startDate.isoformat(), "endDate": endDate.isoformat(), "userId": msg["user_id"]}, "information", algorithm="HS256")
+
+        query = """
+            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_virtual_key)
+            values (?, ?, ?, ?, ?, ?, ?)
+        """
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute(query, (msg["user_id"], msg["name"], startDate.isoformat(), endDate.isoformat(), refresh_token.id, access_token, tokenGenerated))
+        conn.commit()
+        conn.close()
+
     except ValueError as err:
         connection.send_message(
             websocket_api.error_message(msg["id"], websocket_api.const.ERR_UNKNOWN_ERROR, str(err))
@@ -103,7 +126,7 @@ async def create_token(
 @websocket_api.websocket_command(
     {
         vol.Required("type"): "virtual_keys/delete_token",
-        vol.Required("token_id"): str
+        vol.Required("token_id"): int
     }
 )
 @websocket_api.require_admin
@@ -111,19 +134,46 @@ async def create_token(
 async def delete_token(
     hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
 ) -> None:
-    for user in await hass.auth.async_get_users():
-        for token in list(user.refresh_tokens.values()):
-            if (token.id == msg.get("token_id")):
-                hass.auth.async_remove_refresh_token(token)
-                connection.send_result(msg["id"], True)
-                return
+    # @Todo add try catch to catch error with slqite
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute('SELECT token_ha_id FROM tokens WHERE id = ?', (msg["token_id"],))
+    token = cursor.fetchone()    
+
+    if token[0] != "":
+        tokenHa = hass.auth.async_get_refresh_token(token[0])
+        hass.auth.async_remove_refresh_token(tokenHa)
     
-    connection.send_result(msg["id"], False)
+    cursor.execute('DELETE FROM tokens WHERE id = ?', (msg["token_id"],))
+    conn.commit()
+    conn.close()
+    connection.send_result(msg["id"], True)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     websocket_api.async_register_command(hass, list_users)
     websocket_api.async_register_command(hass, create_token)
     websocket_api.async_register_command(hass, delete_token)
+
+    hass.http.register_view(ValidateTokenView())
+
+    connection = sqlite3.connect(DATABASE)
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS tokens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId TEXT NOT NULL,
+        token_name TEXT NOT NULL,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        token_ha_id INTERGER,
+        token_ha TEXT,
+        token_virtual_key TEXT NOT NULL
+    )
+    """)
+
+    connection.commit()
+    connection.close()
 
     return True
