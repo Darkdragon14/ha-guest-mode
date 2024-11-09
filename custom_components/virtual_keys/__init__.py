@@ -37,6 +37,7 @@ async def list_users(
         for token in tokenLists:
             if  datetime.fromisoformat(token[4]).replace(tzinfo=timezone.utc) < now:
                 if token[6] != "":
+                    # @Todo maybe try catch here if token are already deleted
                     tokenHa = hass.auth.async_get_refresh_token(token[5])
                     hass.auth.async_remove_refresh_token(tokenHa)
                 cursor.execute('DELETE FROM tokens WHERE id = ?', (token[0]))
@@ -82,24 +83,7 @@ async def list_users(
 async def create_token(
     hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
 ) -> None:
-    users = await hass.auth.async_get_users()
-
-    user = next((u for u in users if u.id == msg["user_id"]), None)
-    if user is None:
-        connection.send_message(
-            websocket_api.error_message(msg["id"], websocket_api.const.ERR_NOT_FOUND, "User not found")
-        )
-        return
-
     try:
-        refresh_token = await hass.auth.async_create_refresh_token(
-            user,
-            client_name=msg.get("name"),
-            token_type=TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN,
-            access_token_expiration=timedelta(minutes=msg["minutes"]),
-        )
-        access_token = hass.auth.async_create_access_token(refresh_token)
-
         startDate = datetime.now()
         endDate = startDate + timedelta(minutes=msg["minutes"])
         # @Todo Generate jwt with private key so with the aglo RS256 to avoir decrypt element in jwt from another system
@@ -111,7 +95,7 @@ async def create_token(
         """
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
-        cursor.execute(query, (msg["user_id"], msg["name"], startDate.isoformat(), endDate.isoformat(), refresh_token.id, access_token, tokenGenerated))
+        cursor.execute(query, (msg["user_id"], msg["name"], startDate.isoformat(), endDate.isoformat(), "", "", tokenGenerated))
         conn.commit()
         conn.close()
 
@@ -121,7 +105,7 @@ async def create_token(
         )
         return
 
-    connection.send_result(msg["id"], access_token)
+    connection.send_result(msg["id"], tokenGenerated)
 
 @websocket_api.websocket_command(
     {
@@ -155,7 +139,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     websocket_api.async_register_command(hass, create_token)
     websocket_api.async_register_command(hass, delete_token)
 
-    hass.http.register_view(ValidateTokenView())
+    hass.http.register_view(ValidateTokenView(hass))
 
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
