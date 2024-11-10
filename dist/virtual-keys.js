@@ -24,6 +24,17 @@ function differenceInMinutes(targetDateStr) {
   return diffInMinutes;
 }
 
+function getNow() {
+  const date = new Date()
+  return `${date.getFullYear()}-${
+    String(date.getMonth() + 1).padStart(2, "0")
+  }-${String(date.getDate()).padStart(2, "0")} ${
+    String(date.getHours()).padStart(2, "0")
+  }:${String(date.getMinutes()).padStart(2, "0")}:${
+    String(date.getSeconds()).padStart(2, "0")
+  }`;
+}
+
 class VirtualKeysPanel extends LitElement {
   static get properties() {
     return {
@@ -48,11 +59,14 @@ class VirtualKeysPanel extends LitElement {
     this.name = null;
     this.user = null;
     this.expire = 0;
-    this.expirationDate = "";
-    this.datetimeLabel = "Expiration Date";
+    this.startDate = getNow();
+    this.expirationDate = getNow();
+    this.startDateLabel = "Start Date";
+    this.endDtateLabel = "Expiration Date";
   }
 
   fetchUsers() {
+    const userLocale = navigator.language || navigator.languages[0];
     this.hass.callWS({ type: 'virtual_keys/list_users' }).then(users => {
       this.users = [];
       this.tokens = [];
@@ -68,8 +82,10 @@ class VirtualKeysPanel extends LitElement {
               name: token.name,
               user: user.name,
               jwt_token: token.jwt_token,
-              expiration: token.expiration,
+              endDate: new Date(token.end_date).toLocaleString(userLocale),
               remaining: token.remaining,
+              isUsed: token.isUsed,
+              startDate: new Date(token.start_date).toLocaleString(userLocale)
             });
           });
       });
@@ -91,6 +107,10 @@ class VirtualKeysPanel extends LitElement {
     this.name = e.target.value;
   }
 
+  startDateChanged(e) {
+    this.startDate = e.detail.value;
+  }
+
   expireChanged(e) {
     this.expire = e.target.value;
   }
@@ -108,7 +128,8 @@ class VirtualKeysPanel extends LitElement {
       type: 'virtual_keys/create_token',
       name: this.name,
       user_id: this.user,
-      minutes: this.expire ? parseInt(this.expire, 10) : differenceInMinutes(this.expirationDate)
+      startDate: differenceInMinutes(this.startDate),
+      expirationDate: this.expire ? parseInt(this.expire, 10) : differenceInMinutes(this.expirationDate)
     }).then(() => {
       this.fetchUsers();
     }).catch(err => {
@@ -160,7 +181,7 @@ class VirtualKeysPanel extends LitElement {
   }
 
   getLoginUrl(token) {
-    return this.hass.hassUrl() + 'local/community/virtual-keys/login.html?token=' + token.jwt_token;
+    return this.hass.hassUrl() + 'virtual-keys/login?token=' + token.jwt_token;
   }
 
   listItemClick(e, token) {
@@ -208,21 +229,33 @@ class VirtualKeysPanel extends LitElement {
             </ha-combo-box>
             <span>:</span>
 
-            <ha-textfield label="Expire (minutes)" type="number" value="${this.expire}" @input="${this.expireChanged}"></ha-textfield>
-            <span>or</span>
             <ha-selector
               .selector=${{
                 datetime: {
                   mode: "both",
                 }
               }}
-              .label=${this.datetimeLabel}
+              .label=${this.startDateLabel}
               .hass=${this.hass}
               .required=${false}
-              @value-changed=${this.expirationDateChanged}
+              .value=${this.startDate}
+              @value-changed=${this.startDateChanged}
             >
             </ha-selector>
 
+            <ha-selector
+              .selector=${{
+                datetime: {
+                  mode: "both",
+                }
+              }}
+              .label=${this.endDtateLabel}
+              .hass=${this.hass}
+              .required=${false}
+              .value=${this.expirationDate}
+              @value-changed=${this.expirationDateChanged}
+            >
+            </ha-selector>
 
             <mwc-button raised label="Add" @click=${this.addClick}></mwc-button>
           </div>
@@ -246,7 +279,7 @@ class VirtualKeysPanel extends LitElement {
                 ${this.tokens.map(token => html`
                   <mwc-list-item hasMeta twoline @click=${e => this.listItemClick(e, token)}>
                     <a href="${this.getLoginUrl(token)}">${token.name}</a>
-                    <span slot="secondary">${token.user}, Expire: ${humanSeconds(token.remaining)}</span>
+                    <span slot="secondary">${token.user}, Start date: ${token.startDate}, End date: ${token.endDate}, Expiraiton: ${humanSeconds(token.remaining)}, used: ${token.isUsed ? "Yes" : "No"}</span>
                     <mwc-icon slot="meta" @click=${e => this.deleteClick(e, token)}>${this.deleteButton()}</mwc-icon>
                   </mwc-list-item>
                 `)}
@@ -373,6 +406,6 @@ class VirtualKeysPanel extends LitElement {
       }
     `;
   }
-}
+} 
 
 customElements.define('virtual-keys-panel', VirtualKeysPanel);
