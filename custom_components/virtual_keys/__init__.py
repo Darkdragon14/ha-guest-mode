@@ -34,22 +34,24 @@ async def list_users(
         ha_username = next((cred.data.get("username") for cred in user.credentials if cred.auth_provider_type == "homeassistant"), None)
 
         tokens = []
-        for token in tokenLists:
+        for token in tokenLists[:]:
             if  datetime.fromisoformat(token[4]).replace(tzinfo=timezone.utc) < now:
                 if token[6] != "":
                     # @Todo maybe try catch here if token are already deleted
                     tokenHa = hass.auth.async_get_refresh_token(token[5])
                     hass.auth.async_remove_refresh_token(tokenHa)
-                cursor.execute('DELETE FROM tokens WHERE id = ?', (token[0]))
+                cursor.execute('DELETE FROM tokens WHERE id = ?', (token[0],))
+                tokenLists.remove(token)
             if token[1] == user.id:
                 tokens.append({
                     "id": token[0],
                     "name": token[2],
                     "jwt_token": token[7],
                     "type": TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN,
-                    "expiration": token[4],
+                    "end_date": token[4],
                     "remaining": int((datetime.fromisoformat(token[4]).replace(tzinfo=timezone.utc) - now).total_seconds()),
-                    "start_at": token[3]
+                    "start_date": token[3],
+                    "isUsed": token[6] != ""
                 })
 
         result.append({
@@ -75,7 +77,8 @@ async def list_users(
         vol.Required("type"): "virtual_keys/create_token",
         vol.Required("user_id"): str,
         vol.Required("name"): str, # token name
-        vol.Required("minutes"): int, # minutes
+        vol.Required("startDate"): int, # minutes
+        vol.Required("expirationDate"): int, # minutes
     }
 )
 @websocket_api.require_admin
@@ -84,8 +87,9 @@ async def create_token(
     hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
 ) -> None:
     try:
-        startDate = datetime.now()
-        endDate = startDate + timedelta(minutes=msg["minutes"])
+        now = datetime.now()
+        startDate = now + timedelta(minutes=msg["startDate"])
+        endDate = now + timedelta(minutes=msg["expirationDate"])
         # @Todo Generate jwt with private key so with the aglo RS256 to avoir decrypt element in jwt from another system
         tokenGenerated = jwt.encode({"id": msg["id"],"startDate": startDate.isoformat(), "endDate": endDate.isoformat(), "userId": msg["user_id"]}, "information", algorithm="HS256")
 
