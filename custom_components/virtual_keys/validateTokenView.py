@@ -10,8 +10,8 @@ DATABASE = "/config/custom_components/virtual_keys/virtual_keys.db"
 SECRET_KEY = "information"
 
 class ValidateTokenView(HomeAssistantView):
-    url = "/virtual_keys/login"
-    name = "virtual_keys:login"
+    url = "/virtual-keys/login"
+    name = "virtual-keys:login"
     requires_auth = False
 
     def __init__(self, hass: HomeAssistant):
