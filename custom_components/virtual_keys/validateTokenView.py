@@ -23,8 +23,10 @@ class ValidateTokenView(HomeAssistantView):
             return web.Response(status=400, text="Token is missing")
 
         try:
-            decoded_token = jwt.decode(token_param, SECRET_KEY, algorithms=["HS256"])
-            user_id = decoded_token.get("userId")
+            public_key = self.hass.data.get("public_key")
+            if public_key is None:
+                return web.Response(status=500, text="Internal Server Error")
+            decoded_token = jwt.decode(token_param, public_key, algorithms=["RS256"])
             start_date = datetime.fromisoformat(decoded_token.get("startDate"))
             end_date = datetime.fromisoformat(decoded_token.get("endDate"))
         except jwt.ExpiredSignatureError:
@@ -42,8 +44,8 @@ class ValidateTokenView(HomeAssistantView):
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute(
-            'SELECT * FROM tokens WHERE userId = ? AND token_virtual_key = ?',
-            (user_id, token_param)
+            'SELECT * FROM tokens WHERE token_virtual_key = ?',
+            (token_param,)
         )
         result = cursor.fetchone()
 

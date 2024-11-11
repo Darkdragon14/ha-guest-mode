@@ -10,6 +10,7 @@ from homeassistant.components import websocket_api
 from homeassistant.util import dt as dt_util
 
 from .validateTokenView import ValidateTokenView
+from .keyManager import KeyManager
 
 DOMAIN = "virtual_keys"
 
@@ -90,8 +91,11 @@ async def create_token(
         now = datetime.now()
         startDate = now + timedelta(minutes=msg["startDate"])
         endDate = now + timedelta(minutes=msg["expirationDate"])
-        # @Todo Generate jwt with private key so with the aglo RS256 to avoir decrypt element in jwt from another system
-        tokenGenerated = jwt.encode({"id": msg["id"],"startDate": startDate.isoformat(), "endDate": endDate.isoformat(), "userId": msg["user_id"]}, "information", algorithm="HS256")
+        
+        private_key = hass.data.get("private_key")
+        if private_key is None:
+            connection.send_message(msg["id"],  websocket_api.const.ERR_NOT_FOUND, "private key not found")
+        tokenGenerated = jwt.encode({"id": msg["id"],"startDate": startDate.isoformat(), "endDate": endDate.isoformat()}, private_key, algorithm="RS256")
 
         query = """
             INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_virtual_key)
@@ -142,6 +146,11 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     websocket_api.async_register_command(hass, list_users)
     websocket_api.async_register_command(hass, create_token)
     websocket_api.async_register_command(hass, delete_token)
+
+    key_manager = KeyManager()
+    await key_manager.load_or_generate_key()
+    hass.data["private_key"] = key_manager.get_private_key()
+    hass.data["public_key"] = key_manager.get_public_key()
 
     hass.http.register_view(ValidateTokenView(hass))
 
