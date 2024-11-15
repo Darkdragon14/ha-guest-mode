@@ -8,9 +8,12 @@ from homeassistant.auth.models import TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.components import websocket_api
 from homeassistant.util import dt as dt_util
+from homeassistant.components.panel_custom import async_register_panel
+from homeassistant import config_entries
 
 from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
+from .config_flow import GuestModeConfigFlow
 
 DOMAIN = "virtual_keys"
 
@@ -141,7 +144,6 @@ async def delete_token(
     conn.close()
     connection.send_result(msg["id"], True)
 
-
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     websocket_api.async_register_command(hass, list_users)
     websocket_api.async_register_command(hass, create_token)
@@ -172,5 +174,17 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     connection.commit()
     connection.close()
+
+    hass.async_create_task(
+        async_register_panel(
+            hass,
+            frontend_url_path="guest-mode",
+            webcomponent_name="guest-mode-panel",
+            module_url="/hacsfiles/ha-guest-mode/ha-guest-mode.js",
+            sidebar_title="Guest",
+            sidebar_icon="mdi:key-variant",
+            require_admin=True,
+        )
+    )
 
     return True

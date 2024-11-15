@@ -1,0 +1,19 @@
+{
+    "domain": "ha_guest_mode",
+    "name": "HA Guest Mode",
+    "version": "0.1.0",
+    "documentation": "https://github.com/Darkdragon14/ha-guest-mode",
+    "issue_tracker": "https://github.com/Darkdragon14/ha-guest-mode/issues",
+    "iot_class": "local_push",
+    "requirements": [],
+    "dependencies": [],
+    "codeowners": ["@Darkdragon14","@kcsoft"],
+    "config_flow": true,
+    "frontend": true,
+    "resources": [
+        {
+            "url": "/local/community/ha-guest-mode/ha-guest-mode.js",
+            "type": "module"
+        }
+    ]
+}

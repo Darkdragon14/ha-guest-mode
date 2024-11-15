@@ -35,7 +35,7 @@ function getNow() {
   }`;
 }
 
-class VirtualKeysPanel extends LitElement {
+class GuestModePanel extends LitElement {
   static get properties() {
     return {
       hass: { type: Object },
@@ -82,10 +82,10 @@ class VirtualKeysPanel extends LitElement {
               name: token.name,
               user: user.name,
               jwt_token: token.jwt_token,
-              endDate: new Date(token.end_date).toLocaleString(userLocale),
+              endDate: new Date(token.end_date).toLocaleString(userLocale).replace(/:\d{2}$/, ""),
               remaining: token.remaining,
               isUsed: token.isUsed,
-              startDate: new Date(token.start_date).toLocaleString(userLocale)
+              startDate: new Date(token.start_date).toLocaleString(userLocale).replace(/:\d{2}$/, "")
             });
           });
       });
@@ -151,12 +151,6 @@ class VirtualKeysPanel extends LitElement {
       }
       this.showAlert(messageDisplay);
     });
-  }
-
-  deleteButton() {
-    return html`<svg preserveAspectRatio="xMidYMid meet" focusable="false" role="img" aria-hidden="true" viewBox="0 0 24 24" width="24" height="24">
-        <g><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></g>
-      </svg>`;
   }
 
   showAlert(text) {
@@ -278,9 +272,19 @@ class VirtualKeysPanel extends LitElement {
               <mwc-list>
                 ${this.tokens.map(token => html`
                   <mwc-list-item hasMeta twoline @click=${e => this.listItemClick(e, token)}>
-                    <a href="${this.getLoginUrl(token)}">${token.name}</a>
-                    <span slot="secondary">${token.user}, Start date: ${token.startDate}, End date: ${token.endDate}, Expiraiton: ${humanSeconds(token.remaining)}, used: ${token.isUsed ? "Yes" : "No"}</span>
-                    <mwc-icon slot="meta" @click=${e => this.deleteClick(e, token)}>${this.deleteButton()}</mwc-icon>
+                    <a href="${this.getLoginUrl(token)}">
+                      ${token.name} for ${token.user}
+                      ${token.isUsed ?
+                        html`
+                        <ha-icon style="width: 17px; color: green;" icon="mdi:power"></ha-icon>
+                        `:
+                        html`
+                        <ha-icon style="width: 17px; color: red;" icon="mdi:power"></ha-icon>
+                        `
+                      }
+                    </a>
+                    <span slot="secondary">Start date: ${token.startDate}, End date: ${token.endDate}</span>
+                    <ha-icon slot="meta" @click=${e => this.deleteClick(e, token)} icon="mdi:delete"></ha-icon>
                   </mwc-list-item>
                 `)}
               </mwc-list>
@@ -294,7 +298,7 @@ class VirtualKeysPanel extends LitElement {
   }
 
   static get styles() {
-    return css`
+    return css`ha-datetimeha-time-input
       :host {
       }
       .mdc-top-app-bar {
@@ -398,6 +402,10 @@ class VirtualKeysPanel extends LitElement {
       .container-list {
         margin-top: 15px;
       }
+
+      ha-textfield[id="sec"] {
+        display: none;
+      }
       
       @media (min-width: 870px) {
         mwc-icon-button {
@@ -408,4 +416,4 @@ class VirtualKeysPanel extends LitElement {
   }
 } 
 
-customElements.define('virtual-keys-panel', VirtualKeysPanel);
+customElements.define('guest-mode-panel', GuestModePanel);

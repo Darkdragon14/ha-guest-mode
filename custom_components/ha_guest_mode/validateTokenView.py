@@ -36,7 +36,6 @@ class ValidateTokenView(HomeAssistantView):
         except Exception as e:
             return web.Response(status=400, text=str(e))
 
-        # Vérifier les dates
         now = datetime.now()
         if now < start_date or now > end_date:
             return web.Response(status=403, text="Token not yet valid or expired")
