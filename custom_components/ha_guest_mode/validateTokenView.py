@@ -6,12 +6,12 @@ from homeassistant.auth.models import TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
 
-DATABASE = "/config/custom_components/virtual_keys/virtual_keys.db"
+DATABASE = "/config/custom_components/ha_guest_mode/ha_guest_mode.db"
 SECRET_KEY = "information"
 
 class ValidateTokenView(HomeAssistantView):
-    url = "/virtual-keys/login"
-    name = "virtual-keys:login"
+    url = "/guest-mode/login"
+    name = "guest-mode:login"
     requires_auth = False
 
     def __init__(self, hass: HomeAssistant):
@@ -43,7 +43,7 @@ class ValidateTokenView(HomeAssistantView):
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute(
-            'SELECT * FROM tokens WHERE token_virtual_key = ?',
+            'SELECT * FROM tokens WHERE token_ha_guest_mode = ?',
             (token_param,)
         )
         result = cursor.fetchone()

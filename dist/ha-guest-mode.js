@@ -67,7 +67,7 @@ class GuestModePanel extends LitElement {
 
   fetchUsers() {
     const userLocale = navigator.language || navigator.languages[0];
-    this.hass.callWS({ type: 'virtual_keys/list_users' }).then(users => {
+    this.hass.callWS({ type: 'ha_guest_mode/list_users' }).then(users => {
       this.users = [];
       this.tokens = [];
       users.filter(user => !user.system_generated && user.is_active).forEach(user => {
@@ -125,7 +125,7 @@ class GuestModePanel extends LitElement {
 
   addClick() {
     this.hass.callWS({
-      type: 'virtual_keys/create_token',
+      type: 'ha_guest_mode/create_token',
       name: this.name,
       user_id: this.user,
       startDate: differenceInMinutes(this.startDate),
@@ -164,7 +164,7 @@ class GuestModePanel extends LitElement {
     e.stopPropagation();
 
     this.hass.callWS({
-      type: 'virtual_keys/delete_token',
+      type: 'ha_guest_mode/delete_token',
       token_id: token.id,
     }).then(() => {
       this.fetchUsers();
@@ -175,7 +175,7 @@ class GuestModePanel extends LitElement {
   }
 
   getLoginUrl(token) {
-    return this.hass.hassUrl() + 'virtual-keys/login?token=' + token.jwt_token;
+    return this.hass.hassUrl() + 'guest-mode/login?token=' + token.jwt_token;
   }
 
   listItemClick(e, token) {

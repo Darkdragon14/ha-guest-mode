@@ -4,7 +4,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 import asyncio
 
-KEY_FILE_PATH = "/config/custom_components/virtual_keys/private_key.pem"
+KEY_FILE_PATH = "/config/custom_components/ha_guest_mode/private_key.pem"
 
 class KeyManager:
     def __init__(self, key_file_path=KEY_FILE_PATH):

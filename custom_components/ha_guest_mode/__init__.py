@@ -15,12 +15,12 @@ from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
 from .config_flow import GuestModeConfigFlow
 
-DOMAIN = "virtual_keys"
+DOMAIN = "ha_guest_mode"
 
-DATABASE = "/config/custom_components/virtual_keys/virtual_keys.db"
+DATABASE = "/config/custom_components/ha_guest_mode/ha_guest_mode.db"
 
 
-@websocket_api.websocket_command({vol.Required("type"): "virtual_keys/list_users"})
+@websocket_api.websocket_command({vol.Required("type"): "ha_guest_mode/list_users"})
 @websocket_api.require_admin
 @websocket_api.async_response
 async def list_users(
@@ -78,7 +78,7 @@ async def list_users(
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "virtual_keys/create_token",
+        vol.Required("type"): "ha_guest_mode/create_token",
         vol.Required("user_id"): str,
         vol.Required("name"): str, # token name
         vol.Required("startDate"): int, # minutes
@@ -101,7 +101,7 @@ async def create_token(
         tokenGenerated = jwt.encode({"id": msg["id"],"startDate": startDate.isoformat(), "endDate": endDate.isoformat()}, private_key, algorithm="RS256")
 
         query = """
-            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_virtual_key)
+            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode)
             values (?, ?, ?, ?, ?, ?, ?)
         """
         conn = sqlite3.connect(DATABASE)
@@ -120,7 +120,7 @@ async def create_token(
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "virtual_keys/delete_token",
+        vol.Required("type"): "ha_guest_mode/delete_token",
         vol.Required("token_id"): int
     }
 )
@@ -168,7 +168,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         end_date TEXT NOT NULL,
         token_ha_id INTERGER,
         token_ha TEXT,
-        token_virtual_key TEXT NOT NULL
+        token_ha_guest_mode TEXT NOT NULL
     )
     """)
 
