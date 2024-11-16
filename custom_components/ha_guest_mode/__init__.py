@@ -12,6 +12,7 @@ from homeassistant.components.panel_custom import async_register_panel
 
 from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
+from .const import DOMAIN
 
 DOMAIN = "ha_guest_mode"
 
@@ -185,4 +186,14 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         )
     )
 
+    return True
+
+async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
+    """Set up ha_guest_mode from a config entry."""
+    hass.data.setdefault(DOMAIN, {})
+
+    return True
+
+async def async_unload_entry(hass: HomeAssistant, entry):
+    """Unload a config entry."""
     return True

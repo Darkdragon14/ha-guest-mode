@@ -1,0 +1,1 @@
+DOMAIN = "ha_guest_mode"
