@@ -16,13 +16,26 @@ function humanSeconds(seconds) {
   }).join(' ');
 }
 
-function humanDate(seconds) {
+function differenceInMinutes(targetDateStr) {
   const now = new Date();
-  const date = new Date(now.getTime() + seconds * 1000);
-  return date.toLocaleString();
+  const targetDate = new Date(targetDateStr);
+  const diffInMilliseconds = targetDate - now;
+  const diffInMinutes = Math.floor(diffInMilliseconds / 1000 / 60);
+  return diffInMinutes;
 }
 
-class VirtualKeysPanel extends LitElement {
+function getNow() {
+  const date = new Date()
+  return `${date.getFullYear()}-${
+    String(date.getMonth() + 1).padStart(2, "0")
+  }-${String(date.getDate()).padStart(2, "0")} ${
+    String(date.getHours()).padStart(2, "0")
+  }:${String(date.getMinutes()).padStart(2, "0")}:${
+    String(date.getSeconds()).padStart(2, "0")
+  }`;
+}
+
+class GuestModePanel extends LitElement {
   static get properties() {
     return {
       hass: { type: Object },
@@ -31,7 +44,7 @@ class VirtualKeysPanel extends LitElement {
       panel: { type: Object },
       users: { type: Array },
       tokens: { type: Array },
-      useExpireMinutes: { type: Boolean },
+      alert: { type: String },
     };
   }
 
@@ -39,18 +52,22 @@ class VirtualKeysPanel extends LitElement {
     super();
     this.users = [];
     this.tokens = [];
+    this.alert = '';
+    this.alertType = '';
 
     // form inputs
-    this.name = '';
-    this.user = '';
-    this.useExpireMinutes = true;
-    this.expireMinutes = 60;
-    this.expireDate = '';
-    this.expireMinutesChanged({ target: { value: this.expireMinutes } });
+    this.name = null;
+    this.user = null;
+    this.expire = 0;
+    this.startDate = getNow();
+    this.expirationDate = getNow();
+    this.startDateLabel = "Start Date";
+    this.endDtateLabel = "Expiration Date";
   }
 
   fetchUsers() {
-    this.hass.callWS({ type: 'virtual_keys/list_users' }).then(users => {
+    const userLocale = navigator.language || navigator.languages[0];
+    this.hass.callWS({ type: 'ha_guest_mode/list_users' }).then(users => {
       this.users = [];
       this.tokens = [];
       users.filter(user => !user.system_generated && user.is_active).forEach(user => {
@@ -65,8 +82,10 @@ class VirtualKeysPanel extends LitElement {
               name: token.name,
               user: user.name,
               jwt_token: token.jwt_token,
-              expiration: token.expiration,
+              endDate: new Date(token.end_date).toLocaleString(userLocale).replace(/:\d{2}$/, ""),
               remaining: token.remaining,
+              isUsed: token.isUsed,
+              startDate: new Date(token.start_date).toLocaleString(userLocale).replace(/:\d{2}$/, "")
             });
           });
       });
@@ -88,100 +107,80 @@ class VirtualKeysPanel extends LitElement {
     this.name = e.target.value;
   }
 
-  expireMinutesChanged(e) {
-    this.expireMinutes = e.target.value;
-    const date = new Date((new Date().getTime()) + parseInt(this.expireMinutes, 10) * 60000);
-    this.expireDate = date.toLocaleString('sv');
+  startDateChanged(e) {
+    this.startDate = e.detail.value;
   }
 
-  expireDateChanged(e) {
-    const diffInMins = Math.round((new Date(e.detail.value) - new Date()) / 60000);
-    this.expireMinutes = Math.max(0, diffInMins)  + '';
-    this.expireDate = e.detail.value;
+  expireChanged(e) {
+    this.expire = e.target.value;
   }
-  
-  toggleExpire() {
-    this.useExpireMinutes = !this.useExpireMinutes;
+
+  expirationDateChanged(e) {
+    this.expirationDate = e.detail.value;
   }
 
   toggleSideBar() {
     this.dispatchEvent(new Event('hass-toggle-menu', { bubbles: true, composed: true}));
   }
 
-  validate() {
-    if (!this.name) {
-      this.showAlert('Name is required');
-      return false;
-    }
-    if (!this.user) {
-      this.showAlert('User is required');
-      return false;
-    }
-    if (this.useExpireMinutes && !this.expireMinutes) {
-      this.showAlert('Expire minutes is required');
-      return false;
-    }
-    if (!this.useExpireMinutes && !this.expireDate) {
-      this.showAlert('Expire date is required');
-      return false;
-    }
-    if (parseInt(this.expireMinutes, 10) < 1) {
-      this.showAlert(this.useExpireMinutes
-        ? 'Expire minutes must be greater than 0'
-        : 'Expire date must be in the future');
-      return false
-    }
-    return true;
-  }
-
   addClick() {
-    if (!this.validate()) {
-      return;
-    }
-
     this.hass.callWS({
-      type: 'virtual_keys/create_token',
+      type: 'ha_guest_mode/create_token',
       name: this.name,
       user_id: this.user,
-      minutes: parseInt(this.expireMinutes, 10),
+      startDate: differenceInMinutes(this.startDate),
+      expirationDate: this.expire ? parseInt(this.expire, 10) : differenceInMinutes(this.expirationDate)
     }).then(() => {
       this.fetchUsers();
     }).catch(err => {
-      this.showAlert(err.message);
+      this.alertType="warning";
+      let messageDisplay = err.message;
+      if (err.code === 'invalid_format') {
+        const errorMessage = err.message;
+        messageDisplay= 'Element(s) missing to create a token:';
+        if (errorMessage.includes('name')) {
+          messageDisplay += ' an Name,'
+        }
+        if (errorMessage.includes('user_id')) {
+          messageDisplay += ' an User,'
+        }
+        if (errorMessage.includes('minutes')) {
+          messageDisplay += ' an Expiration,'
+        }
+        messageDisplay.slice(0, -1) + '.';
+      }
+      this.showAlert(messageDisplay);
     });
   }
 
-  deleteButton() {
-    return html`<svg preserveAspectRatio="xMidYMid meet" focusable="false" role="img" aria-hidden="true" viewBox="0 0 24 24" width="24" height="24">
-        <g><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></g>
-      </svg>`;
-  }
-
-  showAlert(message) {
-    const event = new Event('hass-notification', { bubbles: true, composed: true});
-    event.detail = { message };
-    this.dispatchEvent(event);
+  showAlert(text) {
+    this.alert = text;
+    setTimeout(() => {
+      this.alert = '';
+    }, 2000);
   }
 
   deleteClick(e, token) {
     e.stopPropagation();
 
     this.hass.callWS({
-      type: 'virtual_keys/delete_token',
+      type: 'ha_guest_mode/delete_token',
       token_id: token.id,
     }).then(() => {
       this.fetchUsers();
     }).catch(err => {
+      this.alertType="warning";
       this.showAlert(err.message);
     });
   }
 
   getLoginUrl(token) {
-    return this.hass.hassUrl() + 'local/community/virtual-keys/login.html?token=' + token.jwt_token;
+    return this.hass.hassUrl() + 'guest-mode/login?token=' + token.jwt_token;
   }
 
   listItemClick(e, token) {
     navigator.clipboard.writeText(this.getLoginUrl(token));
+    this.alertType="info";
     this.showAlert('Copied to clipboard ' + token.name);
   }
 
@@ -211,77 +210,95 @@ class VirtualKeysPanel extends LitElement {
 
         <div class="mdc-top-app-bar--fixed-adjust flex content">
           <div class="filters">
-            <ha-textfield
-              label="Key name"
-              .value="${this.name}"
-              .required=${true}
-              @input="${this.nameChanged}"
-            ></ha-textfield>
+            <ha-textfield label="Key name" value="" @input="${this.nameChanged}"></ha-textfield>
 
             <ha-combo-box
               .items=${this.users}
               .itemLabelPath=${'name'}
               .itemValuePath=${'id'}
               .value="1"
-              label="User"
-              .required=${true}
+              .label=${'User'}
               @value-changed=${this.userChanged}
             >
             </ha-combo-box>
+            <span>:</span>
 
-            <mwc-button
-              .label="${this.useExpireMinutes ? 'Use date' : 'Use minutes'}"
-              @click=${this.toggleExpire}
-            ></mwc-button>
-
-            ${this.useExpireMinutes
-            ? html`
-            <ha-textfield
-              label="Expire (minutes)"
-              .type="number"
-              .value="${this.expireMinutes}"
-              @input="${this.expireMinutesChanged}"
-            ></ha-textfield>
-            `
-            : html`
             <ha-selector
               .selector=${{
-                datetime: {},
+                datetime: {
+                  mode: "both",
+                }
               }}
-              .value=${this.expireDate}
-              label="Expire on"
+              .label=${this.startDateLabel}
               .hass=${this.hass}
               .required=${false}
-              @value-changed=${this.expireDateChanged}
+              .value=${this.startDate}
+              @value-changed=${this.startDateChanged}
             >
             </ha-selector>
-            `}
+
+            <ha-selector
+              .selector=${{
+                datetime: {
+                  mode: "both",
+                }
+              }}
+              .label=${this.endDtateLabel}
+              .hass=${this.hass}
+              .required=${false}
+              .value=${this.expirationDate}
+              @value-changed=${this.expirationDateChanged}
+            >
+            </ha-selector>
 
             <mwc-button raised label="Add" @click=${this.addClick}></mwc-button>
           </div>
 
-          <ha-card>
-            <mwc-list>
-              ${this.tokens.map(token => html`
-                <mwc-list-item hasMeta twoline @click=${e => this.listItemClick(e, token)}>
-                  <a href="${this.getLoginUrl(token)}">${token.name}</a>
-                  <span slot="secondary">${token.user}, ${
-                    this.useExpireMinutes
-                    ? `Expire in: ${humanSeconds(token.remaining)}`
-                    : `Expire on: ${humanDate(token.remaining)}`
-                  }</span>
-                  <mwc-icon slot="meta" @click=${e => this.deleteClick(e, token)}>${this.deleteButton()}</mwc-icon>
-                </mwc-list-item>
-              `)}
-            </mwc-list>
-          </ha-card>
+          ${this.alert.length ? 
+            html`
+              <div class="container-alert">
+                <ha-alert
+                  alert-type=${this.alertType}
+                >
+                  ${this.alert}
+                </ha-alert>
+              </div>` 
+            : ''
+          }
+
+          ${this.tokens.length ?
+            html`
+            <ha-card class="container-list">
+              <mwc-list>
+                ${this.tokens.map(token => html`
+                  <mwc-list-item hasMeta twoline @click=${e => this.listItemClick(e, token)}>
+                    <a href="${this.getLoginUrl(token)}">
+                      ${token.name} for ${token.user}
+                      ${token.isUsed ?
+                        html`
+                        <ha-icon style="width: 17px; color: green;" icon="mdi:power"></ha-icon>
+                        `:
+                        html`
+                        <ha-icon style="width: 17px; color: red;" icon="mdi:power"></ha-icon>
+                        `
+                      }
+                    </a>
+                    <span slot="secondary">Start date: ${token.startDate}, End date: ${token.endDate}</span>
+                    <ha-icon slot="meta" @click=${e => this.deleteClick(e, token)} icon="mdi:delete"></ha-icon>
+                  </mwc-list-item>
+                `)}
+              </mwc-list>
+            </ha-card>`
+            : null
+          }
         </div>
+
       </div>
     `;
   }
 
   static get styles() {
-    return css`
+    return css`ha-datetimeha-time-input
       :host {
       }
       .mdc-top-app-bar {
@@ -376,6 +393,20 @@ class VirtualKeysPanel extends LitElement {
       .filters > * {
         margin-right: 8px;
       }
+
+      .container-alert {
+        margin-top: 15px;
+        padding: 0 2%;
+      }
+
+      .container-list {
+        margin-top: 15px;
+      }
+
+      ha-textfield[id="sec"] {
+        display: none;
+      }
+      
       @media (min-width: 870px) {
         mwc-icon-button {
           display: none;
@@ -383,6 +414,6 @@ class VirtualKeysPanel extends LitElement {
       }
     `;
   }
-}
+} 
 
-customElements.define('virtual-keys-panel', VirtualKeysPanel);
+customElements.define('guest-mode-panel', GuestModePanel);
