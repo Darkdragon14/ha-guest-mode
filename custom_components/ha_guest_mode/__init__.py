@@ -9,12 +9,15 @@ from homeassistant.helpers.typing import ConfigType
 from homeassistant.components import websocket_api
 from homeassistant.util import dt as dt_util
 from homeassistant.components.panel_custom import async_register_panel
+from homeassistant.helpers import config_validation as cv
 
 from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
 from .const import DOMAIN
 
 DOMAIN = "ha_guest_mode"
+
+CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
 
 DATABASE = "/config/custom_components/ha_guest_mode/ha_guest_mode.db"
 
