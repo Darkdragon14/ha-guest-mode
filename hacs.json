@@ -1,7 +1,6 @@
 {
   "name": "Guest Mode",
   "render_readme": true,
-  "domains": ["integration"],
   "zip_release": false,
   "filename": "dist/ha-guest-mode.js"
 }

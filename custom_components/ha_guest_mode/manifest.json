@@ -8,11 +8,5 @@
     "requirements": [],
     "dependencies": ["http", "websocket_api", "config"],
     "codeowners": ["@Darkdragon14","@kcsoft"],
-    "config_flow": true,
-    "resources": [
-        {
-            "url": "/hacsfiles/ha-guest-mode/ha-guest-mode.js",
-            "type": "module"
-        }
-    ]
+    "config_flow": true
 }
