@@ -10,7 +10,6 @@ jobs:
   validate-hacs:
     runs-on: "ubuntu-latest"
     steps:
-    steps:
       - name: HACS validation
         uses: "hacs/action@main"
         with:
