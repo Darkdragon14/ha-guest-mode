@@ -1,12 +1,12 @@
 {
     "domain": "ha_guest_mode",
     "name": "HA Guest Mode",
-    "version": "0.1.0",
-    "documentation": "https://github.com/Darkdragon14/ha-guest-mode",
-    "issue_tracker": "https://github.com/Darkdragon14/ha-guest-mode/issues",
-    "iot_class": "local_push",
-    "requirements": [],
-    "dependencies": ["http", "websocket_api", "config"],
     "codeowners": ["@Darkdragon14","@kcsoft"],
-    "config_flow": true
+    "config_flow": true,
+    "dependencies": ["http", "websocket_api", "config"],
+    "documentation": "https://github.com/Darkdragon14/ha-guest-mode",
+    "iot_class": "local_push",
+    "issue_tracker": "https://github.com/Darkdragon14/ha-guest-mode/issues",
+    "requirements": [],
+    "version": "0.1.0"
 }
