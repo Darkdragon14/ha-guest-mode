@@ -3,6 +3,8 @@ from datetime import timedelta, datetime, timezone
 from typing import Any
 import voluptuous as vol
 import jwt
+import os
+import shutil
 from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN
 from homeassistant.helpers.typing import ConfigType
@@ -182,12 +184,26 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             hass,
             frontend_url_path="guest-mode",
             webcomponent_name="guest-mode-panel",
-            module_url="/hacsfiles/ha-guest-mode/ha-guest-mode.js",
+            module_url="/local/community/ha-guest-mode/ha-guest-mode.js",
             sidebar_title="Guest",
             sidebar_icon="mdi:key-variant",
             require_admin=True,
         )
     )
+
+    source_path = hass.config.path("custom_components/ha_guest_mode/www/ha-guest-mode.js")
+    dest_dir = hass.config.path("www/community/ha-guest-mode")
+    dest_path = os.path.join(dest_dir, "ha-guest-mode.js")
+
+    try:
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
+
+        if os.path.exists(source_path):
+            shutil.copy2(source_path, dest_path)
+
+    except Exception as e:
+        return False
 
     return True
 
