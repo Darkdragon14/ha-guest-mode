@@ -1,9 +1,13 @@
-# virtual-keys
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
+# Guest Mode
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![Hassfest](https://github.com/Darkdragon14/ha-guest-mode/actions/workflows/hassfest.yml/badge.svg)](https://github.com/Darkdragon14/ha-guest-mode/actions/workflows/hassfest.yml)
+[![HACS Action](https://github.com/Darkdragon14/ha-guest-mode/actions/workflows/hacs_action.yml/badge.svg)](https://github.com/Darkdragon14/ha-guest-mode/actions/workflows/hacs_action.yml)
+[![release](https://img.shields.io/github/v/release/Darkdragon14/ha-guest-mode.svg)](https://github.com/Darkdragon14/ha-guest-mode/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Create login link for [Home Assistant](https://www.home-assistant.io/) that you can share with guests.
 
-![image](images/screenshot1.png)
+This is a fork of the original [Virtual-keys](https://github.com/kcsoft/virtual-keys) integration, designed for managing a "Guest Mode" in Home Assistant. It allows you to set up a dedicated mode for guest-friendly smart home interactions, ensuring a tailored experience while protecting personal configurations.
 
 # Installation
 
@@ -11,46 +15,43 @@ Create login link for [Home Assistant](https://www.home-assistant.io/) that you 
 
 You need to install [HACS](https://hacs.xyz/) first.
 
-Because HACS doesn't support both `Integration` and `Plugin` in the same repository, you need to install it twice, once as an `Integration` and once as a `Plugin (Lovelace)`.
+* add "Custom repositories" to HACS, paste the URL of this repository and select "Integration" as category
 
-* add "Custom repositories" to HACS, paste the URL of this repository and select "Lovelace" as category
-
-* go to HACS -> Frontend, Explore and Download Repositories, search for "virtual keys" and install it
-
-* in HACS "Custom repositories" delete the URL of this repository
-
-* add "Custom repositories" to HACS, paste the URL of this repository and this time select "Integration" as category
-
-* go to HACS -> Integrations, Explore and Download Repositories, search for "virtual keys" and install it
-
-* add to `configuration.yaml`:
-
-```yaml
-virtual_keys:
-
-panel_custom:
-  - name: virtual-keys-panel
-    require_admin: true
-    url_path: virtual-keys
-    sidebar_title: Virtual Keys
-    sidebar_icon: mdi:key-variant
-    module_url: /local/community/virtual-keys/virtual-keys.js
-```
+* go to HACS -> Integrations, Explore and Download Repositories, search for "Guest Mode" and install it
 
 * restart Home Assistant
 
+* go in your settings -> devices and services, then add it
+
+# Difference with the fork
+
+You can choose a start date and an end date. Furthermore, the Home Assistant token is only created if the guest uses the link during the specified period.
+
+If you want to know whether your guest has used the link, you can check the icon next to the token's name:
+
+* Red: The link has not been used.
+* Green: The link has been used, and the Home Assistant token has been created.
+
 # Use case
 
-I want to share a "virtual key" with my friends that is valid for a limited time and that they can use to access specific entities in Home Assistant like the fron gate. The key is actually a link to my Home Assistant that can be opened in a browser.
+I want to share an access with my friends that is valid for a limited time and that they can use to access specific entities in Home Assistant like the fron gate. The access is actually a link to my Home Assistant that can be opened in a browser.
 
-To make this work, I need to make some additional steps (after installing Virtual Keys):
+To make this work, I need to make some optional and additional steps (before or after installing Ha Guest Mode):
 
-* create a new user in Home Assistant eg. "guest"
+* create a new user in Home Assistant eg. "guest" (recommended)
 
-* create a new group eg. "guests" and add the user "guest" to it, and also the devices you want to give access to, eg "cover.front_gate", instructions [here](https://developers.home-assistant.io/blog/2019/03/11/user-permissions/)
+* create a new group eg. "guests" and add the user "guest" to it, and also the devices you want to give access to, eg "cover.front_gate", instructions [here](https://developers.home-assistant.io/blog/2019/03/11/user-permissions/) (optional)
 
-* create a new View (tab) in the default Lovelace UI and add the entities you want to give access to, eg. "cover.front_gate", set the visibility to only show to user "guest".
+* create a new View (tab) in the default Lovelace UI and add the entities you want to give access to, eg. "cover.front_gate", set the visibility to only show to user "guest". (optional)
 
-* install [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) and configure it set "kiosk" mode for user "guest"
+* install [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) and configure it set "kiosk" mode for user "guest" or [browser-mode](https://github.com/thomasloven/hass-browser_mod) to hide the sidebar for this user (optional)
 
-Ths is it, you can now create Virtual Keys and share the link.
+This is it, you can now create access and share the link.
+
+# Future improvements
+
+* Add choice between start now and a start date :rocket:
+
+* Generate all path without absolute path :hammer_and_wrench:
+
+* Improved error handling :hammer_and_wrench:
