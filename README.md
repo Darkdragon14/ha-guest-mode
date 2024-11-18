@@ -7,8 +7,7 @@
 
 Create login link for [Home Assistant](https://www.home-assistant.io/) that you can share with guests.
 
-This is a fork of the original [Virtual-keys](https://github.com/kcsoft/virtual-keys) integration, designed for managing a "Guest Mode" in Home Assistant. It allows you to set up a dedicated mode for guest-friendly smart home interactions, ensuring a tailored experience while protecting personal configurations.
-It's based on the code og [@kcsoft](https://github.com/kcsoft), I forked it and I work on it to have one repository and a start date. Other changes are coming
+It's based on the code of [@kcsoft](https://github.com/kcsoft), I forked it and I work on it to have one repository and a start date. Other changes are coming
 
 # Installation
 
