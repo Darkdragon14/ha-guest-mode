@@ -3,11 +3,12 @@
 [![Hassfest](https://github.com/Darkdragon14/ha-guest-mode/actions/workflows/hassfest.yml/badge.svg)](https://github.com/Darkdragon14/ha-guest-mode/actions/workflows/hassfest.yml)
 [![HACS Action](https://github.com/Darkdragon14/ha-guest-mode/actions/workflows/hacs_action.yml/badge.svg)](https://github.com/Darkdragon14/ha-guest-mode/actions/workflows/hacs_action.yml)
 [![release](https://img.shields.io/github/v/release/Darkdragon14/ha-guest-mode.svg)](https://github.com/Darkdragon14/ha-guest-mode/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<!--Maybe later if the repo https://github.com/kcsoft/virtual-keys add one and can used-it[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)-->
 
 Create login link for [Home Assistant](https://www.home-assistant.io/) that you can share with guests.
 
 This is a fork of the original [Virtual-keys](https://github.com/kcsoft/virtual-keys) integration, designed for managing a "Guest Mode" in Home Assistant. It allows you to set up a dedicated mode for guest-friendly smart home interactions, ensuring a tailored experience while protecting personal configurations.
+It's based on the code og [@kcsoft](https://github.com/kcsoft), I forked it and I work on it to have one repository and a start date. Other changes are coming
 
 # Installation
 
@@ -38,19 +39,23 @@ I want to share an access with my friends that is valid for a limited time and t
 
 To make this work, I need to make some optional and additional steps (before or after installing Ha Guest Mode):
 
-* create a new user in Home Assistant eg. "guest" (recommended)
+* Create a new user in Home Assistant eg. "guest" (recommended)
 
-* create a new group eg. "guests" and add the user "guest" to it, and also the devices you want to give access to, eg "cover.front_gate", instructions [here](https://developers.home-assistant.io/blog/2019/03/11/user-permissions/) (optional)
+* Create a new group eg. "guests" and add the user "guest" to it, and also the devices you want to give access to, eg "cover.front_gate", instructions [here](https://developers.home-assistant.io/blog/2019/03/11/user-permissions/) (optional)
 
-* create a new View (tab) in the default Lovelace UI and add the entities you want to give access to, eg. "cover.front_gate", set the visibility to only show to user "guest". (optional)
+* Create a new View (tab) in the default Lovelace UI and add the entities you want to give access to, eg. "cover.front_gate", set the visibility to only show to user "guest". (optional)
 
-* install [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) and configure it set "kiosk" mode for user "guest" or [browser-mode](https://github.com/thomasloven/hass-browser_mod) to hide the sidebar for this user (optional)
+* Install [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) and configure it set "kiosk" mode for user "guest" or [browser-mode](https://github.com/thomasloven/hass-browser_mod) to hide the sidebar for this user (optional)
 
 This is it, you can now create access and share the link.
 
 # Future improvements
 
 * Add choice between start now and a start date :rocket:
+
+* Add possibility to customize the tab name and path to access at admin ui :rocket:
+
+* Add translate :rocket:
 
 * Generate all path without absolute path :hammer_and_wrench:
 
