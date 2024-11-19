@@ -4,7 +4,8 @@ from typing import Any
 import voluptuous as vol
 import jwt
 import os
-import shutil
+import aiofiles
+import asyncio
 from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN
 from homeassistant.helpers.typing import ConfigType
@@ -200,7 +201,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             os.makedirs(dest_dir)
 
         if os.path.exists(source_path):
-            shutil.copy2(source_path, dest_path)
+            await async_copy_file(source_path, dest_path)
 
     except Exception as e:
         return False
@@ -216,3 +217,8 @@ async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry):
     """Unload a config entry."""
     return True
+
+async def async_copy_file(source_path, dest_path):
+    async with aiofiles.open(source_path, 'rb') as src, aiofiles.open(dest_path, 'wb') as dst:
+        while chunk := await src.read(1024):  # Adjust chunk size as needed
+            await dst.write(chunk)
