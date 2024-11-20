@@ -5,7 +5,7 @@
 [![release](https://img.shields.io/github/v/release/Darkdragon14/ha-guest-mode.svg)](https://github.com/Darkdragon14/ha-guest-mode/releases)
 <!--Maybe later if the repo https://github.com/kcsoft/virtual-keys add one and can used-it[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)-->
 
-Create login link for [Home Assistant](https://www.home-assistant.io/) that you can share with guests.
+Generate secure login links for [Home Assistant](https://www.home-assistant.io/) to share with your guests.
 
 It's based on the code of [@kcsoft](https://github.com/kcsoft), I forked it and I work on it to have one repository and a start date. Other changes are coming
 
@@ -13,15 +13,24 @@ It's based on the code of [@kcsoft](https://github.com/kcsoft), I forked it and 
 
 ## HACS installation
 
-You need to install [HACS](https://hacs.xyz/) first.
+To install Guest Mode using [HACS](https://hacs.xyz/):
 
-* add "Custom repositories" to HACS, paste the URL of this repository and select "Integration" as category
+1. Add this repository as a custom repository in HACS:
+   - Go to **HACS** → **Integrations** → **Add Custom Repository**.
+   - Enter the URL of this repository and select **Integration** as the category.
+2. Search for "Guest Mode" in HACS and install it.
+3. Restart Home Assistant.
+4. Go to **Settings** → **Devices & Services** → **Add Integration**.
+5. Search for "Guest Mode" and select it.
 
-* go to HACS -> Integrations, Explore and Download Repositories, search for "Guest Mode" and install it
+## Customizable options
 
-* restart Home Assistant
+|Option Name|Description|required|default Value|
+|---|---|---|---|
+|**Tab Icon**|Icon for the Guest Mode tab, chosen from 23 MDI icons|No|`mdi:shield-key`|
+|**Tab Name**|Name of the Guest Mode tab.  |No|`Guest`|
+|**Path for Admin UI**|Custom URL path for accessing the admin interface|No|`/guest-mode`
 
-* go in your settings -> devices and services, then add it
 
 # Difference with the fork
 
@@ -38,24 +47,22 @@ I want to share an access with my friends that is valid for a limited time and t
 
 To make this work, I need to make some optional and additional steps (before or after installing Ha Guest Mode):
 
-* Create a new user in Home Assistant eg. "guest" (recommended)
+1. **Create a new user** in Home Assistant e.g. "guest" (recommended)
 
-* Create a new group eg. "guests" and add the user "guest" to it, and also the devices you want to give access to, eg "cover.front_gate", instructions [here](https://developers.home-assistant.io/blog/2019/03/11/user-permissions/) (optional)
+2. **Set permission**, create group e.g. "guests" and add this user this group, and also the devices you want to give access to, e.g. "cover.front_gate". See [User Permissions](https://developers.home-assistant.io/blog/2019/03/11/user-permissions/)
 
-* Create a new View (tab) in the default Lovelace UI and add the entities you want to give access to, eg. "cover.front_gate", set the visibility to only show to user "guest". (optional)
+3. **Customize the interface** by creating a new View (tab) in the default Lovelace UI and add the entities you want to give access to, e.g. "cover.front_gate", set the visibility to only show to user "guest". (optional)
 
-* Install [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) and configure it set "kiosk" mode for user "guest" or [browser-mode](https://github.com/thomasloven/hass-browser_mod) to hide the sidebar for this user (optional)
+4. Use [Kiosk Mode](https://github.com/NemesisRE/kiosk-mode) or [Browser Mod](https://github.com/thomasloven/hass-browser_mod) to hide unnecessary UI elements for guests, like sidebar. (optional)
 
-This is it, you can now create access and share the link.
+You can now generate a secure link to share with your guests.
 
 # Future improvements
 
-* Add choice between start now and a start date :rocket:
+* Allowing immediate or scheduled start dates for guest links. :rocket:
 
-* Add possibility to customize the tab name and path to access at admin ui :rocket:
+* Adding multilingual support :rocket:
 
-* Add translate :rocket:
+* Replace absolute paths with dynamically generated relative paths. :hammer_and_wrench:
 
-* Generate all path without absolute path :hammer_and_wrench:
-
-* Improved error handling :hammer_and_wrench:
+* Improving error handling and code maintainability. :hammer_and_wrench:

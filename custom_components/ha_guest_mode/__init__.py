@@ -9,6 +9,7 @@ import asyncio
 from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN
 from homeassistant.helpers.typing import ConfigType
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.components import websocket_api
 from homeassistant.util import dt as dt_util
 from homeassistant.components.panel_custom import async_register_panel
@@ -180,18 +181,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     connection.commit()
     connection.close()
 
-    hass.async_create_task(
-        async_register_panel(
-            hass,
-            frontend_url_path="guest-mode",
-            webcomponent_name="guest-mode-panel",
-            module_url="/local/community/ha-guest-mode/ha-guest-mode.js",
-            sidebar_title="Guest",
-            sidebar_icon="mdi:key-variant",
-            require_admin=True,
-        )
-    )
-
     source_path = hass.config.path("custom_components/ha_guest_mode/www/ha-guest-mode.js")
     dest_dir = hass.config.path("www/community/ha-guest-mode")
     dest_path = os.path.join(dest_dir, "ha-guest-mode.js")
@@ -208,9 +197,29 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     return True
 
-async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Set up ha_guest_mode from a config entry."""
     hass.data.setdefault(DOMAIN, {})
+    
+    config = config_entry.data
+    
+    tab_icon = config.get("Tab Icon", "mdi:shield-key")
+    tab_name = config.get("Tab name", "Guest")
+    path = config.get("Path for admin UI", "/guest-mode")
+    if path.startswith("/"):
+        path = path[1:]
+
+    hass.async_create_task(
+        async_register_panel(
+            hass,
+            frontend_url_path=path,
+            webcomponent_name="guest-mode-panel",
+            module_url="/local/community/ha-guest-mode/ha-guest-mode.js",
+            sidebar_title=tab_name,
+            sidebar_icon=tab_icon,
+            require_admin=True,
+        )
+    )
 
     return True
 
