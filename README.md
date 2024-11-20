@@ -63,6 +63,6 @@ You can now generate a secure link to share with your guests.
 
 * Adding multilingual support :rocket:
 
-* Replace absolute paths with dynamically generated relative paths.:hammer_and_wrench:
+* Replace absolute paths with dynamically generated relative paths. :hammer_and_wrench:
 
 * Improving error handling and code maintainability. :hammer_and_wrench:
