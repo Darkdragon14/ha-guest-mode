@@ -15,13 +15,24 @@ It's based on the code of [@kcsoft](https://github.com/kcsoft), I forked it and 
 
 You need to install [HACS](https://hacs.xyz/) first.
 
-* add "Custom repositories" to HACS, paste the URL of this repository and select "Integration" as category
+* Add "Custom repositories" to HACS, paste the URL of this repository and select "Integration" as category
 
-* go to HACS -> Integrations, Explore and Download Repositories, search for "Guest Mode" and install it
+* Go to HACS → Integrations, Explore and Download Repositories, search for "Guest Mode" and install it
 
-* restart Home Assistant
+* Restart Home Assistant
 
-* go in your settings -> devices and services, then add it
+* Go to Settings → Devices & Services → Add Integration.
+
+* Search for Guest Mode and select it.
+
+## Customize options
+
+|Option Name|Description|required|default Value|
+|---|---|---|---|
+|Tab Icon|Icon displayed for Guest Mode in the UI. You can choose from 23 Material Design Icons (MDI)|false|mdi:shield-key|
+|Tab Name|Name of the Guest Mode tab in the interface|false|Guest|
+|Path for Admin UI|Access a custom path for managing guest mode|false|/guest-mode
+
 
 # Difference with the fork
 
@@ -59,3 +70,5 @@ This is it, you can now create access and share the link.
 * Generate all path without absolute path :hammer_and_wrench:
 
 * Improved error handling :hammer_and_wrench:
+
+* Refactor to split the init in difference file to simplify the maintenance :hammer_and_wrench:
