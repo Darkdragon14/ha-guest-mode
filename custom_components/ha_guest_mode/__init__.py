@@ -202,8 +202,10 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     hass.data.setdefault(DOMAIN, {})
     
     config = config_entry.data
-    tab_name = config.get("tab_name", "Guest")
-    path = config.get("path", "/guest-mode")
+    
+    tab_icon = config.get("Tab Icon", "mdi:shield-key")
+    tab_name = config.get("Tab name", "Guest")
+    path = config.get("Path for admin UI", "/guest-mode")
     if path.startswith("/"):
         path = path[1:]
 
@@ -214,7 +216,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
             webcomponent_name="guest-mode-panel",
             module_url="/local/community/ha-guest-mode/ha-guest-mode.js",
             sidebar_title=tab_name,
-            sidebar_icon="mdi:key-variant",
+            sidebar_icon=tab_icon,
             require_admin=True,
         )
     )
