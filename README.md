@@ -34,7 +34,7 @@ To install Guest Mode using [HACS](https://hacs.xyz/):
 
 # Difference with the fork
 
-You can choose a start date and an end date. Furthermore, the Home Assistant token is only created if the guest uses the link during the specified period.
+You can set the link to be active immediately (default mode) or enable a date selector to specify a start date. Additionally, the Home Assistant token is generated only if the guest accesses the link within the defined time frame.
 
 If you want to know whether your guest has used the link, you can check the icon next to the token's name:
 
@@ -59,9 +59,11 @@ You can now generate a secure link to share with your guests.
 
 # Future improvements
 
-* Allowing immediate or scheduled start dates for guest links. :rocket:
-
 * Adding multilingual support :rocket:
+
+* Removeving seconds in UI :rocket:
+
+* Using ha-date-range-picker if is possible :rocket:
 
 * Replace absolute paths with dynamically generated relative paths. :hammer_and_wrench:
 
