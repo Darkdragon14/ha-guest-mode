@@ -380,10 +380,6 @@ class GuestModePanel extends LitElement {
       mwc-button {
         padding: 16px 0;
       }
-      mwc-checkbox {
-        --mdc-theme-secondary: var(--primary-color);
-        --mdc-checkbox-unchecked-color: var(--text-primary-color);
-      }
       .content {
         padding-left: 16px;
         padding-right: 16px;
