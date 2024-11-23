@@ -45,6 +45,7 @@ class GuestModePanel extends LitElement {
       users: { type: Array },
       tokens: { type: Array },
       alert: { type: String },
+      enableStartDate: { type: Boolean },
     };
   }
 
@@ -63,6 +64,7 @@ class GuestModePanel extends LitElement {
     this.expirationDate = getNow();
     this.startDateLabel = "Start Date";
     this.endDtateLabel = "Expiration Date";
+    this.enableStartDate = false;
   }
 
   fetchUsers() {
@@ -119,8 +121,8 @@ class GuestModePanel extends LitElement {
     this.expirationDate = e.detail.value;
   }
 
-  toggleSideBar() {
-    this.dispatchEvent(new Event('hass-toggle-menu', { bubbles: true, composed: true}));
+  toggleEnableStartDate(e) {
+    this.enableStartDate = !this.enableStartDate;
   }
 
   addClick() {
@@ -190,14 +192,6 @@ class GuestModePanel extends LitElement {
         <header class="mdc-top-app-bar mdc-top-app-bar--fixed">
           <div class="mdc-top-app-bar__row">
             <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start" id="navigation">
-              <div>
-                <mwc-icon-button title="Sidebar Toggle" @click=${this.toggleSideBar}>
-                  <svg preserveAspectRatio="xMidYMid meet" focusable="false" role="img" aria-hidden="true" viewBox="0 0 24 24">
-                    <g><path class="primary-path" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"></path></g>
-                  </svg>
-                </mwc-icon-button>
-              </div>
-
               <span class="mdc-top-app-bar__title">
                 ${this.panel.title}
               </span>
@@ -223,19 +217,29 @@ class GuestModePanel extends LitElement {
             </ha-combo-box>
             <span>:</span>
 
-            <ha-selector
-              .selector=${{
-                datetime: {
-                  mode: "both",
-                }
-              }}
-              .label=${this.startDateLabel}
-              .hass=${this.hass}
-              .required=${false}
-              .value=${this.startDate}
-              @value-changed=${this.startDateChanged}
-            >
-            </ha-selector>
+            <mwc-button
+              .label="${this.enableStartDate ? 'Use now' : 'Use a start date'}"
+              Outlined 
+              @click=${this.toggleEnableStartDate}
+            ></mwc-button>
+
+            ${this.enableStartDate ?
+              html`
+                <ha-selector
+                  .selector=${{
+                    datetime: {
+                      mode: "both",
+                    }
+                  }}
+                  .label=${this.startDateLabel}
+                  .hass=${this.hass}
+                  .required=${false}
+                  .value=${this.startDate}
+                  @value-changed=${this.startDateChanged}
+                >
+                </ha-selector>
+              ` : ''
+            }
 
             <ha-selector
               .selector=${{
@@ -298,7 +302,7 @@ class GuestModePanel extends LitElement {
   }
 
   static get styles() {
-    return css`ha-datetimeha-time-input
+    return css`
       :host {
       }
       .mdc-top-app-bar {
@@ -376,6 +380,10 @@ class GuestModePanel extends LitElement {
       mwc-button {
         padding: 16px 0;
       }
+      mwc-checkbox {
+        --mdc-theme-secondary: var(--primary-color);
+        --mdc-checkbox-unchecked-color: var(--text-primary-color);
+      }
       .content {
         padding-left: 16px;
         padding-right: 16px;
@@ -405,12 +413,6 @@ class GuestModePanel extends LitElement {
 
       ha-textfield[id="sec"] {
         display: none;
-      }
-      
-      @media (min-width: 870px) {
-        mwc-icon-button {
-          display: none;
-        }
       }
     `;
   }
