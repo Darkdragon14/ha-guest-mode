@@ -1,0 +1,25 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "tabIcon": "Icono de pestaña",
+                    "tabName": "Nombre de pestaña",
+                    "pathToAdminUI": "Ruta a la interfaz de administración"
+                }
+            }
+        }
+    },
+    "entity": {
+        "frontend": {
+            "keyName": "Nombre de clave",
+            "user": "Usuario",
+            "useNow": "Usar ahora",
+            "useStartDate": "Usar una fecha de inicio",
+            "startDate": "Fecha de inicio",
+            "expirationDate": "Fecha de expiración",
+            "add": "Añadir",
+            "for": "Para"
+        }
+    }
+}

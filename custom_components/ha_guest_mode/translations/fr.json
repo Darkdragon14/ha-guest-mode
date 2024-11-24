@@ -1,0 +1,25 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "tabIcon": "Icône de l'onglet",
+                    "tabName": "Nom de l'onglet",
+                    "pathToAdminUI": "Chemin vers l'interface d'administration"
+                }
+            }
+        }
+    },
+    "entity": {
+        "frontend": {
+            "keyName": "Nom de la clé",
+            "user": "Utilisateur",
+            "useNow": "Utiliser Maintenant",
+            "useStartDate": "Utiliser une date de début",
+            "startDate": "Date de début",
+            "expirationDate": "Date d'expiration",
+            "add": "Ajouter",
+            "for": "Pour"
+        }
+    }
+}

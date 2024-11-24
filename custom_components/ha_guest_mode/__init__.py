@@ -203,9 +203,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     
     config = config_entry.data
     
-    tab_icon = config.get("Tab Icon", "mdi:shield-key")
-    tab_name = config.get("Tab name", "Guest")
-    path = config.get("Path for admin UI", "/guest-mode")
+    tab_icon = config.get("tabIcon", "mdi:shield-key")
+    tab_name = config.get("tabName", "Guest")
+    path = config.get("pathToAdminUI", "/guest-mode")
     if path.startswith("/"):
         path = path[1:]
 

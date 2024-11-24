@@ -1,0 +1,25 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "tabIcon": "Tab Icon",
+                    "tabName": "Tab Name",
+                    "pathToAdminUI": "Path to Admin Interface"
+                }
+            }
+        }
+    },
+    "entity": {
+        "frontend": {
+            "keyName": "Key Name",
+            "user": "User",
+            "useNow": "Use Now",
+            "useStartDate": "Use a Start Date",
+            "startDate": "Start Date",
+            "expirationDate": "Expiration Date",
+            "add": "Add",
+            "for": "For"
+        }
+    }
+}

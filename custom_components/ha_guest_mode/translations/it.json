@@ -1,0 +1,25 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "tabIcon": "Icona della scheda",
+                    "tabName": "Nome della scheda",
+                    "pathToAdminUI": "Percorso all'interfaccia amministrativa"
+                }
+            }
+        }
+    },
+    "entity": {
+        "frontend": {
+            "keyName": "Nome della chiave",
+            "user": "Utente",
+            "useNow": "Usa ora",
+            "useStartDate": "Usa una data di inizio",
+            "startDate": "Data di inizio",
+            "expirationDate": "Data di scadenza",
+            "add": "Aggiungi",
+            "for": "Per"
+        }
+    }
+}
