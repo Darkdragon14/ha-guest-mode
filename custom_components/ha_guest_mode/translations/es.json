@@ -1,0 +1,41 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "tab_icon": "Icono de pestaña",
+                    "tab_name": "Nombre de pestaña",
+                    "path_to_admin_ui": "Ruta a la interfaz de administración"
+                }
+            }
+        }
+    },
+    "entity": {
+        "frontend": {
+            "key_name": {
+                "name": "Nombre de clave"
+            },
+            "user": {
+                "name": "Usuario"
+            },
+            "use_now": {
+                "name": "Usar ahora"
+            },
+            "use_start_date": {
+                "name": "Usar una fecha de inicio"
+            },
+            "start_date": {
+                "name": "Fecha de inicio"
+            },
+            "expiration_date": {
+                "name": "Fecha de expiración"
+            },
+            "add": {
+                "name": "Añadir"
+            },
+            "for": {
+                "name": "Para"
+            }
+        }
+    }
+}

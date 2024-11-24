@@ -1,0 +1,41 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "tab_icon": "Icône de l'onglet",
+                    "tab_name": "Nom de l'onglet",
+                    "path_to_admin_ui": "Chemin vers l'interface d'administration"
+                }
+            }
+        }
+    },
+    "entity": {
+        "frontend": {
+            "key_name": {
+                "name": "Nom de la clé"
+            },
+            "user": {
+                "name": "Utilisateur"
+            },
+            "use_now": {
+                "name": "Utiliser Maintenant"
+            },
+            "use_start_date": {
+                "name": "Utiliser une date de début"
+            },
+            "start_date": {
+                "name": "Date de début"
+            },
+            "expiration_date": {
+                "name": "Date d'expiration"
+            },
+            "add": {
+                "name": "Ajouter"
+            },
+            "for": {
+                "name": "Pour"
+            }
+        }
+    }
+}
