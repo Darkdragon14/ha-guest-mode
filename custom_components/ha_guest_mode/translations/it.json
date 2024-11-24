@@ -12,14 +12,30 @@
     },
     "entity": {
         "frontend": {
-            "key_name": "Nome della chiave",
-            "user": "Utente",
-            "use_now": "Usa ora",
-            "use_start_date": "Usa una data di inizio",
-            "start_date": "Data di inizio",
-            "expiration_date": "Data di scadenza",
-            "add": "Aggiungi",
-            "for": "Per"
+            "key_name": {
+                "name": "Nome della chiave"
+            },
+            "user": {
+                "name": "Utente"
+            },
+            "use_now": {
+                "name": "Usa ora"
+            },
+            "use_start_date": {
+                "name": "Usa una data di inizio"
+            },
+            "start_date": {
+                "name": "Data di inizio"
+            },
+            "expiration_date": {
+                "name": "Data di scadenza"
+            },
+            "add": {
+                "name": "Aggiungi"
+            },
+            "for": {
+                "name": "Per"
+            }
         }
     }
 }

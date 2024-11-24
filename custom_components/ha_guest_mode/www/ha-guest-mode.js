@@ -187,7 +187,7 @@ class GuestModePanel extends LitElement {
   }
 
   translate(key) {
-    return this.hass.localize(`component.ha_guest_mode.entity.frontend.${key}`);
+    return this.hass.localize(`component.ha_guest_mode.entity.frontend.${key}.name`);
   }
 
   render() {

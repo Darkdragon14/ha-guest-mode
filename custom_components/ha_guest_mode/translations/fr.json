@@ -12,14 +12,30 @@
     },
     "entity": {
         "frontend": {
-            "key_name": "Nom de la clé",
-            "user": "Utilisateur",
-            "use_now": "Utiliser Maintenant",
-            "use_start_date": "Utiliser une date de début",
-            "start_date": "Date de début",
-            "expiration_date": "Date d'expiration",
-            "add": "Ajouter",
-            "for": "Pour"
+            "key_name": {
+                "name": "Nom de la clé"
+            },
+            "user": {
+                "name": "Utilisateur"
+            },
+            "use_now": {
+                "name": "Utiliser Maintenant"
+            },
+            "use_start_date": {
+                "name": "Utiliser une date de début"
+            },
+            "start_date": {
+                "name": "Date de début"
+            },
+            "expiration_date": {
+                "name": "Date d'expiration"
+            },
+            "add": {
+                "name": "Ajouter"
+            },
+            "for": {
+                "name": "Pour"
+            }
         }
     }
 }

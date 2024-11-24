@@ -12,14 +12,30 @@
     },
     "entity": {
         "frontend": {
-            "key_name": "Key Name",
-            "user": "User",
-            "use_now": "Use Now",
-            "use_start_date": "Use a Start Date",
-            "start_date": "Start Date",
-            "expiration_date": "Expiration Date",
-            "add": "Add",
-            "for": "For"
+            "key_name": {
+                "name": "Key Name"
+            },
+            "user": {
+                "name": "User"
+            },
+            "use_now": {
+                "name": "Use Now"
+            },
+            "use_start_date": {
+                "name": "Use a Start Date"
+            },
+            "start_date": {
+                "name": "Start Date"
+            },
+            "expiration_date": {
+                "name": "Expiration Date"
+            },
+            "add": {
+                "name": "Add"
+            },
+            "for": {
+                "name": "For"
+            }
         }
     }
 }
