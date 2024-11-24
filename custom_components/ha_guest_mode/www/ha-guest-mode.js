@@ -191,8 +191,6 @@ class GuestModePanel extends LitElement {
   }
 
   render() {
-    console.log(this.hass.localize("component.ha_guest_mode.entity.frontend.title"));
-
     return html`
       <div>
         <header class="mdc-top-app-bar mdc-top-app-bar--fixed">
@@ -211,7 +209,7 @@ class GuestModePanel extends LitElement {
         <div class="mdc-top-app-bar--fixed-adjust flex content">
           <div class="filters">
             <ha-textfield 
-              .label=${this.translate("keyName")}
+              .label=${this.translate("key_name")}
               value="" 
               @input="${this.nameChanged}"
             ></ha-textfield>
@@ -228,7 +226,7 @@ class GuestModePanel extends LitElement {
             <span>:</span>
 
             <mwc-button
-              .label="${this.enableStartDate ? this.translate("useNow") : this.translate("useStartDate")}"
+              .label="${this.enableStartDate ? this.translate("use_now") : this.translate("use_start_date")}"
               Outlined 
               @click=${this.toggleEnableStartDate}
             ></mwc-button>
@@ -241,7 +239,7 @@ class GuestModePanel extends LitElement {
                       mode: "both",
                     }
                   }}
-                  .label=${this.translate("startDate")}
+                  .label=${this.translate("start_date")}
                   .hass=${this.hass}
                   .required=${false}
                   .value=${this.startDate}
@@ -257,7 +255,7 @@ class GuestModePanel extends LitElement {
                   mode: "both",
                 }
               }}
-              .label=${this.translate("expirationDate")}
+              .label=${this.translate("expiration_date")}
               .hass=${this.hass}
               .required=${false}
               .value=${this.expirationDate}
@@ -301,7 +299,7 @@ class GuestModePanel extends LitElement {
                         `
                       }
                     </a>
-                    <span slot="secondary">${this.translate("startDate")}: ${token.startDate}, ${this.translate("expirationDate")}: ${token.endDate}</span>
+                    <span slot="secondary">${this.translate("start_date")}: ${token.startDate}, ${this.translate("expiration_date")}: ${token.endDate}</span>
                     <ha-icon slot="meta" @click=${e => this.deleteClick(e, token)} icon="mdi:delete"></ha-icon>
                   </mwc-list-item>
                 `)}

@@ -31,8 +31,8 @@ class GuestModeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({
-                vol.Optional("tabIcon", default="mdi:shield-key"): vol.In(icon_choices),
-                vol.Optional("tabName", default="Guest"): str,
-                vol.Optional("pathToAdminUI", default="/guest-mode"): str,
+                vol.Optional("tab_icon", default="mdi:shield-key"): vol.In(icon_choices),
+                vol.Optional("tab_name", default="Guest"): str,
+                vol.Optional("path_to_admin_ui", default="/guest-mode"): str,
             }),
         )

@@ -3,21 +3,21 @@
         "step": {
             "user": {
                 "data": {
-                    "tabIcon": "Tab Icon",
-                    "tabName": "Tab Name",
-                    "pathToAdminUI": "Path to Admin Interface"
+                    "tab_icon": "Tab Icon",
+                    "tab_name": "Tab Name",
+                    "path_to_admin_ui": "Path to Admin Interface"
                 }
             }
         }
     },
     "entity": {
         "frontend": {
-            "keyName": "Key Name",
+            "key_name": "Key Name",
             "user": "User",
-            "useNow": "Use Now",
-            "useStartDate": "Use a Start Date",
-            "startDate": "Start Date",
-            "expirationDate": "Expiration Date",
+            "use_now": "Use Now",
+            "use_start_date": "Use a Start Date",
+            "start_date": "Start Date",
+            "expiration_date": "Expiration Date",
             "add": "Add",
             "for": "For"
         }

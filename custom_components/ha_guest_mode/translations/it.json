@@ -3,21 +3,21 @@
         "step": {
             "user": {
                 "data": {
-                    "tabIcon": "Icona della scheda",
-                    "tabName": "Nome della scheda",
-                    "pathToAdminUI": "Percorso all'interfaccia amministrativa"
+                    "tab_icon": "Icona della scheda",
+                    "tab_name": "Nome della scheda",
+                    "path_to_admin_ui": "Percorso all'interfaccia amministrativa"
                 }
             }
         }
     },
     "entity": {
         "frontend": {
-            "keyName": "Nome della chiave",
+            "key_name": "Nome della chiave",
             "user": "Utente",
-            "useNow": "Usa ora",
-            "useStartDate": "Usa una data di inizio",
-            "startDate": "Data di inizio",
-            "expirationDate": "Data di scadenza",
+            "use_now": "Usa ora",
+            "use_start_date": "Usa una data di inizio",
+            "start_date": "Data di inizio",
+            "expiration_date": "Data di scadenza",
             "add": "Aggiungi",
             "for": "Per"
         }

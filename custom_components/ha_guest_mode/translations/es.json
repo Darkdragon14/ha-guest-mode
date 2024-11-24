@@ -3,21 +3,21 @@
         "step": {
             "user": {
                 "data": {
-                    "tabIcon": "Icono de pestaña",
-                    "tabName": "Nombre de pestaña",
-                    "pathToAdminUI": "Ruta a la interfaz de administración"
+                    "tab_icon": "Icono de pestaña",
+                    "tab_name": "Nombre de pestaña",
+                    "path_to_admin_ui": "Ruta a la interfaz de administración"
                 }
             }
         }
     },
     "entity": {
         "frontend": {
-            "keyName": "Nombre de clave",
+            "key_name": "Nombre de clave",
             "user": "Usuario",
-            "useNow": "Usar ahora",
-            "useStartDate": "Usar una fecha de inicio",
-            "startDate": "Fecha de inicio",
-            "expirationDate": "Fecha de expiración",
+            "use_now": "Usar ahora",
+            "use_start_date": "Usar una fecha de inicio",
+            "start_date": "Fecha de inicio",
+            "expiration_date": "Fecha de expiración",
             "add": "Añadir",
             "for": "Para"
         }
