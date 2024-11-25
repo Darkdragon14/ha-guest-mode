@@ -59,12 +59,16 @@ You can now generate a secure link to share with your guests.
 
 # Future improvements
 
-* Adding multilingual support :rocket:
-
 * Removeving seconds in UI :rocket:
+
+* Update integration to change icon/title/path :rocket:
 
 * Using ha-date-range-picker if is possible :rocket:
 
 * Replace absolute paths with dynamically generated relative paths. :hammer_and_wrench:
 
 * Improving error handling and code maintainability. :hammer_and_wrench:
+
+# Missing Translation
+
+If you want this component to support another language, feel free to submit a PR or create an issue. If you open an issue, I’ll gladly handle the translation for you! :smile:

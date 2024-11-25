@@ -186,6 +186,10 @@ class GuestModePanel extends LitElement {
     this.showAlert('Copied to clipboard ' + token.name);
   }
 
+  translate(key) {
+    return this.hass.localize(`component.ha_guest_mode.entity.frontend.${key}.name`);
+  }
+
   render() {
     return html`
       <div>
@@ -204,21 +208,25 @@ class GuestModePanel extends LitElement {
 
         <div class="mdc-top-app-bar--fixed-adjust flex content">
           <div class="filters">
-            <ha-textfield label="Key name" value="" @input="${this.nameChanged}"></ha-textfield>
+            <ha-textfield 
+              .label=${this.translate("key_name")}
+              value="" 
+              @input="${this.nameChanged}"
+            ></ha-textfield>
 
             <ha-combo-box
               .items=${this.users}
               .itemLabelPath=${'name'}
               .itemValuePath=${'id'}
               .value="1"
-              .label=${'User'}
+              .label=${this.translate("user")}
               @value-changed=${this.userChanged}
             >
             </ha-combo-box>
             <span>:</span>
 
             <mwc-button
-              .label="${this.enableStartDate ? 'Use now' : 'Use a start date'}"
+              .label="${this.enableStartDate ? this.translate("use_now") : this.translate("use_start_date")}"
               Outlined 
               @click=${this.toggleEnableStartDate}
             ></mwc-button>
@@ -231,7 +239,7 @@ class GuestModePanel extends LitElement {
                       mode: "both",
                     }
                   }}
-                  .label=${this.startDateLabel}
+                  .label=${this.translate("start_date")}
                   .hass=${this.hass}
                   .required=${false}
                   .value=${this.startDate}
@@ -247,7 +255,7 @@ class GuestModePanel extends LitElement {
                   mode: "both",
                 }
               }}
-              .label=${this.endDtateLabel}
+              .label=${this.translate("expiration_date")}
               .hass=${this.hass}
               .required=${false}
               .value=${this.expirationDate}
@@ -255,7 +263,11 @@ class GuestModePanel extends LitElement {
             >
             </ha-selector>
 
-            <mwc-button raised label="Add" @click=${this.addClick}></mwc-button>
+            <mwc-button 
+              raised 
+              label="${this.translate("add")}" 
+              @click=${this.addClick}
+            ></mwc-button>
           </div>
 
           ${this.alert.length ? 
@@ -277,7 +289,7 @@ class GuestModePanel extends LitElement {
                 ${this.tokens.map(token => html`
                   <mwc-list-item hasMeta twoline @click=${e => this.listItemClick(e, token)}>
                     <a href="${this.getLoginUrl(token)}">
-                      ${token.name} for ${token.user}
+                      ${token.name} ${this.translate("for").toLowerCase()} ${token.user}
                       ${token.isUsed ?
                         html`
                         <ha-icon style="width: 17px; color: green;" icon="mdi:power"></ha-icon>
@@ -287,7 +299,7 @@ class GuestModePanel extends LitElement {
                         `
                       }
                     </a>
-                    <span slot="secondary">Start date: ${token.startDate}, End date: ${token.endDate}</span>
+                    <span slot="secondary">${this.translate("start_date")}: ${token.startDate}, ${this.translate("expiration_date")}: ${token.endDate}</span>
                     <ha-icon slot="meta" @click=${e => this.deleteClick(e, token)} icon="mdi:delete"></ha-icon>
                   </mwc-list-item>
                 `)}

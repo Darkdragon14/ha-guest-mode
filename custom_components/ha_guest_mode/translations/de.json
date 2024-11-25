@@ -1,0 +1,41 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "tab_icon": "Tab-Symbol",
+                    "tab_name": "Tab-Name",
+                    "path_to_admin_ui": "Pfad zur Admin-Oberfläche"
+                }
+            }
+        }
+    },
+    "entity": {
+        "frontend": {
+            "key_name": {
+                "name": "Schlüsselname"
+            },
+            "user": {
+                "name": "Benutzer"
+            },
+            "use_now": {
+                "name": "Jetzt verwenden"
+            },
+            "use_start_date": {
+                "name": "Startdatum verwenden"
+            },
+            "start_date": {
+                "name": "Startdatum"
+            },
+            "expiration_date": {
+                "name": "Ablaufdatum"
+            },
+            "add": {
+                "name": "Hinzufügen"
+            },
+            "for": {
+                "name": "Für"
+            }
+        }
+    }
+}

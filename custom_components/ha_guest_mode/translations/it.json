@@ -1,0 +1,41 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "tab_icon": "Icona della scheda",
+                    "tab_name": "Nome della scheda",
+                    "path_to_admin_ui": "Percorso all'interfaccia amministrativa"
+                }
+            }
+        }
+    },
+    "entity": {
+        "frontend": {
+            "key_name": {
+                "name": "Nome della chiave"
+            },
+            "user": {
+                "name": "Utente"
+            },
+            "use_now": {
+                "name": "Usa ora"
+            },
+            "use_start_date": {
+                "name": "Usa una data di inizio"
+            },
+            "start_date": {
+                "name": "Data di inizio"
+            },
+            "expiration_date": {
+                "name": "Data di scadenza"
+            },
+            "add": {
+                "name": "Aggiungi"
+            },
+            "for": {
+                "name": "Per"
+            }
+        }
+    }
+}
