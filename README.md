@@ -59,7 +59,7 @@ You can now generate a secure link to share with your guests.
 
 # Future improvements
 
-* Removeving seconds in UI or Using ha-date-range-picker :rocket:
+* Removing seconds in UI or Using ha-date-range-picker :rocket:
 
 * Update integration to change icon/title/path :rocket:
 
