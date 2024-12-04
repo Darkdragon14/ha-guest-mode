@@ -5,7 +5,6 @@ import voluptuous as vol
 import jwt
 import os
 import aiofiles
-import asyncio
 from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN
 from homeassistant.helpers.typing import ConfigType
@@ -17,14 +16,9 @@ from homeassistant.helpers import config_validation as cv
 
 from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
-from .const import DOMAIN
-
-DOMAIN = "ha_guest_mode"
+from .const import DOMAIN, DATABASE
 
 CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
-
-DATABASE = "/config/custom_components/ha_guest_mode/ha_guest_mode.db"
-
 
 @websocket_api.websocket_command({vol.Required("type"): "ha_guest_mode/list_users"})
 @websocket_api.require_admin
@@ -200,14 +194,16 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Set up ha_guest_mode from a config entry."""
     hass.data.setdefault(DOMAIN, {})
-    
-    config = config_entry.data
-    
-    tab_icon = config.get("tab_icon", "mdi:shield-key")
-    tab_name = config.get("tab_name", "Guest")
-    path = config.get("path_to_admin_ui", "/guest-mode")
+
+    tab_icon = config_entry.options.get("tab_icon", config_entry.data.get("tab_icon", "mdi:shield-key"))
+    tab_name = config_entry.options.get("tab_name", config_entry.data.get("tab_name", "Guest"))
+    path = config_entry.options.get("path_to_admin_ui", config_entry.data.get("path_to_admin_ui", "/guest-mode"))
     if path.startswith("/"):
         path = path[1:]
+
+    panels = hass.data.get("frontend_panels", {})
+    if path in panels:
+        hass.components.frontend.async_remove_panel(path)
 
     hass.async_create_task(
         async_register_panel(
@@ -223,8 +219,15 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     return True
 
-async def async_unload_entry(hass: HomeAssistant, entry):
+async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Unload a config entry."""
+    path = config_entry.options.get("path_to_admin_ui", config_entry.data.get("path_to_admin_ui", "/guest-mode"))
+    if path.startswith("/"):
+        path = path[1:]
+
+    panels = hass.data.get("frontend_panels", {})
+    if path in panels:
+        hass.components.frontend.async_remove_panel(path)
     return True
 
 async def async_copy_file(source_path, dest_path):
