@@ -34,6 +34,8 @@ To install Guest Mode using [HACS](https://hacs.xyz/):
 
 # Difference with the fork
 
+In this version, all configurations are handled exclusively through the Home Assistant interface, allowing users to easily modify options as needed without manual edits.
+
 You can set the link to be active immediately (default mode) or enable a date selector to specify a start date. Additionally, the Home Assistant token is generated only if the guest accesses the link within the defined time frame.
 
 If you want to know whether your guest has used the link, you can check the icon next to the token's name:
@@ -61,7 +63,7 @@ You can now generate a secure link to share with your guests.
 
 * Removing seconds in UI or Using ha-date-range-picker :rocket:
 
-* Replace absolute paths with dynamically generated relative paths. :hammer_and_wrench:
+* Adding a configurable path for the login route. :rocket:
 
 * Improving error handling and code maintainability. :hammer_and_wrench:
 
