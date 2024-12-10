@@ -36,6 +36,29 @@
             "for": {
                 "name": "Para"
             }
+        },
+        "guest_error": {
+            "expired_token": {
+                "name": "El token ha expirado."
+            },
+            "internal_server_error": {
+                "name": "Error interno del servidor"
+            },
+            "invalid_token": {
+                "name": "El token proporcionado es inválido."
+            },
+            "missing_token": {
+                "name": "No se proporcionó ningún token."
+            },
+            "not_yet_or_expired": {
+                "name": "El token aún no es válido o ha expirado."
+            },
+            "token_not_found": {
+                "name": "El token no fue encontrado."
+            },
+            "user_not_found": {
+                "name": "El usuario no fue encontrado."
+            }
         }
     }
 }

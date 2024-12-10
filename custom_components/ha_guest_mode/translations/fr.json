@@ -36,6 +36,30 @@
             "for": {
                 "name": "Pour"
             }
+        },
+        "guest_error": {
+            "expired_token": {
+                "name": "Le jeton a expiré."
+            },
+            "internal_server_error": {
+                "name": "Erreur interne du serveur"
+            },
+            "invalid_token": {
+                "name": "Le jeton fourni est invalide."
+            },
+            "missing_token": {
+                "name": "Aucun jeton fourni."
+            },
+            "not_yet_or_expired": {
+                "name": "Le jeton n'est pas encore valide ou a expiré."
+            },
+            "token_not_found": {
+                "name": "Le jeton est introuvable."
+            },
+            "user_not_found": {
+                "name": "L'utilisateur est introuvable."
+            }
         }
+        
     }
 }
