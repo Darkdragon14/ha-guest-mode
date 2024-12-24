@@ -2,13 +2,14 @@ import jwt
 import sqlite3
 from datetime import timedelta, datetime
 from aiohttp import web
+from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.helpers.translation import async_get_translations
 
-from .const import DATABASE
+from .const import DATABASE, DOMAIN
 
 class ValidateTokenView(HomeAssistantView):
     url = "/guest-mode/login"
@@ -18,34 +19,35 @@ class ValidateTokenView(HomeAssistantView):
     def __init__(self, hass: HomeAssistant):
         self.hass = hass
 
-    def get_translatons(translations, label: str):
-        return translations["entity"]["guest_error"][label]["name"]
+    def get_translations(self, translations: dict[str, Any], label: str):
+        key = f"component.{DOMAIN}.entity.guest_error.{label}.name"
+        return translations.get(key, f"Missing translation: {key}")
 
     async def get(self, request):
         language = self.hass.config.language 
-        translations = await async_get_translations(self.hass, language)
+        translations = await async_get_translations(self.hass, language, "entity")
 
         token_param = request.query.get("token")
         if not token_param:
-            return web.Response(status=400, text=self.get_translatons(translations, "missing_token"))
+            return web.Response(status=400, text=self.get_translations(translations, "missing_token"))
 
         try:
             public_key = self.hass.data.get("public_key")
             if public_key is None:
-                return web.Response(status=500, text=self.get_translatons(translations, "internal_server_error"))
+                return web.Response(status=500, text=self.get_translations(translations, "internal_server_error"))
             decoded_token = jwt.decode(token_param, public_key, algorithms=["RS256"])
             start_date = datetime.fromisoformat(decoded_token.get("startDate"))
             end_date = datetime.fromisoformat(decoded_token.get("endDate"))
         except jwt.ExpiredSignatureError:
-            return web.Response(status=401, text=self.get_translatons(translations, "expired_token"))
+            return web.Response(status=401, text=self.get_translations(translations, "expired_token"))
         except jwt.InvalidTokenError:
-            return web.Response(status=401, text=self.get_translatons(translations, "invalid_token"))
+            return web.Response(status=401, text=self.get_translations(translations, "invalid_token"))
         except Exception as e:
             return web.Response(status=400, text=str(e))
 
         now = datetime.now()
         if now < start_date or now > end_date:
-            return web.Response(status=403, text=self.get_translatons(translations, "not_yet_or_expired"))
+            return web.Response(status=403, text=self.get_translations(translations, "not_yet_or_expired"))
 
         conn = sqlite3.connect(self.hass.config.path(DATABASE))
         cursor = conn.cursor()
@@ -56,7 +58,7 @@ class ValidateTokenView(HomeAssistantView):
         result = cursor.fetchone()
 
         if result is None:
-            return web.Response(status=404, text=self.get_translatons(translations, "token_not_found"))
+            return web.Response(status=404, text=self.get_translations(translations, "token_not_found"))
         
         token = result[6]
         
@@ -65,7 +67,7 @@ class ValidateTokenView(HomeAssistantView):
 
             user = next((u for u in users if u.id == result[1]), None)
             if user is None:
-                return web.Response(status=404, text=self.get_translatons(translations, "user_not_found"))
+                return web.Response(status=404, text=self.get_translations(translations, "user_not_found"))
             endDateInSeconds = (end_date - now).total_seconds()
             refresh_token = await self.hass.auth.async_create_refresh_token(
                 user,
