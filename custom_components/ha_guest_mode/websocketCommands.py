@@ -134,3 +134,11 @@ async def delete_token(
     conn.commit()
     conn.close()
     connection.send_result(msg["id"], True)
+
+@websocket_api.websocket_command({vol.Required("type"): "ha_guest_mode/get_path_to_login"})
+@websocket_api.require_admin
+@websocket_api.async_response
+async def get_path_to_login(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    connection.send_result(msg["id"], hass.data.get("get_path_to_login"))

@@ -63,8 +63,6 @@ You can now generate a secure link to share with your guests.
 
 * Removing seconds in UI or Using ha-date-range-picker :rocket:
 
-* Adding a configurable path for the login route. :rocket:
-
 * Improving error handling and code maintainability. :hammer_and_wrench:
 
 # Missing Translation

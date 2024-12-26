@@ -55,6 +55,7 @@ class GuestModePanel extends LitElement {
     this.tokens = [];
     this.alert = '';
     this.alertType = '';
+    this.loginPath = '';
 
     // form inputs
     this.name = null;
@@ -176,8 +177,17 @@ class GuestModePanel extends LitElement {
     });
   }
 
+  async getLoginPath() {
+    if (this.loginPath) {
+      return;
+    }
+    this.hass.callWS({ type: 'ha_guest_mode/get_path_to_login' }).then(path => {
+      this.loginPath = path.slice(1);
+    });
+  }
+
   getLoginUrl(token) {
-    return this.hass.hassUrl() + 'guest-mode/login?token=' + token.jwt_token;
+    return `${this.hass.hassUrl()}${this.loginPath}?token=${token.jwt_token}`;
   }
 
   listItemClick(e, token) {
@@ -191,6 +201,7 @@ class GuestModePanel extends LitElement {
   }
 
   render() {
+    this.getLoginPath();   
     return html`
       <div>
         <header class="mdc-top-app-bar mdc-top-app-bar--fixed">
