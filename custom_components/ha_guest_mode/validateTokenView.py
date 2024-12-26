@@ -12,12 +12,12 @@ from homeassistant.helpers.translation import async_get_translations
 from .const import DATABASE, DOMAIN
 
 class ValidateTokenView(HomeAssistantView):
-    url = "/guest-mode/login"
     name = "guest-mode:login"
     requires_auth = False
 
     def __init__(self, hass: HomeAssistant):
         self.hass = hass
+        self.url = hass.data.get("get_path_to_login")
 
     def get_translations(self, translations: dict[str, Any], label: str):
         key = f"component.{DOMAIN}.entity.guest_error.{label}.name"

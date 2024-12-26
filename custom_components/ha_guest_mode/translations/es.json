@@ -5,7 +5,20 @@
                 "data": {
                     "tab_icon": "Icono de pestaña",
                     "tab_name": "Nombre de pestaña",
-                    "path_to_admin_ui": "Ruta a la interfaz de administración"
+                    "path_to_admin_ui": "Ruta a la interfaz de administración",
+                    "login_path": "Ruta de inicio de sesión de invitado"
+                }
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "tab_icon": "Icono de pestaña",
+                    "tab_name": "Nombre de pestaña",
+                    "path_to_admin_ui": "Ruta a la interfaz de administración",
+                    "login_path": "Ruta de inicio de sesión de invitado"
                 }
             }
         }

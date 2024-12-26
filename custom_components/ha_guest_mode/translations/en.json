@@ -5,7 +5,20 @@
                 "data": {
                     "tab_icon": "Tab Icon",
                     "tab_name": "Tab Name",
-                    "path_to_admin_ui": "Path to Admin Interface"
+                    "path_to_admin_ui": "Path to Admin Interface",
+                    "login_path": "Guest Login Path"
+                }
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "tab_icon": "Tab Icon",
+                    "tab_name": "Tab Name",
+                    "path_to_admin_ui": "Path to Admin Interface",
+                    "login_path": "Guest Login Path"
                 }
             }
         }
