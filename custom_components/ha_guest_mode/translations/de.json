@@ -5,7 +5,20 @@
                 "data": {
                     "tab_icon": "Tab-Symbol",
                     "tab_name": "Tab-Name",
-                    "path_to_admin_ui": "Pfad zur Admin-Oberfläche"
+                    "path_to_admin_ui": "Pfad zur Admin-Oberfläche",
+                    "login_path": "Gast-Login-Pfad"
+                }
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "tab_icon": "Tab-Symbol",
+                    "tab_name": "Tab-Name",
+                    "path_to_admin_ui": "Pfad zur Admin-Oberfläche",
+                    "login_path": "Gast-Login-Pfad"
                 }
             }
         }
