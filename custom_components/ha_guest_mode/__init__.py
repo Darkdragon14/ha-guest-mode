@@ -90,8 +90,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         )
     )
 
-    login_path = config_entry.options.get("login_path", config_entry.data.get("login_path", "/guest-mode/login"))
-    hass.http.register_view(ValidateTokenView(hass, login_path))
+    hass.http.register_view(ValidateTokenView(hass))
 
     return True
 

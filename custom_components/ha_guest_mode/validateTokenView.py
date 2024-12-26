@@ -15,9 +15,9 @@ class ValidateTokenView(HomeAssistantView):
     name = "guest-mode:login"
     requires_auth = False
 
-    def __init__(self, hass: HomeAssistant, login_path: str):
+    def __init__(self, hass: HomeAssistant):
         self.hass = hass
-        self.url = login_path
+        self.url = hass.data.get("get_path_to_login")
 
     def get_translations(self, translations: dict[str, Any], label: str):
         key = f"component.{DOMAIN}.entity.guest_error.{label}.name"
