@@ -29,7 +29,8 @@ To install Guest Mode using [HACS](https://hacs.xyz/):
 |---|---|---|---|
 |**Tab Icon**|Icon for the Guest Mode tab, chosen from 23 MDI icons|No|`mdi:shield-key`|
 |**Tab Name**|Name of the Guest Mode tab.  |No|`Guest`|
-|**Path for Admin UI**|Custom URL path for accessing the admin interface|No|`/guest-mode`
+|**Path for Admin UI**|Custom URL path for accessing the admin interface|No|`/guest-mode`|
+|**Login Path**|Custom URL path for guest to access the login page|No|`/guest-mode/login`|
 
 
 # Difference with the fork
