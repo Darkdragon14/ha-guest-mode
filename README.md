@@ -62,6 +62,12 @@ You can now generate a secure link to share with your guests.
 
 # Future improvements
 
+* Minifying links for easier sharing :rocket:
+
+* Adding direct sharing functionality with popular apps :rocket:
+
+* Removing seconds in UI or Using ha-date-range-picker :rocket:
+
 * Removing seconds in UI or Using ha-date-range-picker :rocket:
 
 * Fix timezone in display of the token :hammer_and_wrench:
