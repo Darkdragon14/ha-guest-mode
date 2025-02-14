@@ -48,6 +48,15 @@
             },
             "for": {
                 "name": "Pour"
+            },
+            "used": {
+                "name": "Utilisé"
+            },
+            "yes": {
+                "name": "Oui"
+            },
+            "no": {
+                "name": "Non"
             }
         },
         "guest_error": {

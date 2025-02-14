@@ -48,6 +48,15 @@
             },
             "for": {
                 "name": "Per"
+            },
+            "used": {
+                "name": "Usato"
+            },
+            "yes": {
+                "name": "Sì"
+            },
+            "no": {
+                "name": "No"
             }
         },
         "guest_error": {
