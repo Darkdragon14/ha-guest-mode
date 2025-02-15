@@ -48,6 +48,15 @@
             },
             "for": {
                 "name": "For"
+            },
+            "used": {
+                "name": "Used"
+            },
+            "yes": {
+                "name": "Yes"
+            },
+            "no": {
+                "name": "No"
             }
         },
         "guest_error": {

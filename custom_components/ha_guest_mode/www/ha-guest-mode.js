@@ -96,7 +96,7 @@ class GuestModePanel extends LitElement {
   }
 
   update(changedProperties) {
-    if (changedProperties.has('hass') && this.hass) {
+    if (changedProperties.has('hass') && this.hass && !this.users.length) {
       this.fetchUsers();
     }
     super.update(changedProperties);
@@ -218,68 +218,70 @@ class GuestModePanel extends LitElement {
         </header>
 
         <div class="mdc-top-app-bar--fixed-adjust flex content">
-          <div class="filters">
-            <ha-textfield 
-              .label=${this.translate("key_name")}
-              value="" 
-              @input="${this.nameChanged}"
-            ></ha-textfield>
+          <ha-card>
+            <div class="card-content">
+              <ha-textfield 
+                .label=${this.translate("key_name")}
+                value="" 
+                @input="${this.nameChanged}"
+              ></ha-textfield>
 
-            <ha-combo-box
-              .items=${this.users}
-              .itemLabelPath=${'name'}
-              .itemValuePath=${'id'}
-              .value="1"
-              .label=${this.translate("user")}
-              @value-changed=${this.userChanged}
-            >
-            </ha-combo-box>
-            <span>:</span>
+              <ha-combo-box
+                .items=${this.users}
+                .itemLabelPath=${'name'}
+                .itemValuePath=${'id'}
+                .value="1"
+                .label=${this.translate("user")}
+                @value-changed=${this.userChanged}
+              >
+              </ha-combo-box>
+              <span>:</span>
 
-            <mwc-button
-              .label="${this.enableStartDate ? this.translate("use_now") : this.translate("use_start_date")}"
-              Outlined 
-              @click=${this.toggleEnableStartDate}
-            ></mwc-button>
+              <mwc-button
+                .label="${this.enableStartDate ? this.translate("use_now") : this.translate("use_start_date")}"
+                Outlined 
+                @click=${this.toggleEnableStartDate}
+              ></mwc-button>
 
-            ${this.enableStartDate ?
-              html`
-                <ha-selector
-                  .selector=${{
-                    datetime: {
-                      mode: "both",
-                    }
-                  }}
-                  .label=${this.translate("start_date")}
-                  .hass=${this.hass}
-                  .required=${false}
-                  .value=${this.startDate}
-                  @value-changed=${this.startDateChanged}
-                >
-                </ha-selector>
-              ` : ''
-            }
+              ${this.enableStartDate ?
+                html`
+                  <ha-selector
+                    .selector=${{
+                      datetime: {
+                        mode: "both",
+                      }
+                    }}
+                    .label=${this.translate("start_date")}
+                    .hass=${this.hass}
+                    .required=${false}
+                    .value=${this.startDate}
+                    @value-changed=${this.startDateChanged}
+                  >
+                  </ha-selector>
+                ` : ''
+              }
 
-            <ha-selector
-              .selector=${{
-                datetime: {
-                  mode: "both",
-                }
-              }}
-              .label=${this.translate("expiration_date")}
-              .hass=${this.hass}
-              .required=${false}
-              .value=${this.expirationDate}
-              @value-changed=${this.expirationDateChanged}
-            >
-            </ha-selector>
+              <ha-selector
+                .selector=${{
+                  datetime: {
+                    mode: "both",
+                  }
+                }}
+                .label=${this.translate("expiration_date")}
+                .hass=${this.hass}
+                .required=${false}
+                .value=${this.expirationDate}
+                @value-changed=${this.expirationDateChanged}
+              >
+              </ha-selector>
 
-            <mwc-button 
-              raised 
-              label="${this.translate("add")}" 
-              @click=${this.addClick}
-            ></mwc-button>
-          </div>
+              <mwc-button 
+                raised 
+                label="${this.translate("add")}" 
+                @click=${this.addClick}
+              ></mwc-button>
+            </div>
+          </ha-card>
 
           ${this.alert.length ? 
             html`
@@ -295,27 +297,36 @@ class GuestModePanel extends LitElement {
 
           ${this.tokens.length ?
             html`
-            <ha-card class="container-list">
-              <mwc-list>
-                ${this.tokens.map(token => html`
-                  <mwc-list-item hasMeta twoline @click=${e => this.listItemClick(e, token)}>
-                    <a href="${this.getLoginUrl(token)}">
-                      ${token.name} ${this.translate("for").toLowerCase()} ${token.user}
-                      ${token.isUsed ?
-                        html`
-                        <ha-icon style="width: 17px; color: green;" icon="mdi:power"></ha-icon>
-                        `:
-                        html`
-                        <ha-icon style="width: 17px; color: red;" icon="mdi:power"></ha-icon>
-                        `
-                      }
-                    </a>
-                    <span slot="secondary">${this.translate("start_date")}: ${token.startDate}, ${this.translate("expiration_date")}: ${token.endDate}</span>
-                    <ha-icon slot="meta" @click=${e => this.deleteClick(e, token)} icon="mdi:delete"></ha-icon>
-                  </mwc-list-item>
-                `)}
-              </mwc-list>
-            </ha-card>`
+            <div class="cards-container">
+              ${this.tokens.map(token => html`
+                <ha-card class="token-card">
+                  <div class="card-content-list">
+                    <h3>${token.name} ${this.translate("for").toLowerCase()} ${token.user}</h3>
+                    <p>
+                      ${this.translate("start_date")}: ${token.startDate} <br>
+                      ${this.translate("expiration_date")}: ${token.endDate} <br>
+                      ${this.translate("used")}: ${token.isUsed ? this.translate("yes").toLowerCase() : this.translate("no").toLowerCase() } <br>
+                      </span>
+                    </p>
+                    <div class="actions">
+                      <mwc-button @click=${e => this.listItemClick(e, token)}>
+                        <ha-icon icon="mdi:share-variant"></ha-icon>
+                      </mwc-button>
+                      <mwc-button>
+                        ${token.isUsed ? html`
+                            <ha-icon icon="mdi:lock-open-variant-outline" style="color: var(--success-color);"></ha-icon>
+                          ` : html`
+                            <ha-icon icon="mdi:lock" style="color: var(--secondary-text-color);"></ha-icon>
+                          `}
+                      </mwc-button>
+                      <mwc-button @click=${e => this.deleteClick(e, token)}>
+                        <ha-icon icon="mdi:delete" style="color: var(--error-color);"></ha-icon>
+                      </mwc-button>
+                    </div>
+                  </div>
+                </ha-card>
+              `)}
+            </div>`
             : null
           }
         </div>
@@ -345,7 +356,7 @@ class GuestModePanel extends LitElement {
         transition: box-shadow 0.2s linear 0s;
       }
       .mdc-top-app-bar--fixed-adjust {
-        padding-top: var(--header-height);
+        padding-top: var(--header-height, 64px);
       }
       .mdc-top-app-bar__row {
         height: var(--header-height);
@@ -396,6 +407,23 @@ class GuestModePanel extends LitElement {
       app-toolbar [main-title] {
         margin-left: 20px
       }
+
+      ha-card {
+        background-color: var(--card-background-color);
+        color: var(--primary-text-color);
+      }
+
+      .card-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .card-content > * {
+        flex: 1 1 auto; /* Permet aux éléments de s’adapter et d’occuper un espace égal */
+        min-width: 150px; /* Assure que les petits écrans n'affichent pas trop d'éléments collés */
+      }
       ha-combo-box {
         padding: 8px 0;
         width: auto;
@@ -404,8 +432,6 @@ class GuestModePanel extends LitElement {
         padding: 16px 0;
       }
       .content {
-        padding-left: 16px;
-        padding-right: 16px;
         padding-bottom: 16px;
       }
       .flex {
@@ -427,11 +453,35 @@ class GuestModePanel extends LitElement {
       }
 
       .container-list {
-        margin-top: 15px;
+        margin: 16px;
       }
 
       ha-textfield[id="sec"] {
         display: none;
+      }
+
+      .cards-container {
+        margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: center;
+      }
+
+      .token-card {
+        flex: 1 1 250px;
+        max-width: 300px;
+      }
+
+      .card-content-list {
+        padding: 16px;
+        gab: 0px;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
     `;
   }
