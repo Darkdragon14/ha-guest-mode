@@ -201,8 +201,8 @@ class GuestModePanel extends LitElement {
   }
 
   listItemClick(e, token) {
-    // if (navigator.share) {
-    if (false) {
+    this.alertType="info";
+    if (navigator.share) {
       const shareData = {
         title: token.name,
         text: `Voici votre lien d'accès : ${this.getLoginUrl(token)}`,
@@ -212,7 +212,6 @@ class GuestModePanel extends LitElement {
       this.alertType = "info";
       this.showAlert('Shared with success');
     } else {
-      this.alertType="info";
       console.log(this.sharingMode);
       const accesLinkTranslated = this.translate("access_link");
       const forTranslated = this.translate("for").toLowerCase();
@@ -246,11 +245,10 @@ class GuestModePanel extends LitElement {
         default:
           console.log('Sharing mode not implemented or it\'s juste link');
       }
-      
-      // Fall back to clipboard if sharing is not available    
-      navigator.clipboard.writeText(this.getLoginUrl(token));
-      this.showAlert('Copied to clipboard ' + token.name);
     }
+    // Fall back to clipboard if sharing is not available    
+    navigator.clipboard.writeText(this.getLoginUrl(token));
+    this.showAlert('Copied to clipboard ' + token.name);
   }
 
   translate(key) {
