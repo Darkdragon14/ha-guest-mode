@@ -6,7 +6,8 @@
                     "tab_icon": "Icône de l'onglet",
                     "tab_name": "Nom de l'onglet",
                     "path_to_admin_ui": "Chemin vers l'interface d'administration",
-                    "login_path": "Chemin de connexion des invités"
+                    "login_path": "Chemin de connexion des invités",
+                    "sharing_mode": "Mode de partage pour HA Compagnon"
                 }
             }
         }
@@ -15,10 +16,11 @@
         "step": {
             "init": {
                 "data": {
-                    "tab_icon": "Icône de l'onglet (options)",
-                    "tab_name": "Nom de l'onglet (options)",
-                    "path_to_admin_ui": "Chemin vers l'interface d'administration (options)",
-                    "login_path": "Chemin de connexion des invités (options)"
+                    "tab_icon": "Icône de l'onglet",
+                    "tab_name": "Nom de l'onglet",
+                    "path_to_admin_ui": "Chemin vers l'interface d'administration",
+                    "login_path": "Chemin de connexion des invités",
+                    "sharing_mode": "Mode de partage pour HA Compagnon"
                 }
             }
         }
@@ -57,6 +59,9 @@
             },
             "no": {
                 "name": "Non"
+            },
+            "access_link": {
+                "name": "Lien d'accès"
             }
         },
         "guest_error": {

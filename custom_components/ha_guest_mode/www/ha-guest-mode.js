@@ -56,6 +56,7 @@ class GuestModePanel extends LitElement {
     this.alert = '';
     this.alertType = '';
     this.loginPath = '';
+    this.sharingMode = '';
 
     // form inputs
     this.name = null;
@@ -186,14 +187,70 @@ class GuestModePanel extends LitElement {
     });
   }
 
+  async getSharingMode() {
+    if (this.sharingMode) {
+      return;
+    }
+    this.hass.callWS({ type: 'ha_guest_mode/get_sharing_mode' }).then(sharingMode => {
+      this.sharingMode = sharingMode;
+    });
+  }
+
   getLoginUrl(token) {
     return `${this.hass.hassUrl()}${this.loginPath}?token=${token.jwt_token}`;
   }
 
   listItemClick(e, token) {
-    navigator.clipboard.writeText(this.getLoginUrl(token));
-    this.alertType="info";
-    this.showAlert('Copied to clipboard ' + token.name);
+    // if (navigator.share) {
+    if (false) {
+      const shareData = {
+        title: token.name,
+        text: `Voici votre lien d'accès : ${this.getLoginUrl(token)}`,
+        url: this.getLoginUrl(token),
+      };
+      navigator.share(shareData)
+      this.alertType = "info";
+      this.showAlert('Shared with success');
+    } else {
+      this.alertType="info";
+      console.log(this.sharingMode);
+      const accesLinkTranslated = this.translate("access_link");
+      const forTranslated = this.translate("for").toLowerCase();
+      const title = `${accesLinkTranslated} ${forTranslated} ${token.name}`;
+      const titleEncoded = encodeURIComponent(title);
+
+      switch (this.sharingMode) {
+        case 'qr':
+          this.showAlert('QR code not implemented');
+          break;
+        case 'email':
+          // open mailto link
+          window.open(`mailto:?subject=${titleEncoded}&body=${this.getLoginUrl(token)}`);
+          this.showAlert('Email sent');
+          break;
+        case 'whatsapp':
+          // open whatsapp link
+          window.open(`whatsapp://send?text=${titleEncoded}%20:%20${this.getLoginUrl(token)}`);
+          this.showAlert('Whatsapp sent');
+          break;
+        case 'telegram':
+          // open telegram link
+          window.open(`tg://msg?text=${titleEncoded}%20:%20${this.getLoginUrl(token)}`);
+          this.showAlert('Telegram sent');
+          break;
+        case 'sms':
+          // open sms link
+          window.open(`sms:?body=${titleEncoded}%20:%20${this.getLoginUrl(token)}`);
+          this.showAlert('SMS sent');
+          break;
+        default:
+          console.log('Sharing mode not implemented or it\'s juste link');
+      }
+      
+      // Fall back to clipboard if sharing is not available    
+      navigator.clipboard.writeText(this.getLoginUrl(token));
+      this.showAlert('Copied to clipboard ' + token.name);
+    }
   }
 
   translate(key) {
@@ -201,7 +258,8 @@ class GuestModePanel extends LitElement {
   }
 
   render() {
-    this.getLoginPath();   
+    this.getLoginPath();
+    this.getSharingMode();
     return html`
       <div>
         <header class="mdc-top-app-bar mdc-top-app-bar--fixed">

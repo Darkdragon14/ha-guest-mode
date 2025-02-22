@@ -6,7 +6,8 @@
                     "tab_icon": "Icono de pestaña",
                     "tab_name": "Nombre de pestaña",
                     "path_to_admin_ui": "Ruta a la interfaz de administración",
-                    "login_path": "Ruta de inicio de sesión de invitado"
+                    "login_path": "Ruta de inicio de sesión de invitado",
+                    "sharing_mode": "Modo de compartir para HA Compagnon"
                 }
             }
         }
@@ -18,7 +19,8 @@
                     "tab_icon": "Icono de pestaña",
                     "tab_name": "Nombre de pestaña",
                     "path_to_admin_ui": "Ruta a la interfaz de administración",
-                    "login_path": "Ruta de inicio de sesión de invitado"
+                    "login_path": "Ruta de inicio de sesión de invitado",
+                    "sharing_mode": "Modo de compartir para HA Compagnon"
                 }
             }
         }
@@ -57,6 +59,9 @@
             },
             "no": {
                 "name": "No"
+            },
+            "access_link": {
+                "name": "Enlace de acceso"
             }
         },
         "guest_error": {
