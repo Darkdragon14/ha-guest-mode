@@ -3,6 +3,7 @@ import {
   html,
   css,
 } from "https://unpkg.com/lit-element@2.4.0/lit-element.js?module";
+import "https://unpkg.com/share-api-polyfill/dist/share-min.js";
 
 function humanSeconds(seconds) {
   return [
@@ -202,54 +203,43 @@ class GuestModePanel extends LitElement {
 
   listItemClick(e, token) {
     this.alertType="info";
-    if (navigator.share) {
-      const shareData = {
-        title: token.name,
-        text: `Voici votre lien d'accès : ${this.getLoginUrl(token)}`,
-        url: this.getLoginUrl(token),
-      };
-      navigator.share(shareData)
-      this.alertType = "info";
-      this.showAlert('Shared with success');
-    } else {
-      console.log(this.sharingMode);
-      const accesLinkTranslated = this.translate("access_link");
-      const forTranslated = this.translate("for").toLowerCase();
-      const title = `${accesLinkTranslated} ${forTranslated} ${token.name}`;
-      const titleEncoded = encodeURIComponent(title);
 
-      switch (this.sharingMode) {
-        case 'qr':
-          this.showAlert('QR code not implemented');
-          break;
-        case 'email':
-          // open mailto link
-          window.open(`mailto:?subject=${titleEncoded}&body=${this.getLoginUrl(token)}`);
-          this.showAlert('Email sent');
-          break;
-        case 'whatsapp':
-          // open whatsapp link
-          window.open(`whatsapp://send?text=${titleEncoded}%20:%20${this.getLoginUrl(token)}`);
-          this.showAlert('Whatsapp sent');
-          break;
-        case 'telegram':
-          // open telegram link
-          window.open(`tg://msg?text=${titleEncoded}%20:%20${this.getLoginUrl(token)}`);
-          this.showAlert('Telegram sent');
-          break;
-        case 'sms':
-          // open sms link
-          window.open(`sms:?body=${titleEncoded}%20:%20${this.getLoginUrl(token)}`);
-          this.showAlert('SMS sent');
-          break;
-        default:
-          console.log('Sharing mode not implemented or it\'s juste link');
-      }
+    const accesLinkTranslated = this.translate("access_link");
+    const forTranslated = this.translate("for").toLowerCase();
+    const title = `${accesLinkTranslated} ${forTranslated} ${token.name}`;
+    const shareData = {
+        title,
+        text: this.getLoginUrl(token),
+        url: this.getLoginUrl(token),
+    };
+
+    const shareConfig =   {
+      copy: true,
+      email: true,
+      print: false,
+      sms: true,
+      messenger: true,
+      facebook: true,
+      whatsapp: true,
+      twitter: false,
+      linkedin: false,
+      telegram: true,
+      skype: false,
+      pinterest: false,
+      language: navigator.language || navigator.languages[0]
     }
-    // Fall back to clipboard if sharing is not available    
-    navigator.clipboard.writeText(this.getLoginUrl(token));
-    this.showAlert('Copied to clipboard ' + token.name);
-  }
+
+
+
+    if (navigator.share) {
+        navigator.share(shareData, shareConfig)
+            .then(() => this.showAlert('Partagé avec succès'))
+            .catch((error) => console.error("Erreur de partage :", error));
+    } else {
+        navigator.clipboard.writeText(this.getLoginUrl(token));
+        this.showAlert('Copied to clipboard ' + token.name);
+    }
+}
 
   translate(key) {
     return this.hass.localize(`component.ha_guest_mode.entity.frontend.${key}.name`);
