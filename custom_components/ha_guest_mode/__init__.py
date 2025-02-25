@@ -9,7 +9,7 @@ from homeassistant.components import websocket_api
 from homeassistant.components.panel_custom import async_register_panel
 from homeassistant.helpers import config_validation as cv
 
-from .websocketCommands import list_users, create_token, delete_token, get_path_to_login, get_sharing_mode
+from .websocketCommands import list_users, create_token, delete_token, get_path_to_login
 from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
 from .const import DOMAIN, DATABASE, DEST_PATH_SCRIPT_JS, SOURCE_PATH_SCRIPT_JS, SCRIPT_JS
@@ -21,7 +21,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     websocket_api.async_register_command(hass, create_token)
     websocket_api.async_register_command(hass, delete_token)
     websocket_api.async_register_command(hass, get_path_to_login)
-    websocket_api.async_register_command(hass, get_sharing_mode)
 
     key_manager = KeyManager()
     await key_manager.load_or_generate_key()
@@ -68,7 +67,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     hass.data.setdefault(DOMAIN, {})
 
     hass.data["get_path_to_login"] = config_entry.options.get("login_path", config_entry.data.get("login_path", "/guest-mode/login"))
-    hass.data["get_sharing_mode"] = config_entry.options.get("sharing_mode", config_entry.data.get("sharing_mode", "link"))
 
     tab_icon = config_entry.options.get("tab_icon", config_entry.data.get("tab_icon", "mdi:shield-key"))
     tab_name = config_entry.options.get("tab_name", config_entry.data.get("tab_name", "Guest"))

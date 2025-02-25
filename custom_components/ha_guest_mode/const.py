@@ -16,5 +16,3 @@ ICONS = [
     "mdi:link-variant","mdi:web","mdi:share-variant",
     "mdi:star","mdi:bell","mdi:email"
 ]
-
-SHARING_MODES = ["link","email","sms","whatsapp","telegram","qr"]

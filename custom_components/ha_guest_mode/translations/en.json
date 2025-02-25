@@ -6,8 +6,7 @@
                     "tab_icon": "Tab Icon",
                     "tab_name": "Tab Name",
                     "path_to_admin_ui": "Path to Admin Interface",
-                    "login_path": "Guest Login Path",
-                    "sharing_mode": "Sharing Mode for HA Compagnon"
+                    "login_path": "Guest Login Path"
                 }
             }
         }
@@ -19,8 +18,7 @@
                     "tab_icon": "Tab Icon",
                     "tab_name": "Tab Name",
                     "path_to_admin_ui": "Path to Admin Interface",
-                    "login_path": "Guest Login Path",
-                    "sharing_mode": "Sharing Mode for HA Compagnon"
+                    "login_path": "Guest Login Path"
                 }
             }
         }

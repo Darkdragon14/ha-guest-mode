@@ -6,8 +6,7 @@
                     "tab_icon": "Icona della scheda",
                     "tab_name": "Nome della scheda",
                     "path_to_admin_ui": "Percorso all'interfaccia amministrativa",
-                    "login_path": "Percorso di accesso ospite",
-                    "sharing_mode": "Modalità di condivisione per HA Compagnon"
+                    "login_path": "Percorso di accesso ospite"
                 }
             }
         }
@@ -19,8 +18,7 @@
                     "tab_icon": "Icona della scheda",
                     "tab_name": "Nome della scheda",
                     "path_to_admin_ui": "Percorso all'interfaccia amministrativa",
-                    "login_path": "Percorso di accesso ospite",
-                    "sharing_mode": "Modalità di condivisione per HA Compagnon"
+                    "login_path": "Percorso di accesso ospite"
                 }
             }
         }

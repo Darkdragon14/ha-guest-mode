@@ -6,8 +6,7 @@
                     "tab_icon": "Tab-Symbol",
                     "tab_name": "Tab-Name",
                     "path_to_admin_ui": "Pfad zur Admin-Oberfläche",
-                    "login_path": "Gast-Login-Pfad",
-                    "sharing_mode": "Freigabemodus für HA Compagnon"
+                    "login_path": "Gast-Login-Pfad"
                 }
             }
         }
@@ -19,8 +18,7 @@
                     "tab_icon": "Tab-Symbol",
                     "tab_name": "Tab-Name",
                     "path_to_admin_ui": "Pfad zur Admin-Oberfläche",
-                    "login_path": "Gast-Login-Pfad",
-                    "sharing_mode": "Freigabemodus für HA Compagnon"
+                    "login_path": "Gast-Login-Pfad"
                 }
             }
         }

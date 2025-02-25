@@ -1,7 +1,7 @@
 import voluptuous as vol
 from homeassistant import config_entries
 
-from .const import ICONS, SHARING_MODES
+from .const import ICONS
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options flow for Guest Mode."""
@@ -30,6 +30,5 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Optional("tab_name", default=tab_name): str,
                 vol.Optional("path_to_admin_ui", default=path): str,
                 vol.Optional("login_path", default=login_path): str,
-                vol.Optional("sharing_mode", default=sharing_mode): vol.In(SHARING_MODES),
             }),
         )

@@ -4,7 +4,7 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 
 from .options_flow import OptionsFlowHandler
-from .const import DOMAIN, ICONS, SHARING_MODES
+from .const import DOMAIN, ICONS
 
 class GuestModeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for ha-guest-mode."""
@@ -28,7 +28,6 @@ class GuestModeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Optional("tab_name", default="Guest"): str,
                 vol.Optional("path_to_admin_ui", default="/guest-mode"): str,
                 vol.Optional("login_path", default="/guest-mode/login"):str,
-                vol.Optional("sharing_ode", default="link"): vol.In(SHARING_MODES),
             }),
         )
 
