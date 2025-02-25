@@ -57,6 +57,9 @@
             },
             "no": {
                 "name": "No"
+            },
+            "access_link": {
+                "name": "Access Link"
             }
         },
         "guest_error": {

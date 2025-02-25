@@ -3,6 +3,7 @@ import {
   html,
   css,
 } from "https://unpkg.com/lit-element@2.4.0/lit-element.js?module";
+import "https://unpkg.com/share-api-polyfill/dist/share-min.js";
 
 function humanSeconds(seconds) {
   return [
@@ -191,17 +192,51 @@ class GuestModePanel extends LitElement {
   }
 
   listItemClick(e, token) {
-    navigator.clipboard.writeText(this.getLoginUrl(token));
     this.alertType="info";
-    this.showAlert('Copied to clipboard ' + token.name);
-  }
+
+    const accesLinkTranslated = this.translate("access_link");
+    const forTranslated = this.translate("for").toLowerCase();
+    const title = `${accesLinkTranslated} ${forTranslated} ${token.name}`;
+    const shareData = {
+        title,
+        text: this.getLoginUrl(token),
+        url: this.getLoginUrl(token),
+    };
+
+    const shareConfig =   {
+      copy: true,
+      email: true,
+      print: false,
+      sms: true,
+      messenger: true,
+      facebook: true,
+      whatsapp: true,
+      twitter: false,
+      linkedin: false,
+      telegram: true,
+      skype: false,
+      pinterest: false,
+      language: navigator.language || navigator.languages[0]
+    }
+
+
+
+    if (navigator.share) {
+        navigator.share(shareData, shareConfig)
+            .then(() => this.showAlert('Partagé avec succès'))
+            .catch((error) => console.error("Erreur de partage :", error));
+    } else {
+        navigator.clipboard.writeText(this.getLoginUrl(token));
+        this.showAlert('Copied to clipboard ' + token.name);
+    }
+}
 
   translate(key) {
     return this.hass.localize(`component.ha_guest_mode.entity.frontend.${key}.name`);
   }
 
   render() {
-    this.getLoginPath();   
+    this.getLoginPath();
     return html`
       <div>
         <header class="mdc-top-app-bar mdc-top-app-bar--fixed">

@@ -1,7 +1,7 @@
 import voluptuous as vol
 from homeassistant import config_entries
 
-from .const import ICONS 
+from .const import ICONS
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options flow for Guest Mode."""
