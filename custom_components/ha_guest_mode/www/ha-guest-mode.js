@@ -57,7 +57,6 @@ class GuestModePanel extends LitElement {
     this.alert = '';
     this.alertType = '';
     this.loginPath = '';
-    this.sharingMode = '';
 
     // form inputs
     this.name = null;
@@ -188,15 +187,6 @@ class GuestModePanel extends LitElement {
     });
   }
 
-  async getSharingMode() {
-    if (this.sharingMode) {
-      return;
-    }
-    this.hass.callWS({ type: 'ha_guest_mode/get_sharing_mode' }).then(sharingMode => {
-      this.sharingMode = sharingMode;
-    });
-  }
-
   getLoginUrl(token) {
     return `${this.hass.hassUrl()}${this.loginPath}?token=${token.jwt_token}`;
   }
@@ -247,7 +237,6 @@ class GuestModePanel extends LitElement {
 
   render() {
     this.getLoginPath();
-    this.getSharingMode();
     return html`
       <div>
         <header class="mdc-top-app-bar mdc-top-app-bar--fixed">
