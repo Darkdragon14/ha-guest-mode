@@ -22,7 +22,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         tab_name = self.config_entry.options.get("tab_name", self.config_entry.data.get("tab_name", "Guest"))
         path = self.config_entry.options.get("path_to_admin_ui", self.config_entry.data.get("path_to_admin_ui", "/guest-mode"))
         login_path = self.config_entry.options.get("login_path", self.config_entry.data.get("login_path", "/guest-mode/login"))
-        sharing_mode = self.config_entry.options.get("sharing_mode", self.config_entry.data.get("sharing_mode", "link"))
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema({
