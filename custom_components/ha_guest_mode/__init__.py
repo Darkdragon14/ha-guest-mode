@@ -14,6 +14,8 @@ from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
 from .const import DOMAIN, DATABASE, DEST_PATH_SCRIPT_JS, SOURCE_PATH_SCRIPT_JS, SCRIPT_JS
 
+from .migrations import migration
+
 CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -42,6 +44,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         token_ha_guest_mode TEXT NOT NULL
     )
     """)
+
+    migration(cursor)
 
     connection.commit()
     connection.close()
