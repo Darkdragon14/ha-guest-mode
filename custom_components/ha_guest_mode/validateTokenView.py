@@ -30,12 +30,24 @@ class ValidateTokenView(HomeAssistantView):
         token_param = request.query.get("token")
         if not token_param:
             return web.Response(status=400, text=self.get_translations(translations, "missing_token"))
+        
+        conn = sqlite3.connect(self.hass.config.path(DATABASE))
+        cursor = conn.cursor()
+        cursor.execute(
+            'SELECT * FROM tokens WHERE uid = ?',
+            (token_param,)
+        )
+        result = cursor.fetchone()
+
+        
+        if result is None:
+            return web.Response(status=404, text=self.get_translations(translations, "token_not_found"))
 
         try:
             public_key = self.hass.data.get("public_key")
             if public_key is None:
                 return web.Response(status=500, text=self.get_translations(translations, "internal_server_error"))
-            decoded_token = jwt.decode(token_param, public_key, algorithms=["RS256"])
+            decoded_token = jwt.decode(result[7], public_key, algorithms=["RS256"])
             start_date = datetime.fromisoformat(decoded_token.get("startDate"))
             end_date = datetime.fromisoformat(decoded_token.get("endDate"))
         except jwt.ExpiredSignatureError:
@@ -48,17 +60,6 @@ class ValidateTokenView(HomeAssistantView):
         now = datetime.now()
         if now < start_date or now > end_date:
             return web.Response(status=403, text=self.get_translations(translations, "not_yet_or_expired"))
-
-        conn = sqlite3.connect(self.hass.config.path(DATABASE))
-        cursor = conn.cursor()
-        cursor.execute(
-            'SELECT * FROM tokens WHERE token_ha_guest_mode = ?',
-            (token_param,)
-        )
-        result = cursor.fetchone()
-
-        if result is None:
-            return web.Response(status=404, text=self.get_translations(translations, "token_not_found"))
         
         token = result[6]
         

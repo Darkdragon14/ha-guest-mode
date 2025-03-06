@@ -85,11 +85,11 @@ class GuestModePanel extends LitElement {
               id: token.id,
               name: token.name,
               user: user.name,
-              jwt_token: token.jwt_token,
               endDate: new Date(token.end_date).toLocaleString(userLocale).replace(/:\d{2}$/, ""),
               remaining: token.remaining,
               isUsed: token.isUsed,
-              startDate: new Date(token.start_date).toLocaleString(userLocale).replace(/:\d{2}$/, "")
+              startDate: new Date(token.start_date).toLocaleString(userLocale).replace(/:\d{2}$/, ""),
+              uid: token.uid,
             });
           });
       });
@@ -188,7 +188,7 @@ class GuestModePanel extends LitElement {
   }
 
   getLoginUrl(token) {
-    return `${this.hass.hassUrl()}${this.loginPath}?token=${token.jwt_token}`;
+    return `${this.hass.hassUrl()}${this.loginPath}?token=${token.uid}`;
   }
 
   listItemClick(e, token) {

@@ -3,6 +3,7 @@ from datetime import timedelta, datetime, timezone
 from typing import Any
 import voluptuous as vol
 import jwt
+import uuid
 
 from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN
@@ -41,12 +42,12 @@ async def list_users(
                 tokens.append({
                     "id": token[0],
                     "name": token[2],
-                    "jwt_token": token[7],
                     "type": TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN,
                     "end_date": token[4],
                     "remaining": int((datetime.fromisoformat(token[4]).replace(tzinfo=timezone.utc) - now).total_seconds()),
                     "start_date": token[3],
-                    "isUsed": token[6] != ""
+                    "isUsed": token[6] != "",
+                    "uid": token[8]
                 })
 
         result.append({
@@ -85,6 +86,7 @@ async def create_token(
         now = datetime.now()
         startDate = now + timedelta(minutes=msg["startDate"])
         endDate = now + timedelta(minutes=msg["expirationDate"])
+        uid = str(uuid.uuid4())
         
         private_key = hass.data.get("private_key")
         if private_key is None:
@@ -92,12 +94,12 @@ async def create_token(
         tokenGenerated = jwt.encode({"id": msg["id"],"startDate": startDate.isoformat(), "endDate": endDate.isoformat()}, private_key, algorithm="RS256")
 
         query = """
-            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode)
-            values (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid)
+            values (?, ?, ?, ?, ?, ?, ?, ?)
         """
         conn = sqlite3.connect(hass.config.path(DATABASE))
         cursor = conn.cursor()
-        cursor.execute(query, (msg["user_id"], msg["name"], startDate.isoformat(), endDate.isoformat(), "", "", tokenGenerated))
+        cursor.execute(query, (msg["user_id"], msg["name"], startDate.isoformat(), endDate.isoformat(), "", "", tokenGenerated, uid))
         conn.commit()
         conn.close()
 
@@ -107,7 +109,7 @@ async def create_token(
         )
         return
 
-    connection.send_result(msg["id"], tokenGenerated)
+    connection.send_result(msg["id"], uid)
 
 @websocket_api.websocket_command(
     {
