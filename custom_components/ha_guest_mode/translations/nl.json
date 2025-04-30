@@ -1,0 +1,90 @@
+
+{
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "tab_icon": "Tab icoon",
+                    "tab_name": "Tab naam",
+                    "path_to_admin_ui": "Pad naar admin-interface",
+                    "login_path": "Gast login-pad"
+                }
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "tab_icon": "Tab icoon",
+                    "tab_name": "Tab naam",
+                    "path_to_admin_ui": "Pad naar admin-interface",
+                    "login_path": "Gast login-pad"
+                }
+            }
+        }
+    },
+    "entity": {
+        "frontend": {
+            "key_name": {
+                "name": "Sleutel naam"
+            },
+            "user": {
+                "name": "Gebruiker"
+            },
+            "use_now": {
+                "name": "Gebruik nu"
+            },
+            "use_start_date": {
+                "name": "Gebruik een startdatum"
+            },
+            "start_date": {
+                "name": "Startdatum"
+            },
+            "expiration_date": {
+                "name": "Verloopdatum"
+            },
+            "add": {
+                "name": "Toevoegen"
+            },
+            "for": {
+                "name": "voor"
+            },
+            "used": {
+                "name": "gebruikt"
+            },
+            "yes": {
+                "name": "Ja"
+            },
+            "no": {
+                "name": "Nee"
+            },
+            "access_link": {
+                "name": "Toegangslink"
+            }
+        },
+        "guest_error": {
+            "expired_token": {
+                "name": "The sleutel is verlopen."
+            },
+            "internal_server_error": {
+                "name": "Interne serverfout"
+            },
+            "invalid_token": {
+                "name": "De ingevulde sleutel is ongeldig."
+            },
+            "missing_token": {
+                "name": "Geen sleutel meegegeven."
+            },
+            "not_yet_or_expired": {
+                "name": "De sleutel is nog niet of niet meer geldig."
+            },
+            "token_not_found": {
+                "name": "Geen sleutel gevonden"
+            },
+            "user_not_found": {
+                "name": "Geen gebruiker gevonden"
+            }
+        }
+    }
+}
