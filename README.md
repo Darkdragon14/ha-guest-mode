@@ -73,3 +73,7 @@ You can now generate a secure link to share with your guests.
 # Missing Translation
 
 If you want this component to support another language, feel free to submit a PR or create an issue. If you open an issue, I’ll gladly handle the translation for you! :smile:
+
+## Contributors
+
+See [CONTRIBUTORS.md](./CONTRIBUTORS.md) for the full list of contributors.
