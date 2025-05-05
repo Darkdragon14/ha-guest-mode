@@ -4,7 +4,6 @@ import {
   css,
 } from "https://unpkg.com/lit-element@2.4.0/lit-element.js?module";
 import "https://unpkg.com/share-api-polyfill/dist/share-min.js";
-import "https://unpkg.com/@mdi/js@6.9.96/mdi.js";
 
 function humanSeconds(seconds) {
   return [
