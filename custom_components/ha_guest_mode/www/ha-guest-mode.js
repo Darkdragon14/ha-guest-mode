@@ -4,6 +4,7 @@ import {
   css,
 } from "https://unpkg.com/lit-element@2.4.0/lit-element.js?module";
 import "https://unpkg.com/share-api-polyfill/dist/share-min.js";
+import "https://unpkg.com/@mdi/js@6.9.96/mdi.js";
 
 function humanSeconds(seconds) {
   return [
@@ -242,6 +243,13 @@ class GuestModePanel extends LitElement {
         <header class="mdc-top-app-bar mdc-top-app-bar--fixed">
           <div class="mdc-top-app-bar__row">
             <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start" id="navigation">
+              <mwc-icon-button
+                @click=${() => this.dispatchEvent(new CustomEvent("hass-toggle-menu", { bubbles: true, composed: true }))}
+              >
+                <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
+                </svg>
+              </mwc-icon-button>
               <span class="mdc-top-app-bar__title">
                 ${this.panel.title}
               </span>
