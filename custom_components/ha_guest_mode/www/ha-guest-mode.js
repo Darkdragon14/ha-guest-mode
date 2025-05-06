@@ -242,7 +242,7 @@ class GuestModePanel extends LitElement {
         <header class="mdc-top-app-bar mdc-top-app-bar--fixed">
           <div class="mdc-top-app-bar__row">
             <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start" id="navigation">
-              <mwc-icon-button
+              <mwc-icon-button class="menu-button"
                 @click=${() => this.dispatchEvent(new CustomEvent("hass-toggle-menu", { bubbles: true, composed: true }))}
               >
                 <svg style="width:24px;height:24px" viewBox="0 0 24 24">
@@ -524,6 +524,17 @@ class GuestModePanel extends LitElement {
         display: flex;
         justify-content: space-between;
         align-items: center;
+      }
+
+      .menu-button {
+        display: none;
+      }
+
+      /* Affiche le bouton uniquement en dessous de 1024px */
+      @media screen and (max-width: 870px) {
+        .menu-button {
+          display: inline-flex;
+        }
       }
     `;
   }
