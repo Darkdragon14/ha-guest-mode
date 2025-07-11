@@ -1,4 +1,3 @@
-
 {
     "config": {
         "step": {
@@ -61,6 +60,18 @@
             },
             "access_link": {
                 "name": "Toegangslink"
+            },
+            "choose_url_title": {
+                "name": "Kies URL"
+            },
+            "choose_url_text": {
+                "name": "Kies de URL die je wilt delen."
+            },
+            "external_url": {
+                "name": "Externe URL"
+            },
+            "internal_url": {
+                "name": "Interne URL"
             }
         },
         "guest_error": {

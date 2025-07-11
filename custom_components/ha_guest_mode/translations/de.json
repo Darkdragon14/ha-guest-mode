@@ -60,6 +60,18 @@
             },
             "access_link": {
                 "name": "Zugriffslink"
+            },
+            "choose_url_title": {
+                "name": "URL auswählen"
+            },
+            "choose_url_text": {
+                "name": "Wählen Sie die URL, die Sie teilen möchten."
+            },
+            "external_url": {
+                "name": "Externe URL"
+            },
+            "internal_url": {
+                "name": "Interne URL"
             }
         },
         "guest_error": {
