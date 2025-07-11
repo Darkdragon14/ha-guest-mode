@@ -47,6 +47,7 @@ class GuestModePanel extends LitElement {
       tokens: { type: Array },
       alert: { type: String },
       enableStartDate: { type: Boolean },
+      urls: { type: Object },
     };
   }
 
@@ -57,6 +58,7 @@ class GuestModePanel extends LitElement {
     this.alert = '';
     this.alertType = '';
     this.loginPath = '';
+    this.urls = {};
 
     // form inputs
     this.name = null;
@@ -67,6 +69,19 @@ class GuestModePanel extends LitElement {
     this.startDateLabel = "Start Date";
     this.endDtateLabel = "Expiration Date";
     this.enableStartDate = false;
+  }
+
+  async getUrls() {
+    try {
+      const urls = await this.hass.callWS({ type: 'ha_guest_mode/get_urls' });
+      if (urls && (urls.internal || urls.external)) {
+        this.urls = urls;
+      } else {
+        this.urls = { internal: this.hass.hassUrl(), external: null };
+      }
+    } catch (err) {
+      this.urls = { internal: this.hass.hassUrl(), external: null };
+    }    
   }
 
   fetchUsers() {
@@ -99,6 +114,7 @@ class GuestModePanel extends LitElement {
   update(changedProperties) {
     if (changedProperties.has('hass') && this.hass && !this.users.length) {
       this.fetchUsers();
+      this.getUrls();
     }
     super.update(changedProperties);
   }
@@ -187,20 +203,41 @@ class GuestModePanel extends LitElement {
     });
   }
 
-  getLoginUrl(token) {
-    return `${this.hass.hassUrl()}${this.loginPath}?token=${token.uid}`;
+  getLoginUrl(token, baseUrl = null) {
+    return `${baseUrl}${this.loginPath}?token=${token.uid}`;
   }
 
-  listItemClick(e, token) {
+  async listItemClick(e, token) {
     this.alertType="info";
 
     const accesLinkTranslated = this.translate("access_link");
     const forTranslated = this.translate("for").toLowerCase();
     const title = `${accesLinkTranslated} ${forTranslated} ${token.name}`;
+
+    let baseUrl;
+    if (this.urls.external && this.urls.internal) {
+      const confirmed = await this.showConfirmationDialog(
+        this.translate("choose_url_title"),
+        this.translate("choose_url_text"),
+        {
+          confirm: this.translate("external_url"),
+          cancel: this.translate("internal_url"),
+        }
+      );
+
+      if (confirmed) {
+        baseUrl = this.urls.external;
+      } else {
+        baseUrl = this.urls.internal;
+      }
+    } else {
+      baseUrl = this.urls.external || this.urls.internal || this.hass.hassUrl();
+    }
+
     const shareData = {
         title,
-        text: this.getLoginUrl(token),
-        url: this.getLoginUrl(token),
+        text: this.getLoginUrl(token, baseUrl),
+        url: this.getLoginUrl(token, baseUrl),
     };
 
     const shareConfig =   {
@@ -219,17 +256,48 @@ class GuestModePanel extends LitElement {
       language: navigator.language || navigator.languages[0]
     }
 
-
-
     if (navigator.share) {
         navigator.share(shareData, shareConfig)
             .then(() => this.showAlert('Partagé avec succès'))
             .catch((error) => console.error("Erreur de partage :", error));
     } else {
-        navigator.clipboard.writeText(this.getLoginUrl(token));
+        navigator.clipboard.writeText(this.getLoginUrl(token, baseUrl));
         this.showAlert('Copied to clipboard ' + token.name);
     }
-}
+  }
+
+  async showConfirmationDialog(title, text, buttons) {
+    return new Promise((resolve) => {
+      const dialog = document.createElement('ha-dialog');
+      dialog.heading = title;
+      dialog.textContent = text;
+
+      const confirmButton = document.createElement('mwc-button');
+      confirmButton.slot = 'primaryAction';
+      confirmButton.textContent = buttons.confirm;
+      confirmButton.addEventListener('click', () => {
+        resolve(true);
+        dialog.close();
+      });
+
+      const cancelButton = document.createElement('mwc-button');
+      cancelButton.slot = 'secondaryAction';
+      cancelButton.textContent = buttons.cancel;
+      cancelButton.addEventListener('click', () => {
+        resolve(false);
+        dialog.close();
+      });
+
+      dialog.appendChild(confirmButton);
+      dialog.appendChild(cancelButton);
+      this.shadowRoot.appendChild(dialog);
+      dialog.open = true;
+
+      dialog.addEventListener('closed', () => {
+        this.shadowRoot.removeChild(dialog);
+      });
+    });
+  }
 
   translate(key) {
     return this.hass.localize(`component.ha_guest_mode.entity.frontend.${key}.name`);
