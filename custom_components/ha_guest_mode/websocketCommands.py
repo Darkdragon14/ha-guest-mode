@@ -31,23 +31,38 @@ async def list_users(
 
         tokens = []
         for token in tokenLists[:]:
-            if  datetime.fromisoformat(token[4]).replace(tzinfo=timezone.utc) < now:
+            # Check for is_never_expire (index 9) and end_date (index 4)
+            is_never_expire = token[9]
+            
+            # Handle expired tokens
+            if not is_never_expire and token[4] and datetime.fromisoformat(token[4]).replace(tzinfo=timezone.utc) < now:
                 if token[6] != "":
-                    # @Todo maybe try catch here if token are already deleted
-                    tokenHa = hass.auth.async_get_refresh_token(token[5])
-                    hass.auth.async_remove_refresh_token(tokenHa)
+                    try:
+                        tokenHa = hass.auth.async_get_refresh_token(token[5])
+                        if tokenHa:
+                            hass.auth.async_remove_refresh_token(tokenHa)
+                    except Exception:
+                        # Ignore if token is already removed from HA
+                        pass
                 cursor.execute('DELETE FROM tokens WHERE id = ?', (token[0],))
                 tokenLists.remove(token)
+                continue # Move to the next token
+
             if token[1] == user.id:
+                remaining_seconds = None
+                if not is_never_expire and token[4]:
+                    remaining_seconds = int((datetime.fromisoformat(token[4]).replace(tzinfo=timezone.utc) - now).total_seconds())
+                
                 tokens.append({
                     "id": token[0],
                     "name": token[2],
                     "type": TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN,
                     "end_date": token[4],
-                    "remaining": int((datetime.fromisoformat(token[4]).replace(tzinfo=timezone.utc) - now).total_seconds()),
+                    "remaining": remaining_seconds,
                     "start_date": token[3],
                     "isUsed": token[6] != "",
-                    "uid": token[8]
+                    "uid": token[8] if len(token) > 8 else None,
+                    "isNeverExpire": is_never_expire
                 })
 
         result.append({
@@ -73,8 +88,9 @@ async def list_users(
         vol.Required("type"): "ha_guest_mode/create_token",
         vol.Required("user_id"): str,
         vol.Required("name"): str, # token name
-        vol.Required("startDate"): int, # minutes
-        vol.Required("expirationDate"): int, # minutes
+        vol.Optional("startDate"): int, # minutes
+        vol.Optional("expirationDate"): int, # minutes
+        vol.Optional("isNeverExpire", default=False): bool,
     }
 )
 @websocket_api.require_admin
@@ -83,23 +99,47 @@ async def create_token(
     hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
 ) -> None:
     try:
-        now = datetime.now()
-        startDate = now + timedelta(minutes=msg["startDate"])
-        endDate = now + timedelta(minutes=msg["expirationDate"])
+        is_never_expire = msg.get("isNeverExpire", False)
+        startDate_iso = None
+        endDate_iso = None
+
+        if not is_never_expire:
+            if "startDate" not in msg or "expirationDate" not in msg:
+                connection.send_message(
+                    websocket_api.error_message(
+                        msg["id"],
+                        websocket_api.const.ERR_INVALID_FORMAT,
+                        "startDate and expirationDate are required when isNeverExpire is false",
+                    )
+                )
+                return
+            now = datetime.now()
+            startDate = now + timedelta(minutes=msg["startDate"])
+            endDate = now + timedelta(minutes=msg["expirationDate"])
+            startDate_iso = startDate.isoformat()
+            endDate_iso = endDate.isoformat()
+
         uid = str(uuid.uuid4())
         
         private_key = hass.data.get("private_key")
         if private_key is None:
             connection.send_message(msg["id"],  websocket_api.const.ERR_NOT_FOUND, "private key not found")
-        tokenGenerated = jwt.encode({"id": msg["id"],"startDate": startDate.isoformat(), "endDate": endDate.isoformat()}, private_key, algorithm="RS256")
+            return
+
+        token_payload = {"id": msg["id"], "isNeverExpire": is_never_expire}
+        if not is_never_expire:
+            token_payload["startDate"] = startDate_iso
+            token_payload["endDate"] = endDate_iso
+        
+        tokenGenerated = jwt.encode(token_payload, private_key, algorithm="RS256")
 
         query = """
-            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid)
-            values (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid, is_never_expire)
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         conn = sqlite3.connect(hass.config.path(DATABASE))
         cursor = conn.cursor()
-        cursor.execute(query, (msg["user_id"], msg["name"], startDate.isoformat(), endDate.isoformat(), "", "", tokenGenerated, uid))
+        cursor.execute(query, (msg["user_id"], msg["name"], startDate_iso, endDate_iso, "", "", tokenGenerated, uid, is_never_expire))
         conn.commit()
         conn.close()
 

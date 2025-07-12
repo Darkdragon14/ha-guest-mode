@@ -47,6 +47,7 @@ class GuestModePanel extends LitElement {
       tokens: { type: Array },
       alert: { type: String },
       enableStartDate: { type: Boolean },
+      isNeverExpire: { type: Boolean },
       urls: { type: Object },
     };
   }
@@ -69,6 +70,7 @@ class GuestModePanel extends LitElement {
     this.startDateLabel = "Start Date";
     this.endDtateLabel = "Expiration Date";
     this.enableStartDate = false;
+    this.isNeverExpire = false;
   }
 
   async getUrls() {
@@ -100,11 +102,12 @@ class GuestModePanel extends LitElement {
               id: token.id,
               name: token.name,
               user: user.name,
-              endDate: new Date(token.end_date).toLocaleString(userLocale).replace(/:\d{2}$/, ""),
+              endDate: token.isNeverExpire ? this.translate("never") : new Date(token.end_date).toLocaleString(userLocale).replace(/:\d{2}$/, ""),
               remaining: token.remaining,
               isUsed: token.isUsed,
-              startDate: new Date(token.start_date).toLocaleString(userLocale).replace(/:\d{2}$/, ""),
+              startDate: token.isNeverExpire ? 'N/A' : new Date(token.start_date).toLocaleString(userLocale).replace(/:\d{2}$/, ""),
               uid: token.uid,
+              isNeverExpire: token.isNeverExpire,
             });
           });
       });
@@ -143,14 +146,24 @@ class GuestModePanel extends LitElement {
     this.enableStartDate = !this.enableStartDate;
   }
 
+  isNeverExpireChanged(e) {
+    this.isNeverExpire = e.target.checked;
+  }
+
   addClick() {
-    this.hass.callWS({
+    const payload = {
       type: 'ha_guest_mode/create_token',
       name: this.name,
       user_id: this.user,
-      startDate: differenceInMinutes(this.startDate),
-      expirationDate: this.expire ? parseInt(this.expire, 10) : differenceInMinutes(this.expirationDate)
-    }).then(() => {
+      isNeverExpire: this.isNeverExpire,
+    };
+
+    if (!this.isNeverExpire) {
+      payload.startDate = differenceInMinutes(this.startDate);
+      payload.expirationDate = this.expire ? parseInt(this.expire, 10) : differenceInMinutes(this.expirationDate);
+    }
+
+    this.hass.callWS(payload).then(() => {
       this.fetchUsers();
     }).catch(err => {
       this.alertType="warning";
@@ -345,50 +358,63 @@ class GuestModePanel extends LitElement {
                 @value-changed=${this.userChanged}
               >
               </ha-combo-box>
-              <span>:</span>
+              <span style="min-width: auto">:</span>
 
-              <mwc-button
-                .label="${this.enableStartDate ? this.translate("use_now") : this.translate("use_start_date")}"
-                Outlined 
-                @click=${this.toggleEnableStartDate}
-              ></mwc-button>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <mwc-checkbox
+                  .checked=${this.isNeverExpire}
+                  @change=${this.isNeverExpireChanged}
+                ></mwc-checkbox>
+                <span>${this.translate("never_expire")}</span>
+              </div>
 
-              ${this.enableStartDate ?
-                html`
-                  <ha-selector
-                    .selector=${{
-                      datetime: {
-                        mode: "both",
-                      }
-                    }}
-                    .label=${this.translate("start_date")}
-                    .hass=${this.hass}
-                    .required=${false}
-                    .value=${this.startDate}
-                    @value-changed=${this.startDateChanged}
-                  >
-                  </ha-selector>
-                ` : ''
-              }
+              ${!this.isNeverExpire ? html`
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <mwc-checkbox
+                    .checked=${this.enableStartDate}
+                    @change=${this.toggleEnableStartDate}
+                  ></mwc-checkbox>
+                  <span>${this.translate("use_start_date")}</span>
+                </div>
 
-              <ha-selector
-                .selector=${{
-                  datetime: {
-                    mode: "both",
-                  }
-                }}
-                .label=${this.translate("expiration_date")}
-                .hass=${this.hass}
-                .required=${false}
-                .value=${this.expirationDate}
-                @value-changed=${this.expirationDateChanged}
-              >
-              </ha-selector>
+                ${this.enableStartDate ?
+                  html`
+                    <ha-selector
+                      .selector=${{
+                        datetime: {
+                          mode: "both",
+                        }
+                      }}
+                      .label=${this.translate("start_date")}
+                      .hass=${this.hass}
+                      .required=${false}
+                      .value=${this.startDate}
+                      @value-changed=${this.startDateChanged}
+                    >
+                    </ha-selector>
+                  ` : ''
+                }
+
+                <ha-selector
+                  .selector=${{
+                    datetime: {
+                      mode: "both",
+                    }
+                  }}
+                  .label=${this.translate("expiration_date")}
+                  .hass=${this.hass}
+                  .required=${false}
+                  .value=${this.expirationDate}
+                  @value-changed=${this.expirationDateChanged}
+                >
+                </ha-selector>
+              ` : ''}
 
               <mwc-button 
                 raised 
                 label="${this.translate("add")}" 
                 @click=${this.addClick}
+                style="max-width: 250px;"
               ></mwc-button>
             </div>
           </ha-card>
@@ -413,8 +439,12 @@ class GuestModePanel extends LitElement {
                   <div class="card-content-list">
                     <h3>${token.name} ${this.translate("for").toLowerCase()} ${token.user}</h3>
                     <p>
-                      ${this.translate("start_date")}: ${token.startDate} <br>
-                      ${this.translate("expiration_date")}: ${token.endDate} <br>
+                      ${token.isNeverExpire ? html`
+                        ${this.translate("expiration_date")}: ${this.translate("never")} <br>
+                      ` : html`
+                        ${this.translate("start_date")}: ${token.startDate} <br>
+                        ${this.translate("expiration_date")}: ${token.endDate} <br>
+                      `}
                       ${this.translate("used")}: ${token.isUsed ? this.translate("yes").toLowerCase() : this.translate("no").toLowerCase() } <br>
                       </span>
                     </p>

@@ -72,6 +72,12 @@
             },
             "internal_url": {
                 "name": "Interne URL"
+            },
+            "never_expire": {
+                "name": "Läuft nie ab"
+            },
+            "never": {
+                "name": "Nie"
             }
         },
         "guest_error": {

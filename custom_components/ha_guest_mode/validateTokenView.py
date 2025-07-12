@@ -48,8 +48,12 @@ class ValidateTokenView(HomeAssistantView):
             if public_key is None:
                 return web.Response(status=500, text=self.get_translations(translations, "internal_server_error"))
             decoded_token = jwt.decode(result[7], public_key, algorithms=["RS256"])
-            start_date = datetime.fromisoformat(decoded_token.get("startDate"))
-            end_date = datetime.fromisoformat(decoded_token.get("endDate"))
+            is_never_expire = result[9]
+            start_date = None
+            end_date = None
+            if not is_never_expire:
+                start_date = datetime.fromisoformat(decoded_token.get("startDate"))
+                end_date = datetime.fromisoformat(decoded_token.get("endDate"))
         except jwt.ExpiredSignatureError:
             return web.Response(status=401, text=self.get_translations(translations, "expired_token"))
         except jwt.InvalidTokenError:
@@ -58,24 +62,39 @@ class ValidateTokenView(HomeAssistantView):
             return web.Response(status=400, text=str(e))
 
         now = datetime.now()
-        if now < start_date or now > end_date:
+        if not is_never_expire and (now < start_date or now > end_date):
             return web.Response(status=403, text=self.get_translations(translations, "not_yet_or_expired"))
         
         token = result[6]
         
-        if token == "" and now > start_date:
+        if token == "" and (is_never_expire or (start_date and now > start_date)):
             users = await self.hass.auth.async_get_users()
 
             user = next((u for u in users if u.id == result[1]), None)
             if user is None:
                 return web.Response(status=404, text=self.get_translations(translations, "user_not_found"))
-            endDateInSeconds = (end_date - now).total_seconds()
-            refresh_token = await self.hass.auth.async_create_refresh_token(
-                user,
-                client_name=result[2],
-                token_type=TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN,
-                access_token_expiration=timedelta(seconds=endDateInSeconds),
-            )
+            
+            token_args = {
+                "client_name": result[2],
+                "token_type": TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN,
+            }
+            if not is_never_expire and end_date:
+                endDateInSeconds = (end_date - now).total_seconds()
+                token_args["access_token_expiration"] = timedelta(seconds=endDateInSeconds)
+
+            try:
+                refresh_token = await self.hass.auth.async_create_refresh_token(
+                    user,
+                    **token_args
+                )
+            except ValueError:
+                refresh_token = next(
+                    (rt for rt in user.refresh_tokens.values() if rt.client_name == result[2]),
+                    None,
+                )
+                if refresh_token is None:
+                    return web.Response(status=500, text=self.get_translations(translations, "internal_server_error"))
+
             token = self.hass.auth.async_create_access_token(refresh_token)
 
             query = """
