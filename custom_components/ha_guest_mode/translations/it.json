@@ -78,6 +78,15 @@
             },
             "never": {
                 "name": "Mai"
+            },
+            "dashboard": {
+                "name": "Cruscotto (opzionale)"
+            },
+            "default_dashboard": {
+                "name": "Cruscotto predefinito"
+            },
+            "energy_dashboard": {
+                "name": "Cruscotto energetico"
             }
         },
         "guest_error": {

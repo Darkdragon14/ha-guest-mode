@@ -78,6 +78,15 @@
             },
             "never": {
                 "name": "Nunca"
+            },
+            "dashboard": {
+                "name": "Tablero (opcional)"
+            },
+            "default_dashboard": {
+                "name": "Tablero predeterminado"
+            },
+            "energy_dashboard": {
+                "name": "Tablero de energía"
             }
         },
         "guest_error": {
