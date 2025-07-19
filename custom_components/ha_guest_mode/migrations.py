@@ -38,3 +38,6 @@ def migration(cursor):
         cursor.execute("DROP TABLE tokens")
 
         cursor.execute("ALTER TABLE tokens_new RENAME TO tokens")
+
+    if "dashboard" not in columns:
+        cursor.execute("ALTER TABLE tokens ADD COLUMN dashboard TEXT")

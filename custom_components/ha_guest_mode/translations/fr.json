@@ -78,6 +78,15 @@
             },
             "never": {
                 "name": "Jamais"
+            },
+            "dashboard": {
+                "name": "Tableau de bord (optionnel)"
+            },
+            "default_dashboard": {
+                "name": "Tableau de bord par défaut"
+            },
+            "energy_dashboard": {
+                "name": "Tableau de bord Énergie"
             }
         },
         "guest_error": {

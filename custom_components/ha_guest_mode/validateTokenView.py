@@ -66,6 +66,7 @@ class ValidateTokenView(HomeAssistantView):
             return web.Response(status=403, text=self.get_translations(translations, "not_yet_or_expired"))
         
         token = result[6]
+        dashboard = result[10]
         
         if token == "" and (is_never_expire or (start_date and now > start_date)):
             users = await self.hass.auth.async_get_users()
@@ -109,14 +110,14 @@ class ValidateTokenView(HomeAssistantView):
         html_content = f"""
         <!DOCTYPE html>
         <html>
-          <body>
-            <script type="text/javascript">
-              const hassUrl = window.location.protocol + '//' + window.location.host;
-              const access_token = '{token}';
-              localStorage.setItem('hassTokens', JSON.stringify({{ access_token: access_token, hassUrl: hassUrl }}));
-              window.location.href = hassUrl;
-            </script>
-          </body>
+            <body>
+                <script type="text/javascript">
+                    const hassUrl = window.location.protocol + '//' + window.location.host;
+                    const access_token = '{token}';
+                    localStorage.setItem('hassTokens', JSON.stringify({{ access_token: access_token, hassUrl: hassUrl }}));
+                    window.location.href = hassUrl + '/{dashboard}';
+                </script>
+            </body>
         </html>
         """
         return web.Response(content_type="text/html", text=html_content)

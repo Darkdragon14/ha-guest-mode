@@ -49,6 +49,9 @@ class GuestModePanel extends LitElement {
       enableStartDate: { type: Boolean },
       isNeverExpire: { type: Boolean },
       urls: { type: Object },
+      dashboards: { type: Array },
+      dashboard: { type: String },
+      dashboards: { type: Array },
     };
   }
 
@@ -60,6 +63,8 @@ class GuestModePanel extends LitElement {
     this.alertType = '';
     this.loginPath = '';
     this.urls = {};
+    this.dashboards = [];
+    this.dashboard = 'lovelace';
 
     // form inputs
     this.name = null;
@@ -86,6 +91,26 @@ class GuestModePanel extends LitElement {
     }    
   }
 
+  async getDashboards() {
+    try {
+      const dashboards = await this.hass.callWS({ type: 'lovelace/dashboards/list' });
+      dashboards.push({
+        title: this.translate("default_dashboard"),
+        url_path: 'lovelace'
+      }, {
+        title: this.translate("energy_dashboard"),
+        url_path: 'energy'
+      })
+      this.dashboards = dashboards.map(dashboard => ({
+        title: dashboard.title,
+        url_path: dashboard.url_path,
+      }));
+    }
+    catch (err) {
+      console.error('Error fetching dashboards:', err);
+    }
+  }
+
   fetchUsers() {
     const userLocale = navigator.language || navigator.languages[0];
     this.hass.callWS({ type: 'ha_guest_mode/list_users' }).then(users => {
@@ -108,6 +133,7 @@ class GuestModePanel extends LitElement {
               startDate: token.isNeverExpire ? 'N/A' : new Date(token.start_date).toLocaleString(userLocale).replace(/:\d{2}$/, ""),
               uid: token.uid,
               isNeverExpire: token.isNeverExpire,
+              dashboard: token.dashboard || 'lovelace',
             });
           });
       });
@@ -118,6 +144,7 @@ class GuestModePanel extends LitElement {
     if (changedProperties.has('hass') && this.hass && !this.users.length) {
       this.fetchUsers();
       this.getUrls();
+      this.getDashboards();
     }
     super.update(changedProperties);
   }
@@ -150,12 +177,17 @@ class GuestModePanel extends LitElement {
     this.isNeverExpire = e.target.checked;
   }
 
+  dashboardChanged(e) {
+    this.dashboard = e.detail.value;
+  }
+
   addClick() {
     const payload = {
       type: 'ha_guest_mode/create_token',
       name: this.name,
       user_id: this.user,
       isNeverExpire: this.isNeverExpire,
+      dashboard: this.dashboard,
     };
 
     if (!this.isNeverExpire) {
@@ -358,6 +390,16 @@ class GuestModePanel extends LitElement {
                 @value-changed=${this.userChanged}
               >
               </ha-combo-box>
+
+              <ha-combo-box
+                .items=${this.dashboards}
+                .itemLabelPath=${'title'}
+                .itemValuePath=${'url_path'}
+                .value="lovelace"
+                .label=${this.translate("dashboard")}
+                @value-changed=${this.dashboardChanged}
+              >
+              </ha-combo-box>
               <span style="min-width: auto">:</span>
 
               <div style="display: flex; align-items: center; gap: 4px;">
@@ -434,7 +476,10 @@ class GuestModePanel extends LitElement {
           ${this.tokens.length ?
             html`
             <div class="cards-container">
-              ${this.tokens.map(token => html`
+              ${this.tokens.map(token => {
+                const dashboard = this.dashboards.find(d => d.url_path === token.dashboard);
+                const dashboardTitle = dashboard ? dashboard.title : token.dashboard;
+                return html`
                 <ha-card class="token-card">
                   <div class="card-content-list">
                     <h3>${token.name} ${this.translate("for").toLowerCase()} ${token.user}</h3>
@@ -446,6 +491,7 @@ class GuestModePanel extends LitElement {
                         ${this.translate("expiration_date")}: ${token.endDate} <br>
                       `}
                       ${this.translate("used")}: ${token.isUsed ? this.translate("yes").toLowerCase() : this.translate("no").toLowerCase() } <br>
+                      ${this.translate("dashboard")}: ${dashboardTitle} <br>
                       </span>
                     </p>
                     <div class="actions">
@@ -465,7 +511,7 @@ class GuestModePanel extends LitElement {
                     </div>
                   </div>
                 </ha-card>
-              `)}
+              `})}
             </div>`
             : null
           }

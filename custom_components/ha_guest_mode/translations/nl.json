@@ -78,6 +78,15 @@
             },
             "never": {
                 "name": "Nooit"
+            },
+            "dashboard": {
+                "name": "Dashboard (optioneel)"
+            },
+            "default_dashboard": {
+                "name": "Standaard dashboard"
+            },
+            "energy_dashboard": {
+                "name": "Energie dashboard"
             }
         },
         "guest_error": {

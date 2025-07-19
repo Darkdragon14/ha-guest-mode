@@ -62,7 +62,8 @@ async def list_users(
                     "start_date": token[3],
                     "isUsed": token[6] != "",
                     "uid": token[8] if len(token) > 8 else None,
-                    "isNeverExpire": is_never_expire
+                    "isNeverExpire": is_never_expire,
+                    "dashboard": token[10] if len(token) > 10 else None
                 })
 
         result.append({
@@ -91,6 +92,7 @@ async def list_users(
         vol.Optional("startDate"): int, # minutes
         vol.Optional("expirationDate"): int, # minutes
         vol.Optional("isNeverExpire", default=False): bool,
+        vol.Optional("dashboard"): str,
     }
 )
 @websocket_api.require_admin
@@ -102,6 +104,7 @@ async def create_token(
         is_never_expire = msg.get("isNeverExpire", False)
         startDate_iso = None
         endDate_iso = None
+        dashboard = msg.get("dashboard", "lovelace")
 
         if not is_never_expire:
             if "startDate" not in msg or "expirationDate" not in msg:
@@ -134,12 +137,12 @@ async def create_token(
         tokenGenerated = jwt.encode(token_payload, private_key, algorithm="RS256")
 
         query = """
-            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid, is_never_expire)
-            values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid, is_never_expire, dashboard)
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         conn = sqlite3.connect(hass.config.path(DATABASE))
         cursor = conn.cursor()
-        cursor.execute(query, (msg["user_id"], msg["name"], startDate_iso, endDate_iso, "", "", tokenGenerated, uid, is_never_expire))
+        cursor.execute(query, (msg["user_id"], msg["name"], startDate_iso, endDate_iso, "", "", tokenGenerated, uid, is_never_expire, dashboard))
         conn.commit()
         conn.close()
 
