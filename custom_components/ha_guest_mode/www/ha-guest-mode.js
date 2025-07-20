@@ -81,7 +81,9 @@ class GuestModePanel extends LitElement {
   async getUrls() {
     try {
       const urls = await this.hass.callWS({ type: 'ha_guest_mode/get_urls' });
+      console.log('URLs:', urls);
       if (urls && (urls.internal || urls.external)) {
+        delete urls.cloud;
         this.urls = urls;
       } else {
         this.urls = { internal: this.hass.hassUrl(), external: null };
@@ -93,13 +95,13 @@ class GuestModePanel extends LitElement {
 
   async getDashboards() {
     try {
-      const dashboards = await this.hass.callWS({ type: 'lovelace/dashboards/list' });
-      dashboards.push({
-        title: this.translate("default_dashboard"),
-        url_path: 'lovelace'
-      }, {
-        title: this.translate("energy_dashboard"),
-        url_path: 'energy'
+      const dashboards = await this.hass.callWS({ type: 'ha_guest_mode/get_panels' });
+      dashboards.forEach(dashboard => {
+        if (dashboard.url_path === 'lovelace') {
+          dashboard.title = this.translate("default_dashboard");
+        } else if (!dashboard.title) {
+          dashboard.title = dashboard.url_path
+        }
       })
       this.dashboards = dashboards.map(dashboard => ({
         title: dashboard.title,
