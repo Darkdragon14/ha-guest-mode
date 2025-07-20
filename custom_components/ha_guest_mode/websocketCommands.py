@@ -2,6 +2,7 @@ import sqlite3
 from datetime import timedelta, datetime, timezone
 from typing import Any
 import voluptuous as vol
+from contextlib import suppress
 import jwt
 import uuid
 
@@ -9,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN
 from homeassistant.components import websocket_api
 from homeassistant.util import dt as dt_util
+from homeassistant.helpers.network import NoURLAvailableError, get_url
 
 from .const import DATABASE
 
@@ -194,9 +196,40 @@ async def get_path_to_login(
 async def get_urls(
     hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
 ) -> None:
-    """Get the internal and external URLs of Home Assistant."""
-    urls = {
-        "internal": hass.config.internal_url,
-        "external": hass.config.external_url,
-    }
-    connection.send_result(msg["id"], urls)
+    """Get the internal, external, and cloud URLs."""
+    internal_url = None
+    external_url = None
+    cloud_url = None
+    with suppress(NoURLAvailableError):
+        internal_url = get_url(
+            hass, allow_internal=True, allow_external=False, allow_cloud=False
+        )
+    with suppress(NoURLAvailableError):
+        external_url = get_url(
+            hass, allow_internal=False, allow_external=True, prefer_external=True
+        )
+
+    connection.send_result(
+        msg["id"],
+        {
+            "internal": internal_url,
+            "external": external_url
+        },
+    )
+
+@websocket_api.websocket_command({vol.Required("type"): "ha_guest_mode/get_panels"})
+@websocket_api.require_admin
+@websocket_api.async_response
+async def get_panels(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    panels = hass.data.get("frontend_panels", {})
+    result = []
+
+    for url_path, panel in panels.items():
+        result.append({
+            "url_path": url_path,
+            "title": panel.sidebar_title,
+        })
+
+    connection.send_result(msg["id"], result)

@@ -9,7 +9,7 @@ from homeassistant.components import websocket_api
 from homeassistant.components.panel_custom import async_register_panel
 from homeassistant.helpers import config_validation as cv
 
-from .websocketCommands import list_users, create_token, delete_token, get_path_to_login, get_urls
+from .websocketCommands import list_users, create_token, delete_token, get_path_to_login, get_urls, get_panels
 from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
 from .const import DOMAIN, DATABASE, DEST_PATH_SCRIPT_JS, SOURCE_PATH_SCRIPT_JS, SCRIPT_JS
@@ -24,6 +24,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     websocket_api.async_register_command(hass, delete_token)
     websocket_api.async_register_command(hass, get_path_to_login)
     websocket_api.async_register_command(hass, get_urls)
+    websocket_api.async_register_command(hass, get_panels)
 
     key_manager = KeyManager()
     await key_manager.load_or_generate_key()
