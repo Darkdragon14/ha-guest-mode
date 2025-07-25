@@ -251,7 +251,10 @@ class GuestModePanel extends LitElement {
   }
 
   getLoginUrl(token, baseUrl = null) {
-    return `${baseUrl}${this.loginPath}?token=${token.uid}`;
+    const base = (baseUrl || '').replace(/\/$/, '');
+    const path = this.loginPath.replace(/^\//, '');
+    const loginUrl = `${base}/${path}`;
+    return `${loginUrl}?token=${token.uid}`;
   }
 
   async listItemClick(e, token) {
