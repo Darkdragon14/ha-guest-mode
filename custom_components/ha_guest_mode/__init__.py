@@ -72,7 +72,10 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     """Set up ha_guest_mode from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
-    hass.data["get_path_to_login"] = config_entry.options.get("login_path", config_entry.data.get("login_path", "/guest-mode/login"))
+    get_path_to_login = config_entry.options.get("login_path", config_entry.data.get("login_path", "/guest-mode/login"))
+    if not get_path_to_login.startswith('/'):
+        get_path_to_login = f"/{get_path_to_login}"
+    hass.data["get_path_to_login"] = get_path_to_login
 
     tab_icon = config_entry.options.get("tab_icon", config_entry.data.get("tab_icon", "mdi:shield-key"))
     tab_name = config_entry.options.get("tab_name", config_entry.data.get("tab_name", "Guest"))
