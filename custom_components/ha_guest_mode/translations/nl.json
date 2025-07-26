@@ -43,6 +43,12 @@
             "expiration_date": {
                 "name": "Verloopdatum"
             },
+            "use_duration": {
+                "name": "Gebruik een duur"
+            },
+            "duration_in_hours": {
+                "name": "Duur in uren"
+            },
             "add": {
                 "name": "Toevoegen"
             },

@@ -43,6 +43,12 @@
             "expiration_date": {
                 "name": "Date d'expiration"
             },
+            "use_duration": {
+                "name": "Utiliser une durée"
+            },
+            "duration_in_hours": {
+                "name": "Durée en heures"
+            },
             "add": {
                 "name": "Ajouter"
             },

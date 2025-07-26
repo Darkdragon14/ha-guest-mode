@@ -48,6 +48,8 @@ class GuestModePanel extends LitElement {
       alert: { type: String },
       enableStartDate: { type: Boolean },
       isNeverExpire: { type: Boolean },
+      useDuration: { type: Boolean },
+      duration: { type: Number },
       urls: { type: Object },
       dashboards: { type: Array },
       dashboard: { type: String },
@@ -76,6 +78,8 @@ class GuestModePanel extends LitElement {
     this.endDtateLabel = "Expiration Date";
     this.enableStartDate = false;
     this.isNeverExpire = false;
+    this.useDuration = false;
+    this.duration = 1;
   }
 
   async getUrls() {
@@ -179,6 +183,14 @@ class GuestModePanel extends LitElement {
     this.isNeverExpire = e.target.checked;
   }
 
+  toggleUseDuration(e) {
+    this.useDuration = !this.useDuration;
+  }
+
+  durationChanged(e) {
+    this.duration = e.target.value;
+  }
+
   dashboardChanged(e) {
     this.dashboard = e.detail.value;
   }
@@ -193,8 +205,14 @@ class GuestModePanel extends LitElement {
     };
 
     if (!this.isNeverExpire) {
+      if (this.useDuration) {
+        const startDate = new Date(this.startDate);
+        startDate.setHours(startDate.getHours() + parseInt(this.duration, 10));
+        payload.expirationDate = differenceInMinutes(startDate);
+      } else {
+        payload.expirationDate = this.expire ? parseInt(this.expire, 10) : differenceInMinutes(this.expirationDate);
+      }
       payload.startDate = differenceInMinutes(this.startDate);
-      payload.expirationDate = this.expire ? parseInt(this.expire, 10) : differenceInMinutes(this.expirationDate);
     }
 
     this.hass.callWS(payload).then(() => {
@@ -442,19 +460,37 @@ class GuestModePanel extends LitElement {
                   ` : ''
                 }
 
-                <ha-selector
-                  .selector=${{
-                    datetime: {
-                      mode: "both",
-                    }
-                  }}
-                  .label=${this.translate("expiration_date")}
-                  .hass=${this.hass}
-                  .required=${false}
-                  .value=${this.expirationDate}
-                  @value-changed=${this.expirationDateChanged}
-                >
-                </ha-selector>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <mwc-checkbox
+                    .checked=${this.useDuration}
+                    @change=${this.toggleUseDuration}
+                  ></mwc-checkbox>
+                  <span>${this.translate("use_duration")}</span>
+                </div>
+
+                ${this.useDuration ? html`
+                  <ha-textfield
+                    .label=${this.translate("duration_in_hours")}
+                    .value=${this.duration}
+                    @input=${this.durationChanged}
+                    type="number"
+                    style="max-width: 250px;"
+                  ></ha-textfield>
+                ` : html`
+                  <ha-selector
+                    .selector=${{
+                      datetime: {
+                        mode: "both",
+                      }
+                    }}
+                    .label=${this.translate("expiration_date")}
+                    .hass=${this.hass}
+                    .required=${false}
+                    .value=${this.expirationDate}
+                    @value-changed=${this.expirationDateChanged}
+                  >
+                  </ha-selector>
+                `}
               ` : ''}
 
               <mwc-button 
@@ -684,6 +720,10 @@ class GuestModePanel extends LitElement {
         .menu-button {
           display: inline-flex;
         }
+      }
+      .card-content > mwc-button {
+        flex: none;
+        margin-left: auto;
       }
     `;
   }
