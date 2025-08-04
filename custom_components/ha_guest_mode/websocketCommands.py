@@ -233,3 +233,11 @@ async def get_panels(
         })
 
     connection.send_result(msg["id"], result)
+
+@websocket_api.websocket_command({vol.Required("type"): "ha_guest_mode/get_copy_link_mode"})
+@websocket_api.require_admin
+@websocket_api.async_response
+async def get_copy_link_mode(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    connection.send_result(msg["id"], hass.data.get("copy_link_mode"))

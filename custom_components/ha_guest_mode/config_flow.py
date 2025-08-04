@@ -28,6 +28,7 @@ class GuestModeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Optional("tab_name", default="Guest"): str,
                 vol.Optional("path_to_admin_ui", default="/guest-mode"): str,
                 vol.Optional("login_path", default="/guest-mode/login"):str,
+                vol.Optional("copy_link_mode", default=False): bool,
             }),
         )
 

@@ -54,6 +54,7 @@ class GuestModePanel extends LitElement {
       dashboards: { type: Array },
       dashboard: { type: String },
       dashboards: { type: Array },
+      copyLinkMode: { type: Boolean },
     };
   }
 
@@ -67,6 +68,7 @@ class GuestModePanel extends LitElement {
     this.urls = {};
     this.dashboards = [];
     this.dashboard = 'lovelace';
+    this.copyLinkMode = false;
 
     // form inputs
     this.name = null;
@@ -80,6 +82,16 @@ class GuestModePanel extends LitElement {
     this.isNeverExpire = false;
     this.useDuration = false;
     this.duration = 1;
+  }
+
+  async getCopyLinkMode() {
+    try {
+      const copyLinkMode = await this.hass.callWS({ type: 'ha_guest_mode/get_copy_link_mode' });
+      this.copyLinkMode = copyLinkMode;
+    } catch (err) {
+      console.error('Error fetching copy link mode:', err);
+      this.copyLinkMode = false; // Default to false if there's an error
+    }
   }
 
   async getUrls() {
@@ -151,6 +163,7 @@ class GuestModePanel extends LitElement {
       this.fetchUsers();
       this.getUrls();
       this.getDashboards();
+      this.getCopyLinkMode();
     }
     super.update(changedProperties);
   }
@@ -324,7 +337,7 @@ class GuestModePanel extends LitElement {
       language: navigator.language || navigator.languages[0]
     }
 
-    if (navigator.share) {
+    if (navigator.share && !this.copyLinkMode) {
         navigator.share(shareData, shareConfig)
             .then(() => this.showAlert('Partagé avec succès'))
             .catch((error) => console.error("Erreur de partage :", error));

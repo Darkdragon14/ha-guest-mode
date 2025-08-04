@@ -6,7 +6,8 @@
                     "tab_icon": "Icono de pestaña",
                     "tab_name": "Nombre de pestaña",
                     "path_to_admin_ui": "Ruta a la interfaz de administración",
-                    "login_path": "Ruta de inicio de sesión de invitado"
+                    "login_path": "Ruta de inicio de sesión de invitado",
+                    "copy_link_mode": "Copiar enlace directamente (omite compartir)"
                 }
             }
         }
@@ -18,7 +19,8 @@
                     "tab_icon": "Icono de pestaña",
                     "tab_name": "Nombre de pestaña",
                     "path_to_admin_ui": "Ruta a la interfaz de administración",
-                    "login_path": "Ruta de inicio de sesión de invitado"
+                    "login_path": "Ruta de inicio de sesión de invitado",
+                    "copy_link_mode": "Copiar enlace directamente (omite compartir)"
                 }
             }
         }

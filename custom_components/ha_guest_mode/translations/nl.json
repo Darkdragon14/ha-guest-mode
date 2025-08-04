@@ -6,7 +6,8 @@
                     "tab_icon": "Tab icoon",
                     "tab_name": "Tab naam",
                     "path_to_admin_ui": "Pad naar admin-interface",
-                    "login_path": "Gast login-pad"
+                    "login_path": "Gast login-pad",
+                    "copy_link_mode": "Kopieer de link direct (slaat delen over)"
                 }
             }
         }
@@ -18,7 +19,8 @@
                     "tab_icon": "Tab icoon",
                     "tab_name": "Tab naam",
                     "path_to_admin_ui": "Pad naar admin-interface",
-                    "login_path": "Gast login-pad"
+                    "login_path": "Gast login-pad",
+                    "copy_link_mode": "Kopieer de link direct (slaat delen over)"
                 }
             }
         }
