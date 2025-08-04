@@ -1,6 +1,8 @@
 import sqlite3
 import os
 import aiofiles
+import json
+from pathlib import Path
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
@@ -92,7 +94,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
             hass,
             frontend_url_path=path,
             webcomponent_name="guest-mode-panel",
-            module_url="/local/community/ha-guest-mode/ha-guest-mode.js",
+            module_url=f"/local/community/ha-guest-mode/ha-guest-mode.js?v={get_version()}",
             sidebar_title=tab_name,
             sidebar_icon=tab_icon,
             require_admin=True,
@@ -118,3 +120,9 @@ async def async_copy_file(source_path, dest_path):
     async with aiofiles.open(source_path, 'rb') as src, aiofiles.open(dest_path, 'wb') as dst:
         while chunk := await src.read(1024):  # Adjust chunk size as needed
             await dst.write(chunk)
+
+    
+def get_version():
+    manifest_path = Path(__file__).parent / "manifest.json"
+    with open(manifest_path, encoding="utf-8") as f:
+        return json.load(f).get("version", "dev")
