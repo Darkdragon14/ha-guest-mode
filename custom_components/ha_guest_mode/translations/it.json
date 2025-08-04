@@ -6,7 +6,8 @@
                     "tab_icon": "Icona della scheda",
                     "tab_name": "Nome della scheda",
                     "path_to_admin_ui": "Percorso all'interfaccia amministrativa",
-                    "login_path": "Percorso di accesso ospite"
+                    "login_path": "Percorso di accesso ospite",
+                    "copy_link_mode": "Copia il link direttamente (salta la condivisione)"
                 }
             }
         }
@@ -18,7 +19,8 @@
                     "tab_icon": "Icona della scheda",
                     "tab_name": "Nome della scheda",
                     "path_to_admin_ui": "Percorso all'interfaccia amministrativa",
-                    "login_path": "Percorso di accesso ospite"
+                    "login_path": "Percorso di accesso ospite",
+                    "copy_link_mode": "Copia il link direttamente (salta la condivisione)"
                 }
             }
         }

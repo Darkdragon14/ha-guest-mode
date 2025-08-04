@@ -6,7 +6,8 @@
                     "tab_icon": "Tab-Symbol",
                     "tab_name": "Tab-Name",
                     "path_to_admin_ui": "Pfad zur Admin-Oberfläche",
-                    "login_path": "Gast-Login-Pfad"
+                    "login_path": "Gast-Login-Pfad",
+                    "copy_link_mode": "Link direkt kopieren (überspringt das Teilen)"
                 }
             }
         }
@@ -18,7 +19,8 @@
                     "tab_icon": "Tab-Symbol",
                     "tab_name": "Tab-Name",
                     "path_to_admin_ui": "Pfad zur Admin-Oberfläche",
-                    "login_path": "Gast-Login-Pfad"
+                    "login_path": "Gast-Login-Pfad",
+                    "copy_link_mode": "Link direkt kopieren (überspringt das Teilen)"
                 }
             }
         }

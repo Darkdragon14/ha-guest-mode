@@ -32,6 +32,7 @@ To install Guest Mode using [HACS](https://hacs.xyz/):
 |**Tab Name**|Name of the Guest Mode tab.  |No|`Guest`|
 |**Path for Admin UI**|Custom URL path for accessing the admin interface|No|`/guest-mode`|
 |**Login Path**|Custom URL path for guest to access the login page|No|`/guest-mode/login`|
+|**Copy link directly (skips sharing)**|If checked, clicking the share button will copy the link directly to the clipboard instead of opening the native share dialog.|No|Unchecked|
 
 
 # Difference with the fork

@@ -11,7 +11,7 @@ from homeassistant.components import websocket_api
 from homeassistant.components.panel_custom import async_register_panel
 from homeassistant.helpers import config_validation as cv
 
-from .websocketCommands import list_users, create_token, delete_token, get_path_to_login, get_urls, get_panels
+from .websocketCommands import list_users, create_token, delete_token, get_path_to_login, get_urls, get_panels, get_copy_link_mode
 from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
 from .const import DOMAIN, DATABASE, DEST_PATH_SCRIPT_JS, SOURCE_PATH_SCRIPT_JS, SCRIPT_JS
@@ -27,6 +27,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     websocket_api.async_register_command(hass, get_path_to_login)
     websocket_api.async_register_command(hass, get_urls)
     websocket_api.async_register_command(hass, get_panels)
+    websocket_api.async_register_command(hass, get_copy_link_mode)
 
     key_manager = KeyManager()
     await key_manager.load_or_generate_key()
@@ -73,6 +74,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Set up ha_guest_mode from a config entry."""
     hass.data.setdefault(DOMAIN, {})
+
+    hass.data["copy_link_mode"] = config_entry.options.get("copy_link_mode", config_entry.data.get("copy_link_mode", False))
 
     get_path_to_login = config_entry.options.get("login_path", config_entry.data.get("login_path", "/guest-mode/login"))
     if not get_path_to_login.startswith('/'):
