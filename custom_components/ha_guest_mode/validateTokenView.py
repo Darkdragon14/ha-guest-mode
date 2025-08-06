@@ -66,9 +66,17 @@ class ValidateTokenView(HomeAssistantView):
             return web.Response(status=403, text=self.get_translations(translations, "not_yet_or_expired"))
         
         token = result[6]
+        if token:
+            refresh_token = self.hass.auth.async_validate_access_token(token)
+            if refresh_token is None:
+                token = ""
+        else:
+            token = "" 
+
         dashboard = result[10]
         
         if token == "" and (is_never_expire or (start_date and now > start_date)):
+            """ if is_never_expire or (start_date and now > start_date): """
             users = await self.hass.auth.async_get_users()
 
             user = next((u for u in users if u.id == result[1]), None)

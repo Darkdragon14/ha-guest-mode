@@ -174,8 +174,12 @@ async def delete_token(
     token = cursor.fetchone()    
 
     if token[0] != "":
-        tokenHa = hass.auth.async_get_refresh_token(token[0])
-        hass.auth.async_remove_refresh_token(tokenHa)
+        try:
+            tokenHa = hass.auth.async_get_refresh_token(token[0])
+            hass.auth.async_remove_refresh_token(tokenHa)
+        except Exception:
+            # Ignore if token is already removed from HA
+            pass
     
     cursor.execute('DELETE FROM tokens WHERE id = ?', (msg["token_id"],))
     conn.commit()
