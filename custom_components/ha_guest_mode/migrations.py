@@ -11,7 +11,7 @@ def migration(cursor):
     needs_migration = False
     for col_name in ("start_date", "end_date"):
         col = columns.get(col_name)
-        if col and col[3]:  # column[3] == 1 => NOT NULL
+        if col and col[3] == 1:  # column[3] == 1 => NOT NULL
             needs_migration = True
 
     if needs_migration:
@@ -31,8 +31,16 @@ def migration(cursor):
         """)
 
         cursor.execute("""
-            INSERT INTO tokens_new (id, start_date, end_date, uid, is_never_expire)
-            SELECT id, start_date, end_date, uid, is_never_expire FROM tokens
+            INSERT INTO tokens_new (
+                id, userId, token_name, start_date, end_date,
+                token_ha_id, token_ha, token_ha_guest_mode,
+                uid, is_never_expire
+            )
+            SELECT
+                id, userId, token_name, start_date, end_date,
+                token_ha_id, token_ha, token_ha_guest_mode,
+                uid, is_never_expire
+            FROM tokens
         """)
 
         cursor.execute("DROP TABLE tokens")

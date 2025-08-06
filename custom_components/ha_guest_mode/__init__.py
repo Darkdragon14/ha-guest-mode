@@ -20,6 +20,16 @@ from .migrations import migration
 
 CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
 
+def get_version():
+    manifest_path = Path(__file__).parent / "manifest.json"
+    try:
+        with open(manifest_path, encoding="utf-8") as f:
+            return json.load(f).get("version", "dev")
+    except Exception:
+        return "dev"
+
+VERSION = get_version()
+
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     websocket_api.async_register_command(hass, list_users)
     websocket_api.async_register_command(hass, create_token)
@@ -97,7 +107,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
             hass,
             frontend_url_path=path,
             webcomponent_name="guest-mode-panel",
-            module_url=f"/local/community/ha-guest-mode/ha-guest-mode.js?v={get_version()}",
+            module_url=f"/local/community/ha-guest-mode/ha-guest-mode.js?v={VERSION}",
             sidebar_title=tab_name,
             sidebar_icon=tab_icon,
             require_admin=True,
@@ -123,9 +133,3 @@ async def async_copy_file(source_path, dest_path):
     async with aiofiles.open(source_path, 'rb') as src, aiofiles.open(dest_path, 'wb') as dst:
         while chunk := await src.read(1024):  # Adjust chunk size as needed
             await dst.write(chunk)
-
-    
-def get_version():
-    manifest_path = Path(__file__).parent / "manifest.json"
-    with open(manifest_path, encoding="utf-8") as f:
-        return json.load(f).get("version", "dev")
