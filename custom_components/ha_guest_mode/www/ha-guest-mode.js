@@ -353,16 +353,18 @@ class GuestModePanel extends LitElement {
       dialog.heading = title;
       dialog.textContent = text;
 
-      const confirmButton = document.createElement('mwc-button');
+      const confirmButton = document.createElement('ha-button');
       confirmButton.slot = 'primaryAction';
+      confirmButton.variant = 'danger';
       confirmButton.textContent = buttons.confirm;
       confirmButton.addEventListener('click', () => {
         resolve(true);
         dialog.close();
       });
 
-      const cancelButton = document.createElement('mwc-button');
+      const cancelButton = document.createElement('ha-button');
       cancelButton.slot = 'secondaryAction';
+      cancelButton.variant = 'success';
       cancelButton.textContent = buttons.cancel;
       cancelButton.addEventListener('click', () => {
         resolve(false);
@@ -506,12 +508,13 @@ class GuestModePanel extends LitElement {
                 `}
               ` : ''}
 
-              <mwc-button 
-                raised 
-                label="${this.translate("add")}" 
+              <ha-button
                 @click=${this.addClick}
+                size="small"
                 style="max-width: 250px;"
-              ></mwc-button>
+              >
+                ${this.translate("add")}
+              </ha-button>
             </div>
           </ha-card>
 
@@ -549,19 +552,19 @@ class GuestModePanel extends LitElement {
                       </span>
                     </p>
                     <div class="actions">
-                      <mwc-button @click=${e => this.listItemClick(e, token)}>
+                      <ha-button appearance="plain" @click=${e => this.listItemClick(e, token)}>
                         <ha-icon icon="mdi:share-variant"></ha-icon>
-                      </mwc-button>
-                      <mwc-button>
+                      </ha-button>
+                      <ha-button appearance="plain" disabled>
                         ${token.isUsed ? html`
                             <ha-icon icon="mdi:lock-open-variant-outline" style="color: var(--success-color);"></ha-icon>
                           ` : html`
                             <ha-icon icon="mdi:lock" style="color: var(--secondary-text-color);"></ha-icon>
                           `}
-                      </mwc-button>
-                      <mwc-button @click=${e => this.deleteClick(e, token)}>
+                      </ha-button>
+                      <ha-button appearance="plain" @click=${e => this.deleteClick(e, token)}>
                         <ha-icon icon="mdi:delete" style="color: var(--error-color);"></ha-icon>
-                      </mwc-button>
+                      </ha-button>
                     </div>
                   </div>
                 </ha-card>
@@ -668,7 +671,7 @@ class GuestModePanel extends LitElement {
         padding: 8px 0;
         width: auto;
       }
-      mwc-button {
+      ha-button {
         padding: 16px 0;
       }
       .content {
@@ -734,7 +737,7 @@ class GuestModePanel extends LitElement {
           display: inline-flex;
         }
       }
-      .card-content > mwc-button {
+      .card-content > ha-button {
         flex: none;
         margin-left: auto;
       }
