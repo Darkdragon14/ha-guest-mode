@@ -234,6 +234,8 @@ async def get_panels(
         result.append({
             "url_path": url_path,
             "title": panel.sidebar_title,
+            "config": panel.config,
+            "component_name": panel.component_name,
         })
 
     connection.send_result(msg["id"], result)
