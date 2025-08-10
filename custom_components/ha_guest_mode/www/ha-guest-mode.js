@@ -112,17 +112,44 @@ class GuestModePanel extends LitElement {
   async getDashboards() {
     try {
       const dashboards = await this.hass.callWS({ type: 'ha_guest_mode/get_panels' });
-      dashboards.forEach(dashboard => {
+      const dashboardPromises = dashboards.map(async (dashboard) => {
         if (dashboard.url_path === 'lovelace') {
           dashboard.title = this.translate("default_dashboard");
         } else if (!dashboard.title) {
-          dashboard.title = dashboard.url_path
+          dashboard.title = dashboard.url_path;
         }
-      })
-      this.dashboards = dashboards.map(dashboard => ({
-        title: dashboard.title,
-        url_path: dashboard.url_path,
-      }));
+
+        const dashboardEntry = {
+          title: dashboard.title,
+          url_path: dashboard.url_path,
+        };
+
+        const viewEntries = [];
+
+        if (dashboard.component_name === 'lovelace') {
+          try {
+            const config = await this.hass.callWS({
+              type: 'lovelace/config',
+              url_path: dashboard.url_path !== 'lovelace' ? dashboard.url_path : null,
+              force: false,
+            });
+            if (config.views && config.views.length > 0) {
+              config.views.forEach(view => {
+                viewEntries.push({
+                  title: `${dashboard.title} / ${view.title || view.path}`,
+                  url_path: `${dashboard.url_path}/${view.path}`,
+                });
+              });
+            }
+          } catch (err) {
+            console.log('Error fetching Lovelace config for dashboard:', dashboard.title, err);
+          }
+        }
+        return [dashboardEntry, ...viewEntries];
+      });
+
+      const nestedDashboards = await Promise.all(dashboardPromises);
+      this.dashboards = nestedDashboards.flat();
     }
     catch (err) {
       console.error('Error fetching dashboards:', err);
