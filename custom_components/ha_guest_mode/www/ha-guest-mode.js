@@ -4,6 +4,7 @@ import {
   css,
 } from "https://unpkg.com/lit-element@2.4.0/lit-element.js?module";
 import "https://unpkg.com/share-api-polyfill/dist/share-min.js";
+import QRCode from "https://cdn.skypack.dev/qrcode";
 
 function humanSeconds(seconds) {
   return [
@@ -374,6 +375,78 @@ class GuestModePanel extends LitElement {
     }
   }
 
+  async qrButtonClick(e, token) {
+    e.stopPropagation();
+
+    let baseUrl;
+    if (this.urls.external && this.urls.internal) {
+      const confirmed = await this.showConfirmationDialog(
+        this.translate("choose_url_title"),
+        this.translate("choose_url_text"),
+        { confirm: this.translate("external_url"), cancel: this.translate("internal_url") }
+      );
+      baseUrl = confirmed ? this.urls.external : this.urls.internal;
+    } else {
+      baseUrl = this.urls.external || this.urls.internal || this.hass.hassUrl();
+    }
+
+    const url = this.getLoginUrl(token, baseUrl);
+
+    // Dialog
+    const dialog = document.createElement('ha-dialog');
+    dialog.heading = `QR — ${token.name}`;
+    dialog.style.setProperty('--dialog-content-padding', '16px');
+
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.alignItems = 'center';
+    container.style.gap = '12px';
+
+    const canvas = document.createElement('canvas');
+    container.appendChild(canvas);
+
+    const linkEl = document.createElement('a');
+    linkEl.href = url;
+    linkEl.textContent = url;
+    linkEl.target = '_blank';
+    linkEl.style.wordBreak = 'break-all';
+    linkEl.style.textAlign = 'center';
+    container.appendChild(linkEl);
+
+    const copyBtn = document.createElement('ha-button');
+    copyBtn.slot = 'primaryAction';
+    copyBtn.textContent = this.translate("copy") || "Copy";
+    copyBtn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(url);
+      this.alertType = "info";
+      this.showAlert('Copied to clipboard');
+    });
+
+    const closeBtn = document.createElement('ha-button');
+    closeBtn.slot = 'secondaryAction';
+    closeBtn.textContent = this.translate("close") || "Close";
+    closeBtn.addEventListener('click', () => dialog.close());
+
+    dialog.appendChild(container);
+    dialog.appendChild(copyBtn);
+    dialog.appendChild(closeBtn);
+    this.shadowRoot.appendChild(dialog);
+    dialog.open = true;
+
+    dialog.addEventListener('closed', () => {
+      if (this.shadowRoot.contains(dialog)) this.shadowRoot.removeChild(dialog);
+    });
+
+    try {
+      await QRCode.toCanvas(canvas, url, { width: 256, errorCorrectionLevel: 'H' });
+    } catch (err) {
+      console.error(err);
+      this.alertType = "warning";
+      this.showAlert("QR generation failed");
+    }
+  }
+
   async showConfirmationDialog(title, text, buttons) {
     return new Promise((resolve) => {
       const dialog = document.createElement('ha-dialog');
@@ -582,6 +655,9 @@ class GuestModePanel extends LitElement {
                       <ha-button appearance="plain" @click=${e => this.listItemClick(e, token)}>
                         <ha-icon icon="mdi:share-variant"></ha-icon>
                       </ha-button>
+                        <ha-button appearance="plain" @click=${e => this.qrButtonClick(e, token)} title="QR Code">
+                          <ha-icon icon="mdi:qrcode"></ha-icon>
+                        </ha-button>
                       <ha-button appearance="plain" disabled>
                         ${token.isUsed ? html`
                             <ha-icon icon="mdi:lock-open-variant-outline" style="color: var(--success-color);"></ha-icon>
