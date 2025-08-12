@@ -4,12 +4,14 @@ Thanks to everyone who has contributed to this project!
 
 We recognize contributions of all kinds, including but not limited to:
 
-| Contributor | Contributions |
-|-------------|---------------|
-| @Darkdragon |💻 Code, 🧪 Tests |
-| @kcsoft     | 🙏 Original project inspiration |
-| @physje     | 🌍 Translation (Dutch) |
-
+| Contributor                                       | Contributions |
+|---------------------------------------------------|---------------|
+| [@Darkdragon](https://github.com/Darkdragon14)    | 💻 Code, 🧪 Tests |
+| [@kcsoft](https://github.com/kcsoft)              | 🙏 Original project inspiration |
+| [@physje](https://github.com/physje)              | 🌍 Translation (Dutch) |
+| [@autohhacs](https://github.com/autohhacs)        | 💡Propose many ideas (see [this issue](https://github.com/Darkdragon14/ha-guest-mode/issues/15)) |
+| [@Gronsak](https://github.com/Gronsak)            | 💡 Add an option for a simple copy link mode |
+| [@shorty89](https://github.com/shorty89)          | 💡 Display a Qr code |
 ---
 
 ## Contribution Types
