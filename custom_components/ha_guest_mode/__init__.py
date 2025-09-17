@@ -15,6 +15,7 @@ from .websocketCommands import list_users, create_token, delete_token, get_path_
 from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
 from .const import DOMAIN, DATABASE, DEST_PATH_SCRIPT_JS, SOURCE_PATH_SCRIPT_JS, SCRIPT_JS
+from .services import async_register_services
 
 from .migrations import migration
 
@@ -31,6 +32,8 @@ def get_version():
 VERSION = get_version()
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    await async_register_services(hass)
+
     websocket_api.async_register_command(hass, list_users)
     websocket_api.async_register_command(hass, create_token)
     websocket_api.async_register_command(hass, delete_token)

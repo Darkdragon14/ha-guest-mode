@@ -25,6 +25,42 @@
             }
         }
     },
+    "services": {
+        "create_token": {
+            "name": "Token erstellen",
+            "description": "Erstellt ein neues Gastmodus-Token. Wenn weder Ablaufdauer noch Ablaufdatum angegeben sind, läuft das Token nie ab.",
+            "fields": {
+                "user_id": {
+                    "name": "Benutzer",
+                    "description": "Der Benutzer, für den das Token erstellt werden soll."
+                },
+                "token_name": {
+                    "name": "Token-Name",
+                    "description": "Der Name des Tokens."
+                },
+                "expiration_duration": {
+                    "name": "Ablaufdauer",
+                    "description": "Die Dauer bis zum Ablauf des Tokens (z. B. '02:00:00')."
+                },
+                "expiration_date": {
+                    "name": "Ablaufdatum",
+                    "description": "Das Datum, an dem das Token abläuft."
+                },
+                "start_date": {
+                    "name": "Startdatum",
+                    "description": "Das Datum, ab dem das Token gültig ist."
+                },
+                "dashboard": {
+                    "name": "Dashboard",
+                    "description": "Der URL-Pfad des gewünschten Dashboards (z. B. 'lovelace-guest'). Fügen Sie den führenden Schrägstrich nicht hinzu."
+                }
+            },
+            "errors": {
+                "user_not_found": "Benutzer '{0}' nicht gefunden",
+                "expiration_exclusive": "Geben Sie nur eine von Ablaufdauer oder Ablaufdatum an"
+            }
+        }
+    },
     "entity": {
         "frontend": {
             "key_name": {

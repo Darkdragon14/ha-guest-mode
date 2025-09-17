@@ -25,6 +25,42 @@
             }
         }
     },
+    "services": {
+        "create_token": {
+            "name": "Token aanmaken",
+            "description": "Maakt een nieuw gastmodus-token aan. Als er geen vervaltijd of vervaldatum is opgegeven, zal het token nooit verlopen.",
+            "fields": {
+                "user_id": {
+                    "name": "Gebruiker",
+                    "description": "De gebruiker voor wie het token moet worden aangemaakt."
+                },
+                "token_name": {
+                    "name": "Tokennaam",
+                    "description": "De naam van het token."
+                },
+                "expiration_duration": {
+                    "name": "Vervaltijd",
+                    "description": "De duur totdat het token verloopt (bijv. '02:00:00')."
+                },
+                "expiration_date": {
+                    "name": "Vervaldatum",
+                    "description": "De datum waarop het token verloopt."
+                },
+                "start_date": {
+                    "name": "Startdatum",
+                    "description": "De datum waarop het token geldig wordt."
+                },
+                "dashboard": {
+                    "name": "Dashboard",
+                    "description": "Het URL-pad van het gewenste dashboard (bijv. 'lovelace-guest'). Voeg de voorloop-slash niet toe."
+                }
+            },
+            "errors": {
+                "user_not_found": "Gebruiker '{0}' niet gevonden",
+                "expiration_exclusive": "Geef slechts één van vervaltijd of vervaldatum op"
+            }
+        }
+    },
     "entity": {
         "frontend": {
             "key_name": {

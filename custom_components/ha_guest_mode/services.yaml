@@ -1,0 +1,24 @@
+create_token:
+  fields:
+    user_id:
+      required: true
+      selector:
+        text: {}
+    token_name:
+      selector:
+        text: {}
+    expiration_duration:
+      example: "12h"
+      selector:
+        text: {}
+    expiration_date:
+      selector:
+        datetime: {}
+    start_date:
+      selector:
+        datetime: {}
+    dashboard:
+      default: "lovelace"
+      example: "lovelace-guest"
+      selector:
+        text: {}

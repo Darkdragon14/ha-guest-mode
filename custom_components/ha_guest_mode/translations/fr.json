@@ -25,6 +25,42 @@
             }
         }
     },
+    "services": {
+        "create_token": {
+            "name": "Créer un jeton",
+            "description": "Crée un nouveau jeton pour le mode invité. Si ni la durée d'expiration ni la date d'expiration ne sont fournies, le jeton n'expirera jamais.",
+            "fields": {
+                "user_id": {
+                    "name": "Utilisateur",
+                    "description": "L'utilisateur pour lequel créer le jeton."
+                },
+                "token_name": {
+                    "name": "Nom du jeton",
+                    "description": "Le nom du jeton."
+                },
+                "expiration_duration": {
+                    "name": "Durée d'expiration",
+                    "description": "La durée avant l'expiration du jeton (par exemple, '02:00:00')."
+                },
+                "expiration_date": {
+                    "name": "Date d'expiration",
+                    "description": "La date d'expiration du jeton."
+                },
+                "start_date": {
+                    "name": "Date de début",
+                    "description": "La date à partir de laquelle le jeton est valide."
+                },
+                "dashboard": {
+                    "name": "Tableau de bord",
+                    "description": "Le chemin de l'URL du tableau de bord souhaité (par exemple, 'lovelace-guest'). N'incluez pas le slash au début."
+                }
+            },
+            "errors": {
+                "user_not_found": "Utilisateur '{0}' non trouvé",
+                "expiration_exclusive": "Spécifiez uniquement une durée d'expiration ou une date d'expiration"
+            }
+        }
+    },
     "entity": {
         "frontend": {
             "key_name": {

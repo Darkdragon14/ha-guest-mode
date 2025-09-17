@@ -25,6 +25,42 @@
             }
         }
     },
+    "services": {
+        "create_token": {
+            "name": "Crear token",
+            "description": "Crea un nuevo token de modo de invitado. Si no se proporciona ni la duración de la expiración ni la fecha de expiración, el token nunca expirará.",
+            "fields": {
+                "user_id": {
+                    "name": "Usuario",
+                    "description": "El usuario para el que se creará el token."
+                },
+                "token_name": {
+                    "name": "Nombre del token",
+                    "description": "El nombre del token."
+                },
+                "expiration_duration": {
+                    "name": "Duración de la expiración",
+                    "description": "La duración hasta que el token expire (por ejemplo, '02:00:00')."
+                },
+                "expiration_date": {
+                    "name": "Fecha de expiración",
+                    "description": "La fecha en que expira el token."
+                },
+                "start_date": {
+                    "name": "Fecha de inicio",
+                    "description": "La fecha en que el token se vuelve válido."
+                },
+                "dashboard": {
+                    "name": "Tablero",
+                    "description": "La ruta de la URL del tablero deseado (por ejemplo, 'lovelace-guest'). No incluya la barra inclinada inicial."
+                }
+            },
+            "errors": {
+                "user_not_found": "Usuario '{0}' no encontrado",
+                "expiration_exclusive": "Especifique solo una de duración de expiración o fecha de expiración"
+            }
+        }
+    },
     "entity": {
         "frontend": {
             "key_name": {

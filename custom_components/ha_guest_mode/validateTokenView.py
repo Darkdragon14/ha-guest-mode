@@ -74,6 +74,8 @@ class ValidateTokenView(HomeAssistantView):
             token = "" 
 
         dashboard = result[10]
+        if dashboard and dashboard.startswith('/'):
+            dashboard = dashboard[1:]
         
         if token == "" and (is_never_expire or (start_date and now > start_date)):
             """ if is_never_expire or (start_date and now > start_date): """
