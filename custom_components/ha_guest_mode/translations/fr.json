@@ -12,7 +12,7 @@
             }
         },
         "error": {
-            "user_not_found": "Utilisateur '{0}' non trouvé",
+            "user_not_found": "Utilisateur {0} non trouvé",
             "expiration_exclusive": "Spécifiez uniquement une durée d'expiration ou une date d'expiration"
         }
     },
