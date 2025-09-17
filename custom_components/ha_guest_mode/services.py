@@ -11,7 +11,7 @@ from homeassistant.helpers.translation import async_get_translations
 from .const import DOMAIN, DATABASE
 
 async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
-    translations = await async_get_translations(hass, hass.config.language, "services")
+    translations = await async_get_translations(hass, hass.config.language, "config")
 
     username = call.data.get("user_id")
     token_name = call.data.get("token_name", "New Token")
@@ -28,10 +28,10 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
             break
     
     if user_id is None:
-        raise vol.Invalid(translations.get("component.ha_guest_mode.services.create_token.errors.user_not_found").format(username))
+        raise vol.Invalid(translations.get("component.ha_guest_mode.config.error.user_not_found").format(username))
 
     if expiration_duration is not None and expiration_date is not None:
-        raise vol.Invalid(translations.get("component.ha_guest_mode.services.create_token.errors.expiration_exclusive"))
+        raise vol.Invalid(translations.get("component.ha_guest_mode.config.error.expiration_exclusive"))
 
     if expiration_duration is None and expiration_date is None:
         is_never_expire = True

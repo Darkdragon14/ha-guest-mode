@@ -10,6 +10,10 @@
                     "copy_link_mode": "Link direkt kopieren (überspringt das Teilen)"
                 }
             }
+        },
+        "error": {
+            "user_not_found": "Benutzer '{0}' nicht gefunden",
+            "expiration_exclusive": "Geben Sie nur eine von Ablaufdauer oder Ablaufdatum an"
         }
     },
     "options": {
@@ -54,10 +58,6 @@
                     "name": "Dashboard",
                     "description": "Der URL-Pfad des gewünschten Dashboards (z. B. 'lovelace-guest'). Fügen Sie den führenden Schrägstrich nicht hinzu."
                 }
-            },
-            "errors": {
-                "user_not_found": "Benutzer '{0}' nicht gefunden",
-                "expiration_exclusive": "Geben Sie nur eine von Ablaufdauer oder Ablaufdatum an"
             }
         }
     },

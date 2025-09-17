@@ -10,6 +10,10 @@
                     "copy_link_mode": "Copier le lien directement (ignore le partage)"
                 }
             }
+        },
+        "error": {
+            "user_not_found": "Utilisateur '{0}' non trouvé",
+            "expiration_exclusive": "Spécifiez uniquement une durée d'expiration ou une date d'expiration"
         }
     },
     "options": {
@@ -54,10 +58,6 @@
                     "name": "Tableau de bord",
                     "description": "Le chemin de l'URL du tableau de bord souhaité (par exemple, 'lovelace-guest'). N'incluez pas le slash au début."
                 }
-            },
-            "errors": {
-                "user_not_found": "Utilisateur '{0}' non trouvé",
-                "expiration_exclusive": "Spécifiez uniquement une durée d'expiration ou une date d'expiration"
             }
         }
     },

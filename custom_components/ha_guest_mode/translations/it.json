@@ -10,6 +10,10 @@
                     "copy_link_mode": "Copia il link direttamente (salta la condivisione)"
                 }
             }
+        },
+        "error": {
+            "user_not_found": "Utente '{0}' non trovato",
+            "expiration_exclusive": "Specifica solo una tra durata di scadenza o data di scadenza"
         }
     },
     "options": {
@@ -54,10 +58,6 @@
                     "name": "Cruscotto",
                     "description": "Il percorso URL del cruscotto desiderato (ad es. 'lovelace-guest'). Non includere la barra iniziale."
                 }
-            },
-            "errors": {
-                "user_not_found": "Utente '{0}' non trovato",
-                "expiration_exclusive": "Specifica solo una tra durata di scadenza o data di scadenza"
             }
         }
     },

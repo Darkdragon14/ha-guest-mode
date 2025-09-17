@@ -10,6 +10,10 @@
                     "copy_link_mode": "Kopieer de link direct (slaat delen over)"
                 }
             }
+        },
+        "error": {
+            "user_not_found": "Gebruiker '{0}' niet gevonden",
+            "expiration_exclusive": "Geef slechts één van vervaltijd of vervaldatum op"
         }
     },
     "options": {
@@ -54,10 +58,6 @@
                     "name": "Dashboard",
                     "description": "Het URL-pad van het gewenste dashboard (bijv. 'lovelace-guest'). Voeg de voorloop-slash niet toe."
                 }
-            },
-            "errors": {
-                "user_not_found": "Gebruiker '{0}' niet gevonden",
-                "expiration_exclusive": "Geef slechts één van vervaltijd of vervaldatum op"
             }
         }
     },

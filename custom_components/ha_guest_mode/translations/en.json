@@ -10,6 +10,10 @@
                     "copy_link_mode": "Copy link directly (skips sharing)"
                 }
             }
+        },
+        "error": {
+            "user_not_found": "User '{0}' not found",
+            "expiration_exclusive": "Specify only one of expiration_duration or expiration_date"
         }
     },
     "options": {
@@ -54,10 +58,6 @@
                     "name": "Dashboard",
                     "description": "The URL path of the desired dashboard (e.g., 'lovelace-guest'). Do not include the leading slash."
                 }
-            },
-            "errors": {
-                "user_not_found": "User '{0}' not found",
-                "expiration_exclusive": "Specify only one of expiration_duration or expiration_date"
             }
         }
     },
