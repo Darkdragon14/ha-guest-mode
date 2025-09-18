@@ -34,9 +34,9 @@
             "name": "Crea token",
             "description": "Crea un nuovo token in modalità ospite. Se non viene fornita né la durata di scadenza né la data di scadenza, il token non scadrà mai.",
             "fields": {
-                "user_id": {
-                    "name": "Utente",
-                    "description": "L'utente per cui creare il token."
+                "username": {
+                    "name": "Nome utente",
+                    "description": "Il nome utente per cui creare il token."
                 },
                 "token_name": {
                     "name": "Nome del token",

@@ -34,9 +34,9 @@
             "name": "Token aanmaken",
             "description": "Maakt een nieuw gastmodus-token aan. Als er geen vervaltijd of vervaldatum is opgegeven, zal het token nooit verlopen.",
             "fields": {
-                "user_id": {
-                    "name": "Gebruiker",
-                    "description": "De gebruiker voor wie het token moet worden aangemaakt."
+                "username": {
+                    "name": "Gebruikersnaam",
+                    "description": "De gebruikersnaam voor wie het token moet worden aangemaakt."
                 },
                 "token_name": {
                     "name": "Tokennaam",

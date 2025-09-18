@@ -34,9 +34,9 @@
             "name": "Créer un jeton",
             "description": "Crée un nouveau jeton pour le mode invité. Si ni la durée d'expiration ni la date d'expiration ne sont fournies, le jeton n'expirera jamais.",
             "fields": {
-                "user_id": {
-                    "name": "Utilisateur",
-                    "description": "L'utilisateur pour lequel créer le jeton."
+                "username": {
+                    "name": "Nom d'utilisateur",
+                    "description": "Le nom d'utilisateur pour lequel créer le jeton."
                 },
                 "token_name": {
                     "name": "Nom du jeton",

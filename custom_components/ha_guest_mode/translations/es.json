@@ -34,9 +34,9 @@
             "name": "Crear token",
             "description": "Crea un nuevo token de modo de invitado. Si no se proporciona ni la duración de la expiración ni la fecha de expiración, el token nunca expirará.",
             "fields": {
-                "user_id": {
-                    "name": "Usuario",
-                    "description": "El usuario para el que se creará el token."
+                "username": {
+                    "name": "Nombre de usuario",
+                    "description": "El nombre de usuario para el que se creará el token."
                 },
                 "token_name": {
                     "name": "Nombre del token",

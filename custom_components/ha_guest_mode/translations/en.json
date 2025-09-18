@@ -34,9 +34,9 @@
             "name": "Create Token",
             "description": "Creates a new guest mode token. If neither expiration duration nor expiration date is provided, the token will never expire.",
             "fields": {
-                "user_id": {
-                    "name": "User",
-                    "description": "The user to create the token for."
+                "username": {
+                    "name": "Username",
+                    "description": "The username to create the token for."
                 },
                 "token_name": {
                     "name": "Token Name",

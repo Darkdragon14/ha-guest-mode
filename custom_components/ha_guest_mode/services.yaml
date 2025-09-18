@@ -1,6 +1,6 @@
 create_token:
   fields:
-    user_id:
+    username:
       required: true
       selector:
         text: {}

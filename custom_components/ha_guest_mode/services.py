@@ -13,7 +13,7 @@ from .const import DOMAIN, DATABASE
 async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
     translations = await async_get_translations(hass, hass.config.language, "config")
 
-    username = call.data.get("user_id")
+    username = call.data.get("username")
     token_name = call.data.get("token_name", "New Token")
     expiration_duration = call.data.get("expiration_duration")
     expiration_date = call.data.get("expiration_date")
@@ -78,7 +78,7 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
 
 async def async_register_services(hass: HomeAssistant):
     SERVICE_CREATE_TOKEN_SCHEMA = vol.Schema({
-        vol.Required("user_id"): cv.string,
+        vol.Required("username"): cv.string,
         vol.Optional("token_name"): cv.string,
         vol.Exclusive("expiration_duration", "expiration"): cv.time_period,
         vol.Exclusive("expiration_date", "expiration"): cv.datetime,

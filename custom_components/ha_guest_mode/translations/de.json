@@ -34,9 +34,9 @@
             "name": "Token erstellen",
             "description": "Erstellt ein neues Gastmodus-Token. Wenn weder Ablaufdauer noch Ablaufdatum angegeben sind, läuft das Token nie ab.",
             "fields": {
-                "user_id": {
-                    "name": "Benutzer",
-                    "description": "Der Benutzer, für den das Token erstellt werden soll."
+                "username": {
+                    "name": "Benutzername",
+                    "description": "Der Benutzername, für den das Token erstellt werden soll."
                 },
                 "token_name": {
                     "name": "Token-Name",
