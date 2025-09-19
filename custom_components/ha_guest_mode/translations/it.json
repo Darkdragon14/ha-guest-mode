@@ -10,6 +10,10 @@
                     "copy_link_mode": "Copia il link direttamente (salta la condivisione)"
                 }
             }
+        },
+        "error": {
+            "user_not_found": "Utente {0} non trovato",
+            "expiration_exclusive": "Specifica solo una tra durata di scadenza o data di scadenza"
         }
     },
     "options": {
@@ -21,6 +25,38 @@
                     "path_to_admin_ui": "Percorso all'interfaccia amministrativa",
                     "login_path": "Percorso di accesso ospite",
                     "copy_link_mode": "Copia il link direttamente (salta la condivisione)"
+                }
+            }
+        }
+    },
+    "services": {
+        "create_token": {
+            "name": "Crea token",
+            "description": "Crea un nuovo token in modalità ospite. Se non viene fornita né la durata di scadenza né la data di scadenza, il token non scadrà mai.",
+            "fields": {
+                "username": {
+                    "name": "Nome utente",
+                    "description": "Il nome utente per cui creare il token."
+                },
+                "token_name": {
+                    "name": "Nome del token",
+                    "description": "Il nome del token."
+                },
+                "expiration_duration": {
+                    "name": "Durata della scadenza",
+                    "description": "La durata fino alla scadenza del token (ad es. '02:00:00')."
+                },
+                "expiration_date": {
+                    "name": "Data di scadenza",
+                    "description": "La data in cui il token scade."
+                },
+                "start_date": {
+                    "name": "Data di inizio",
+                    "description": "La data in cui il token diventa valido."
+                },
+                "dashboard": {
+                    "name": "Cruscotto",
+                    "description": "Il percorso URL del cruscotto desiderato (ad es. 'lovelace-guest'). Non includere la barra iniziale."
                 }
             }
         }

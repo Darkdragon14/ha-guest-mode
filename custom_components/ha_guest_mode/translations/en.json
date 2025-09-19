@@ -10,6 +10,10 @@
                     "copy_link_mode": "Copy link directly (skips sharing)"
                 }
             }
+        },
+        "error": {
+            "user_not_found": "User {0} not found",
+            "expiration_exclusive": "Specify only one of expiration_duration or expiration_date"
         }
     },
     "options": {
@@ -21,6 +25,38 @@
                     "path_to_admin_ui": "Path to Admin Interface",
                     "login_path": "Guest Login Path",
                     "copy_link_mode": "Copy link directly (skips sharing)"
+                }
+            }
+        }
+    },
+    "services": {
+        "create_token": {
+            "name": "Create Token",
+            "description": "Creates a new guest mode token. If neither expiration duration nor expiration date is provided, the token will never expire.",
+            "fields": {
+                "username": {
+                    "name": "Username",
+                    "description": "The username to create the token for."
+                },
+                "token_name": {
+                    "name": "Token Name",
+                    "description": "The name of the token."
+                },
+                "expiration_duration": {
+                    "name": "Expiration Duration",
+                    "description": "The duration until the token expires (e.g., '02:00:00')."
+                },
+                "expiration_date": {
+                    "name": "Expiration Date",
+                    "description": "The date when the token expires."
+                },
+                "start_date": {
+                    "name": "Start Date",
+                    "description": "The date when the token becomes valid."
+                },
+                "dashboard": {
+                    "name": "Dashboard",
+                    "description": "The URL path of the desired dashboard (e.g., 'lovelace-guest'). Do not include the leading slash."
                 }
             }
         }

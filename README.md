@@ -62,6 +62,35 @@ To make this work, I need to make some optional and additional steps (before or 
 
 You can now generate a secure link to share with your guests.
 
+# Services
+
+This integration provides services that can be used in automations.
+
+## Service: ha_guest_mode.create_token
+
+Creates a new guest mode token.
+
+| Parameter | Description | Required |
+|---|---|---|
+| `user_id` | The name of the user to create the token for. | Yes |
+| `token_name` | The name of the token. | No |
+| `expiration_duration` | The duration until the token expires (e.g., '02:00:00'). | No |
+| `expiration_date` | The date when the token expires. | No |
+| `start_date` | The date when the token becomes valid. | No |
+| `dashboard` | The URL path of the desired dashboard (e.g., 'lovelace-guest'). Do not include the leading slash. | No |
+
+**Note:** If neither `expiration_duration` nor `expiration_date` is provided, the token will never expire.
+
+### Example
+
+```yaml
+- service: ha_guest_mode.create_token
+  data:
+    user_id: "guest"
+    token_name: "My Guest Token"
+    expiration_duration: "01:00:00" # 1 hour
+```
+
 # Future improvements
 
 * Removing seconds in UI or Using ha-date-range-picker :rocket:
