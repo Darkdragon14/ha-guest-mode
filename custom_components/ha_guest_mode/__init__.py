@@ -119,6 +119,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     hass.http.register_view(ValidateTokenView(hass))
 
+    hass.async_create_task(hass.config_entries.async_forward_entry_setups(config_entry, ["image"]))
+
     return True
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):

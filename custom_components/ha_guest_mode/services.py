@@ -76,6 +76,8 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
     conn.commit()
     conn.close()
 
+    await hass.services.async_call("homeassistant", "update_entity", {"entity_id": "image.guest_qr_code"}, blocking=True)
+
 async def async_register_services(hass: HomeAssistant):
     SERVICE_CREATE_TOKEN_SCHEMA = vol.Schema({
         vol.Required("username"): cv.string,

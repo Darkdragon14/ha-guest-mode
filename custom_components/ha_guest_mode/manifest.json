@@ -7,6 +7,6 @@
     "documentation": "https://github.com/Darkdragon14/ha-guest-mode",
     "iot_class": "local_push",
     "issue_tracker": "https://github.com/Darkdragon14/ha-guest-mode/issues",
-    "requirements": [],
-    "version": "1.16.0"
+    "requirements": ["qrcode", "Pillow"],
+    "version": "1.18.0"
 }
