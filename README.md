@@ -91,6 +91,14 @@ Creates a new guest mode token.
     expiration_duration: "01:00:00" # 1 hour
 ```
 
+# Entities
+
+This integration creates the following entity:
+
+| Entity ID | Name | Description |
+|---|---|---|
+| `image.guest_qr_code` | Guest QR Code | An image entity that displays a QR code for the most recently created guest token. The QR code contains the direct login URL for the guest. The state of the entity will be `Ready` if a token is available and a QR code has been generated, and `No token` otherwise. |
+
 # Future improvements
 
 * Removing seconds in UI or Using ha-date-range-picker :rocket:

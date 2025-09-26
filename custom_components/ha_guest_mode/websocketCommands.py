@@ -112,7 +112,7 @@ async def create_token(
             if "startDate" not in msg or "expirationDate" not in msg:
                 connection.send_message(
                     websocket_api.error_message(
-                        msg["id"],
+                        msg["id"], 
                         websocket_api.const.ERR_INVALID_FORMAT,
                         "startDate and expirationDate are required when isNeverExpire is false",
                     )
@@ -147,6 +147,8 @@ async def create_token(
         cursor.execute(query, (msg["user_id"], msg["name"], startDate_iso, endDate_iso, "", "", tokenGenerated, uid, is_never_expire, dashboard))
         conn.commit()
         conn.close()
+
+        await hass.services.async_call("homeassistant", "update_entity", {"entity_id": "image.guest_qr_code"}, blocking=True)
 
     except ValueError as err:
         connection.send_message(

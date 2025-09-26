@@ -12,6 +12,7 @@ We recognize contributions of all kinds, including but not limited to:
 | [@autohhacs](https://github.com/autohhacs)        | 💡Propose many ideas (see [this issue](https://github.com/Darkdragon14/ha-guest-mode/issues/15)) |
 | [@Gronsak](https://github.com/Gronsak)            | 💡 Add an option for a simple copy link mode |
 | [@shorty89](https://github.com/shorty89)          | 💡 Display a Qr code |
+| [@19stth85](https://github.com/19stth85)          | 💡 Display a Qr code in entity and add action to create token |
 ---
 
 ## Contribution Types
