@@ -131,6 +131,15 @@
             },
             "energy_dashboard": {
                 "name": "Tableau de bord Énergie"
+            },
+            "first_used": {
+                "name": "Première utilisation"
+            },
+            "last_used": {
+                "name": "Dernière utilisation"
+            },
+            "times_used": {
+                "name": "Nombre d'utilisations"
             }
         },
         "guest_error": {

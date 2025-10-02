@@ -180,6 +180,9 @@ class GuestModePanel extends LitElement {
               uid: token.uid,
               isNeverExpire: token.isNeverExpire,
               dashboard: token.dashboard || 'lovelace',
+              first_used: token.first_used ? new Date(token.first_used).toLocaleString(userLocale).replace(/:\d{2}$/, "") : this.translate("never"),
+              last_used: token.last_used ? new Date(token.last_used).toLocaleString(userLocale).replace(/:\d{2}$/, "") : this.translate("never"),
+              times_used: token.times_used || 0,
             });
           });
       });
@@ -649,7 +652,9 @@ class GuestModePanel extends LitElement {
                       `}
                       ${this.translate("used")}: ${token.isUsed ? this.translate("yes").toLowerCase() : this.translate("no").toLowerCase() } <br>
                       ${this.translate("dashboard")}: ${dashboardTitle} <br>
-                      </span>
+                      ${this.translate("first_used")}: ${token.first_used} <br>
+                      ${this.translate("last_used")}: ${token.last_used} <br>
+                      ${this.translate("times_used")}: ${token.times_used} <br>
                     </p>
                     <div class="actions">
                       <ha-button appearance="plain" @click=${e => this.listItemClick(e, token)}>

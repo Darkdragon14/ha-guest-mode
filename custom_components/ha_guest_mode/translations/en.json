@@ -131,6 +131,15 @@
             },
             "energy_dashboard": {
                 "name": "Energy Dashboard"
+            },
+            "first_used": {
+                "name": "First Used"
+            },
+            "last_used": {
+                "name": "Last Used"
+            },
+            "times_used": {
+                "name": "Times Used"
             }
         },
         "guest_error": {

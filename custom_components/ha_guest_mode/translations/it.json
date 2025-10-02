@@ -131,6 +131,15 @@
             },
             "energy_dashboard": {
                 "name": "Cruscotto energetico"
+            },
+            "first_used": {
+                "name": "Primo Utilizzo"
+            },
+            "last_used": {
+                "name": "Ultimo Utilizzo"
+            },
+            "times_used": {
+                "name": "Numero di Utilizzi"
             }
         },
         "guest_error": {

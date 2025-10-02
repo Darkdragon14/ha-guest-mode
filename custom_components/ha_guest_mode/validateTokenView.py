@@ -44,6 +44,34 @@ class ValidateTokenView(HomeAssistantView):
             return web.Response(status=404, text=self.get_translations(translations, "token_not_found"))
 
         try:
+            column_names = [desc[0] for desc in cursor.description]
+            first_used_idx = column_names.index('first_used')
+            times_used_idx = column_names.index('times_used')
+            id_idx = column_names.index('id')
+
+            first_used = result[first_used_idx]
+            times_used = result[times_used_idx] or 0
+            
+            now_iso = datetime.now().isoformat()
+            new_times_used = times_used + 1
+            
+            update_query = "UPDATE tokens SET last_used = ?, times_used = ?"
+            params = [now_iso, new_times_used]
+
+            if not first_used:
+                update_query += ", first_used = ?"
+                params.append(now_iso)
+            
+            update_query += " WHERE id = ?"
+            params.append(result[id_idx])
+
+            cursor.execute(update_query, tuple(params))
+            conn.commit()
+        except (ValueError, IndexError):
+            # Columns not present, do nothing
+            pass
+
+        try:
             public_key = self.hass.data.get("public_key")
             if public_key is None:
                 return web.Response(status=500, text=self.get_translations(translations, "internal_server_error"))

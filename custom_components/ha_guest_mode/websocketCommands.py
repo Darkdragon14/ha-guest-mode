@@ -65,7 +65,10 @@ async def list_users(
                     "isUsed": token[6] != "",
                     "uid": token[8] if len(token) > 8 else None,
                     "isNeverExpire": is_never_expire,
-                    "dashboard": token[10] if len(token) > 10 else None
+                    "dashboard": token[10] if len(token) > 10 else None,
+                    "first_used": token[11] if len(token) > 11 else None,
+                    "last_used": token[12] if len(token) > 12 else None,
+                    "times_used": token[13] if len(token) > 13 else 0
                 })
 
         result.append({
