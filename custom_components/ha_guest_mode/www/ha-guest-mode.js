@@ -51,6 +51,7 @@ class GuestModePanel extends LitElement {
       isNeverExpire: { type: Boolean },
       useDuration: { type: Boolean },
       duration: { type: Number },
+      usage_limit: { type: Number },
       urls: { type: Object },
       dashboards: { type: Array },
       dashboard: { type: String },
@@ -183,6 +184,7 @@ class GuestModePanel extends LitElement {
               first_used: token.first_used ? new Date(token.first_used).toLocaleString(userLocale).replace(/:\d{2}$/, "") : this.translate("never"),
               last_used: token.last_used ? new Date(token.last_used).toLocaleString(userLocale).replace(/:\d{2}$/, "") : this.translate("never"),
               times_used: token.times_used || 0,
+              usage_limit: token.usage_limit,
             });
           });
       });
@@ -235,6 +237,10 @@ class GuestModePanel extends LitElement {
     this.duration = e.target.value;
   }
 
+  usageLimitChanged(e) {
+    this.usage_limit = e.target.value;
+  }
+
   dashboardChanged(e) {
     this.dashboard = e.detail.value;
   }
@@ -246,6 +252,7 @@ class GuestModePanel extends LitElement {
       user_id: this.user,
       isNeverExpire: this.isNeverExpire,
       dashboard: this.dashboard,
+      usage_limit: this.usage_limit ? parseInt(this.usage_limit, 10) : null,
     };
 
     if (!this.isNeverExpire) {
@@ -541,6 +548,13 @@ class GuestModePanel extends LitElement {
                 @value-changed=${this.dashboardChanged}
               >
               </ha-combo-box>
+              <ha-textfield
+                .label=${this.translate("usage_limit")}
+                type="number"
+                min="0"
+                .value=${this.usage_limit || ''}
+                @input=${this.usageLimitChanged}
+              ></ha-textfield>
               <span style="min-width: auto">:</span>
 
               <div style="display: flex; align-items: center; gap: 4px;">
@@ -654,7 +668,7 @@ class GuestModePanel extends LitElement {
                       ${this.translate("dashboard")}: ${dashboardTitle} <br>
                       ${this.translate("first_used")}: ${token.first_used} <br>
                       ${this.translate("last_used")}: ${token.last_used} <br>
-                      ${this.translate("times_used")}: ${token.times_used} <br>
+                      ${this.translate("times_used")}: ${token.times_used}${token.usage_limit ? ` / ${token.usage_limit}` : ''} <br>
                     </p>
                     <div class="actions">
                       <ha-button appearance="plain" @click=${e => this.listItemClick(e, token)}>

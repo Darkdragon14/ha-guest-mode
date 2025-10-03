@@ -48,9 +48,14 @@ class ValidateTokenView(HomeAssistantView):
             first_used_idx = column_names.index('first_used')
             times_used_idx = column_names.index('times_used')
             id_idx = column_names.index('id')
+            usage_limit_idx = column_names.index('usage_limit')
 
             first_used = result[first_used_idx]
             times_used = result[times_used_idx] or 0
+            usage_limit = result[usage_limit_idx]
+
+            if usage_limit is not None and usage_limit > 0 and times_used >= usage_limit:
+                return web.Response(status=403, text=self.get_translations(translations, "usage_limit_reached"))
             
             now_iso = datetime.now().isoformat()
             new_times_used = times_used + 1

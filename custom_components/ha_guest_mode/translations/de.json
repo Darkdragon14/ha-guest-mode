@@ -140,6 +140,9 @@
             },
             "times_used": {
                 "name": "Anzahl Benutzungen"
+            },
+            "usage_limit": {
+                "name": "Nutzungslimit"
             }
         },
         "guest_error": {
@@ -163,6 +166,9 @@
             },
             "user_not_found": {
                 "name": "Der Benutzer wurde nicht gefunden."
+            },
+            "usage_limit_reached": {
+                "name": "Das Nutzungslimit für dieses Token wurde erreicht."
             }
         }
     }

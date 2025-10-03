@@ -58,3 +58,6 @@ def migration(cursor):
 
     if "times_used" not in columns:
         cursor.execute("ALTER TABLE tokens ADD COLUMN times_used INTEGER")
+
+    if "usage_limit" not in columns:
+        cursor.execute("ALTER TABLE tokens ADD COLUMN usage_limit INTEGER")

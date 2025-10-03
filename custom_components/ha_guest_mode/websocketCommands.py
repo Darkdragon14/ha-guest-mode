@@ -68,7 +68,8 @@ async def list_users(
                     "dashboard": token[10] if len(token) > 10 else None,
                     "first_used": token[11] if len(token) > 11 else None,
                     "last_used": token[12] if len(token) > 12 else None,
-                    "times_used": token[13] if len(token) > 13 else 0
+                    "times_used": token[13] if len(token) > 13 else 0,
+                    "usage_limit": token[14] if len(token) > 14 else None
                 })
 
         result.append({
@@ -98,6 +99,7 @@ async def list_users(
         vol.Optional("expirationDate"): int, # minutes
         vol.Optional("isNeverExpire", default=False): bool,
         vol.Optional("dashboard"): str,
+        vol.Optional("usage_limit"): int,
     }
 )
 @websocket_api.require_admin
@@ -110,6 +112,7 @@ async def create_token(
         startDate_iso = None
         endDate_iso = None
         dashboard = msg.get("dashboard", "lovelace")
+        usage_limit = msg.get("usage_limit")
 
         if not is_never_expire:
             if "startDate" not in msg or "expirationDate" not in msg:
@@ -142,12 +145,12 @@ async def create_token(
         tokenGenerated = jwt.encode(token_payload, private_key, algorithm="RS256")
 
         query = """
-            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid, is_never_expire, dashboard)
-            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid, is_never_expire, dashboard, usage_limit)
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         conn = sqlite3.connect(hass.config.path(DATABASE))
         cursor = conn.cursor()
-        cursor.execute(query, (msg["user_id"], msg["name"], startDate_iso, endDate_iso, "", "", tokenGenerated, uid, is_never_expire, dashboard))
+        cursor.execute(query, (msg["user_id"], msg["name"], startDate_iso, endDate_iso, "", "", tokenGenerated, uid, is_never_expire, dashboard, usage_limit))
         conn.commit()
         conn.close()
 
