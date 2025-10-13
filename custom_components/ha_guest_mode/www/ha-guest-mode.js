@@ -57,6 +57,10 @@ class GuestModePanel extends LitElement {
       dashboard: { type: String },
       dashboards: { type: Array },
       copyLinkMode: { type: Boolean },
+      groups: { type: Array },
+      createUser: { type: Boolean },
+      newUserName: { type: String },
+      selectedGroup: { type: String },
     };
   }
 
@@ -69,8 +73,12 @@ class GuestModePanel extends LitElement {
     this.loginPath = '';
     this.urls = {};
     this.dashboards = [];
-    this.dashboard = 'lovelace';
+    this.dashboard = '';
     this.copyLinkMode = false;
+    this.groups = [];
+    this.createUser = false;
+    this.newUserName = '';
+    this.selectedGroup = '';
 
     // form inputs
     this.name = null;
@@ -158,9 +166,20 @@ class GuestModePanel extends LitElement {
     }
   }
 
+  async getGroups() {
+    try {
+      const groups = await this.hass.callWS({ type: 'ha_guest_mode/list_groups' });
+      this.groups = Array.isArray(groups) ? groups : [];
+    } catch (err) {
+      console.error('Error fetching groups:', err);
+      this.groups = [];
+    }
+  }
+
   fetchUsers() {
     const userLocale = navigator.language || navigator.languages[0];
     this.hass.callWS({ type: 'ha_guest_mode/list_users' }).then(users => {
+      const previousUser = this.user;
       this.users = [];
       this.tokens = [];
       users.filter(user => !user.system_generated && user.is_active).forEach(user => {
@@ -188,6 +207,13 @@ class GuestModePanel extends LitElement {
             });
           });
       });
+
+      if (previousUser) {
+        const matched = this.users.find(u => u.id === previousUser);
+        this.user = matched ? matched.id : null;
+      } else if (!this.createUser) {
+        this.user = null;
+      }
     });
   }
 
@@ -197,6 +223,7 @@ class GuestModePanel extends LitElement {
       this.getUrls();
       this.getDashboards();
       this.getCopyLinkMode();
+      this.getGroups();
     }
     super.update(changedProperties);
   }
@@ -205,8 +232,23 @@ class GuestModePanel extends LitElement {
     this.user = e.detail.value;
   }
 
+  toggleCreateUser(e) {
+    this.createUser = e.target.checked;
+    if (this.createUser) {
+      this.user = null;
+    }
+    if (!this.createUser) {
+      this.newUserName = '';
+      this.selectedGroup = '';
+    }
+  }
+
   nameChanged(e) {
     this.name = e.target.value;
+  }
+
+  newUserNameChanged(e) {
+    this.newUserName = e.target.value;
   }
 
   startDateChanged(e) {
@@ -245,15 +287,56 @@ class GuestModePanel extends LitElement {
     this.dashboard = e.detail.value;
   }
 
+  groupChanged(e) {
+    this.selectedGroup = e.detail.value;
+  }
+
   addClick() {
     const payload = {
       type: 'ha_guest_mode/create_token',
       name: this.name,
-      user_id: this.user,
       isNeverExpire: this.isNeverExpire,
-      dashboard: this.dashboard,
-      usage_limit: this.usage_limit ? parseInt(this.usage_limit, 10) : null,
     };
+    const hasUsageLimit = this.usage_limit !== undefined && this.usage_limit !== null && this.usage_limit !== '';
+    if (hasUsageLimit) {
+      const limitValue = parseInt(this.usage_limit, 10);
+      if (Number.isNaN(limitValue)) {
+        this.alertType = "warning";
+        this.showAlert(this.translate("invalid_usage_limit") || "Usage limit must be a number");
+        return;
+      }
+      payload.usage_limit = limitValue;
+    }
+
+    if (this.dashboard) {
+      payload.dashboard = this.dashboard;
+    }
+
+    if (!this.name) {
+      this.alertType = "warning";
+      this.showAlert(this.translate("missing_token_name") || "Token name is required");
+      return;
+    }
+
+    if (this.createUser) {
+      if (!this.newUserName) {
+        this.alertType = "warning";
+        this.showAlert(this.translate("missing_user_name") || "Guest name is required");
+        return;
+      }
+      payload.create_user = true;
+      payload.new_user_name = this.newUserName;
+      if (this.selectedGroup) {
+        payload.group_id = this.selectedGroup;
+      }
+    } else {
+      if (!this.user) {
+        this.alertType = "warning";
+        this.showAlert(this.translate("missing_user") || "Select a user");
+        return;
+      }
+      payload.user_id = this.user;
+    }
 
     if (!this.isNeverExpire) {
       if (this.useDuration) {
@@ -498,6 +581,8 @@ class GuestModePanel extends LitElement {
 
   render() {
     this.getLoginPath();
+    const baseGroups = ['system-admin', 'system-users', 'system-read-only'];
+    const customGroups = (this.groups || []).filter(group => !baseGroups.includes(group.id));
     return html`
       <div>
         <header class="mdc-top-app-bar mdc-top-app-bar--fixed">
@@ -523,27 +608,58 @@ class GuestModePanel extends LitElement {
         <div class="mdc-top-app-bar--fixed-adjust flex content">
           <ha-card>
             <div class="card-content">
+              <div class="checkbox-row">
+                <mwc-checkbox
+                  .checked=${this.createUser}
+                  @change=${this.toggleCreateUser}
+                ></mwc-checkbox>
+                <span>${this.translate("create_new_user")}</span>
+              </div>
+
               <ha-textfield 
                 .label=${this.translate("key_name")}
                 value="" 
                 @input="${this.nameChanged}"
               ></ha-textfield>
 
-              <ha-combo-box
-                .items=${this.users}
-                .itemLabelPath=${'name'}
-                .itemValuePath=${'id'}
-                .value="1"
-                .label=${this.translate("user")}
-                @value-changed=${this.userChanged}
-              >
-              </ha-combo-box>
+              ${this.createUser
+                ? html`
+                    <ha-textfield
+                      .label=${this.translate("new_user_name")}
+                      .value=${this.newUserName}
+                      @input=${this.newUserNameChanged}
+                    ></ha-textfield>
+                    ${customGroups.length > 0
+                      ? html`
+                          <ha-combo-box
+                            .items=${customGroups}
+                            .itemLabelPath=${'name'}
+                            .itemValuePath=${'id'}
+                            .value=${this.selectedGroup || ''}
+                            .label=${this.translate("assign_group")}
+                            @value-changed=${this.groupChanged}
+                          >
+                          </ha-combo-box>
+                        `
+                      : null}
+                  `
+                : html`
+                    <ha-combo-box
+                      .items=${this.users}
+                      .itemLabelPath=${'name'}
+                      .itemValuePath=${'id'}
+                      .value=${this.user || ''}
+                      .label=${this.translate("user")}
+                      @value-changed=${this.userChanged}
+                    >
+                    </ha-combo-box>
+                  `}
 
               <ha-combo-box
                 .items=${this.dashboards}
                 .itemLabelPath=${'title'}
                 .itemValuePath=${'url_path'}
-                .value="lovelace"
+                .value=${this.dashboard || ''}
                 .label=${this.translate("dashboard")}
                 @value-changed=${this.dashboardChanged}
               >
@@ -792,6 +908,11 @@ class GuestModePanel extends LitElement {
       ha-combo-box {
         padding: 8px 0;
         width: auto;
+      }
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
       ha-button {
         padding: 16px 0;

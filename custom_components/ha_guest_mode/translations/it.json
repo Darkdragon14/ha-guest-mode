@@ -143,6 +143,27 @@
             },
             "usage_limit": {
                 "name": "Limite di utilizzo"
+            },
+            "create_new_user": {
+                "name": "Crea un utente dedicato"
+            },
+            "new_user_name": {
+                "name": "Nome dell'utente ospite"
+            },
+            "assign_group": {
+                "name": "Gruppo aggiuntivo (opzionale)"
+            },
+            "missing_token_name": {
+                "name": "Il nome del token è obbligatorio"
+            },
+            "missing_user_name": {
+                "name": "Il nome dell'utente ospite è obbligatorio"
+            },
+            "missing_user": {
+                "name": "Seleziona un utente"
+            },
+            "invalid_usage_limit": {
+                "name": "Il limite di utilizzo deve essere un numero"
             }
         },
         "guest_error": {

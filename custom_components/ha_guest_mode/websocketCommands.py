@@ -1,10 +1,12 @@
 import sqlite3
 from datetime import timedelta, datetime, timezone
 from typing import Any
+from collections import defaultdict
 import voluptuous as vol
 from contextlib import suppress
 import jwt
 import uuid
+import json
 
 from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN
@@ -13,6 +15,30 @@ from homeassistant.util import dt as dt_util
 from homeassistant.helpers.network import NoURLAvailableError, get_url
 
 from .const import DATABASE
+
+
+async def _async_get_all_groups(hass: HomeAssistant):
+    """Return all auth groups, compatible with multiple HA versions."""
+    auth = hass.auth
+    groups = []
+
+    store = getattr(auth, "_store", None)
+    if store is not None:
+        getter = getattr(store, "async_get_groups", None)
+        if getter is not None:
+            groups = await getter()
+            return list(groups)
+
+    # Fallback to fetching known groups individually
+    potential_ids = ("system-admin", "system-users", "system-read-only")
+    getter = getattr(auth, "async_get_group", None)
+    if getter is not None:
+        for group_id in potential_ids:
+            group = await getter(group_id)
+            if group is not None:
+                groups.append(group)
+
+    return groups
 
 @websocket_api.websocket_command({vol.Required("type"): "ha_guest_mode/list_users"})
 @websocket_api.require_admin
@@ -24,53 +50,130 @@ async def list_users(
     now = dt_util.utcnow()
 
     conn = sqlite3.connect(hass.config.path(DATABASE))
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM tokens')
-    tokenLists = cursor.fetchall()    
+    token_rows = cursor.fetchall()
 
-    for user in await hass.auth.async_get_users():
+    async def remove_managed_user_if_needed(user_id: str, managed: bool) -> None:
+        if not managed:
+            return
+
+        cursor.execute('SELECT COUNT(*) FROM tokens WHERE userId = ?', (user_id,))
+        remaining = cursor.fetchone()[0]
+        if remaining:
+            return
+
+        user = await hass.auth.async_get_user(user_id)
+        if user and not user.system_generated:
+            await hass.auth.async_remove_user(user)
+
+    active_tokens = []
+    for row in token_rows:
+        token = dict(row)
+        is_never_expire = bool(token.get("is_never_expire"))
+        end_date_str = token.get("end_date")
+
+        if not is_never_expire and end_date_str:
+            end_date = datetime.fromisoformat(end_date_str).replace(tzinfo=timezone.utc)
+
+            if end_date < now:
+                refresh_token_id = token.get("token_ha_id")
+                if refresh_token_id:
+                    with suppress(Exception):
+                        refresh_token = hass.auth.async_get_refresh_token(refresh_token_id)
+                        if refresh_token:
+                            hass.auth.async_remove_refresh_token(refresh_token)
+
+                cursor.execute('DELETE FROM tokens WHERE id = ?', (token["id"],))
+                await remove_managed_user_if_needed(token["userId"], bool(token.get("managed_user")))
+                continue
+
+        active_tokens.append(token)
+
+    conn.commit()
+
+    existing_users = {user.id: user for user in await hass.auth.async_get_users()}
+
+    managed_tokens_missing_user = [
+        token for token in active_tokens
+        if token.get("managed_user") and token.get("userId") not in existing_users
+    ]
+
+    if managed_tokens_missing_user:
+        available_groups = {group.id: group for group in await _async_get_all_groups(hass)}
+        for token in managed_tokens_missing_user:
+            stored_groups = token.get("managed_user_groups")
+            group_ids: list[str] = []
+            if stored_groups:
+                try:
+                    parsed = json.loads(stored_groups)
+                    if isinstance(parsed, list):
+                        group_ids = [gid for gid in parsed if gid in available_groups]
+                except (ValueError, TypeError):
+                    group_ids = []
+
+            default_group = "system-users"
+            if len(group_ids) > 1 and default_group in group_ids:
+                group_ids = [gid for gid in group_ids if gid != default_group]
+            if not group_ids and default_group in available_groups:
+                group_ids.append(default_group)
+
+            group_ids = list(dict.fromkeys(group_ids))  # preserve order, ensure unique
+
+            user_name = token.get("managed_user_name") or token.get("token_name") or "Guest"
+            new_user = await hass.auth.async_create_user(user_name, group_ids=group_ids or None)
+            existing_users[new_user.id] = new_user
+
+            token["userId"] = new_user.id
+            token["managed_user_name"] = new_user.name
+
+            stored_group_value = json.dumps(group_ids) if group_ids else None
+
+            cursor.execute(
+                "UPDATE tokens SET userId = ?, managed_user_name = ?, managed_user_groups = ? WHERE id = ?",
+                (new_user.id, new_user.name, stored_group_value, token["id"]),
+            )
+
+            token["managed_user_groups"] = stored_group_value
+
+        conn.commit()
+        existing_users = {user.id: user for user in await hass.auth.async_get_users()}
+
+    tokens_by_user = defaultdict(list)
+    for token in active_tokens:
+        tokens_by_user[token["userId"]].append(token)
+
+    for user in existing_users.values():
         ha_username = next((cred.data.get("username") for cred in user.credentials if cred.auth_provider_type == "homeassistant"), None)
 
         tokens = []
-        for token in tokenLists[:]:
-            # Check for is_never_expire (index 9) and end_date (index 4)
-            is_never_expire = token[9]
-            
-            # Handle expired tokens
-            if not is_never_expire and token[4] and datetime.fromisoformat(token[4]).replace(tzinfo=timezone.utc) < now:
-                if token[6] != "":
-                    try:
-                        tokenHa = hass.auth.async_get_refresh_token(token[5])
-                        if tokenHa:
-                            hass.auth.async_remove_refresh_token(tokenHa)
-                    except Exception:
-                        # Ignore if token is already removed from HA
-                        pass
-                cursor.execute('DELETE FROM tokens WHERE id = ?', (token[0],))
-                tokenLists.remove(token)
-                continue # Move to the next token
+        for token in tokens_by_user.get(user.id, []):
+            is_never_expire = bool(token["is_never_expire"])
+            remaining_seconds = None
+            if not is_never_expire and token["end_date"]:
+                remaining_seconds = int(
+                    (datetime.fromisoformat(token["end_date"]).replace(tzinfo=timezone.utc) - now).total_seconds()
+                )
 
-            if token[1] == user.id:
-                remaining_seconds = None
-                if not is_never_expire and token[4]:
-                    remaining_seconds = int((datetime.fromisoformat(token[4]).replace(tzinfo=timezone.utc) - now).total_seconds())
-                
-                tokens.append({
-                    "id": token[0],
-                    "name": token[2],
+            tokens.append(
+                {
+                    "id": token["id"],
+                    "name": token["token_name"],
                     "type": TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN,
-                    "end_date": token[4],
+                    "end_date": token["end_date"],
                     "remaining": remaining_seconds,
-                    "start_date": token[3],
-                    "isUsed": token[6] != "",
-                    "uid": token[8] if len(token) > 8 else None,
+                    "start_date": token["start_date"],
+                    "isUsed": bool(token["token_ha"]),
+                    "uid": token["uid"],
                     "isNeverExpire": is_never_expire,
-                    "dashboard": token[10] if len(token) > 10 else None,
-                    "first_used": token[11] if len(token) > 11 else None,
-                    "last_used": token[12] if len(token) > 12 else None,
-                    "times_used": token[13] if len(token) > 13 else 0,
-                    "usage_limit": token[14] if len(token) > 14 else None
-                })
+                    "dashboard": token["dashboard"],
+                    "first_used": token["first_used"],
+                    "last_used": token["last_used"],
+                    "times_used": token["times_used"] or 0,
+                    "usage_limit": token["usage_limit"],
+                }
+            )
 
         result.append({
             "id": user.id,
@@ -90,16 +193,37 @@ async def list_users(
     connection.send_result(msg["id"], result)
 
 
+@websocket_api.websocket_command({vol.Required("type"): "ha_guest_mode/list_groups"})
+@websocket_api.require_admin
+@websocket_api.async_response
+async def list_groups(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    groups = await _async_get_all_groups(hass)
+    payload = [
+        {
+            "id": group.id,
+            "name": group.name,
+            "system_generated": group.system_generated,
+        }
+        for group in groups
+    ]
+    connection.send_result(msg["id"], payload)
+
+
 @websocket_api.websocket_command(
     {
         vol.Required("type"): "ha_guest_mode/create_token",
-        vol.Required("user_id"): str,
+        vol.Optional("user_id"): str,
         vol.Required("name"): str, # token name
         vol.Optional("startDate"): int, # minutes
         vol.Optional("expirationDate"): int, # minutes
         vol.Optional("isNeverExpire", default=False): bool,
         vol.Optional("dashboard"): str,
-        vol.Optional("usage_limit"): int,
+        vol.Optional("usage_limit"): vol.Any(vol.Coerce(int), None),
+        vol.Optional("create_user", default=False): bool,
+        vol.Optional("new_user_name"): str,
+        vol.Optional("group_id"): str,
     }
 )
 @websocket_api.require_admin
@@ -113,6 +237,11 @@ async def create_token(
         endDate_iso = None
         dashboard = msg.get("dashboard", "lovelace")
         usage_limit = msg.get("usage_limit")
+        create_user = msg.get("create_user", False)
+        user_id = msg.get("user_id")
+        managed_user = False
+        managed_user_name = None
+        managed_user_groups = None
 
         if not is_never_expire:
             if "startDate" not in msg or "expirationDate" not in msg:
@@ -131,6 +260,57 @@ async def create_token(
             endDate_iso = endDate.isoformat()
 
         uid = str(uuid.uuid4())
+
+        if create_user:
+            new_user_name = msg.get("new_user_name")
+            if not new_user_name:
+                connection.send_message(
+                    websocket_api.error_message(
+                        msg["id"],
+                        websocket_api.const.ERR_INVALID_FORMAT,
+                        "new_user_name is required when create_user is true",
+                    )
+                )
+                return
+
+            groups = await _async_get_all_groups(hass)
+            default_group_id = next((group.id for group in groups if group.id == "system-users"), None)
+            if default_group_id is None and groups:
+                default_group_id = groups[0].id
+
+            requested_group_id = msg.get("group_id")
+            valid_group_ids = {group.id for group in groups}
+            group_ids: list[str] = []
+
+            if requested_group_id and requested_group_id in valid_group_ids:
+                group_ids.append(requested_group_id)
+            elif default_group_id:
+                group_ids.append(default_group_id)
+
+            try:
+                user = await hass.auth.async_create_user(new_user_name, group_ids=group_ids or None)
+            except ValueError as err:
+                connection.send_message(
+                    websocket_api.error_message(
+                        msg["id"], websocket_api.const.ERR_UNKNOWN_ERROR, str(err)
+                    )
+                )
+                return
+
+            user_id = user.id
+            managed_user = True
+            managed_user_name = user.name
+            managed_user_groups = json.dumps(group_ids) if group_ids else None
+
+        if not user_id:
+            connection.send_message(
+                websocket_api.error_message(
+                    msg["id"],
+                    websocket_api.const.ERR_INVALID_FORMAT,
+                    "user_id is required",
+                )
+            )
+            return
         
         private_key = hass.data.get("private_key")
         if private_key is None:
@@ -145,12 +325,30 @@ async def create_token(
         tokenGenerated = jwt.encode(token_payload, private_key, algorithm="RS256")
 
         query = """
-            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid, is_never_expire, dashboard, usage_limit)
-            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid, is_never_expire, dashboard, usage_limit, managed_user, managed_user_name, managed_user_groups)
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         conn = sqlite3.connect(hass.config.path(DATABASE))
         cursor = conn.cursor()
-        cursor.execute(query, (msg["user_id"], msg["name"], startDate_iso, endDate_iso, "", "", tokenGenerated, uid, is_never_expire, dashboard, usage_limit))
+        cursor.execute(
+            query,
+            (
+                user_id,
+                msg["name"],
+                startDate_iso,
+                endDate_iso,
+                "",
+                "",
+                tokenGenerated,
+                uid,
+                is_never_expire,
+                dashboard,
+                usage_limit,
+                1 if managed_user else 0,
+                managed_user_name,
+                managed_user_groups,
+            ),
+        )
         conn.commit()
         conn.close()
 
@@ -177,19 +375,34 @@ async def delete_token(
 ) -> None:
     # @Todo add try catch to catch error with slqite
     conn = sqlite3.connect(hass.config.path(DATABASE))
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute('SELECT token_ha_id FROM tokens WHERE id = ?', (msg["token_id"],))
-    token = cursor.fetchone()    
+    cursor.execute('SELECT token_ha_id, userId, managed_user FROM tokens WHERE id = ?', (msg["token_id"],))
+    token = cursor.fetchone()
 
-    if token[0] != "":
+    if token is None:
+        conn.close()
+        connection.send_result(msg["id"], False)
+        return
+
+    if token["token_ha_id"]:
         try:
-            tokenHa = hass.auth.async_get_refresh_token(token[0])
+            tokenHa = hass.auth.async_get_refresh_token(token["token_ha_id"])
             hass.auth.async_remove_refresh_token(tokenHa)
         except Exception:
             # Ignore if token is already removed from HA
             pass
     
     cursor.execute('DELETE FROM tokens WHERE id = ?', (msg["token_id"],))
+
+    if token["managed_user"]:
+        cursor.execute('SELECT COUNT(*) FROM tokens WHERE userId = ?', (token["userId"],))
+        remaining = cursor.fetchone()[0]
+        if not remaining:
+            user = await hass.auth.async_get_user(token["userId"])
+            if user and not user.system_generated:
+                await hass.auth.async_remove_user(user)
+
     conn.commit()
     conn.close()
     connection.send_result(msg["id"], True)

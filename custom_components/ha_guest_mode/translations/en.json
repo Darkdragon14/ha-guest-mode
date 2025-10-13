@@ -143,6 +143,27 @@
             },
             "usage_limit": {
                 "name": "Usage Limit"
+            },
+            "create_new_user": {
+                "name": "Create a dedicated user"
+            },
+            "new_user_name": {
+                "name": "Guest user name"
+            },
+            "assign_group": {
+                "name": "Additional group (optional)"
+            },
+            "missing_token_name": {
+                "name": "Token name is required"
+            },
+            "missing_user_name": {
+                "name": "Guest user name is required"
+            },
+            "missing_user": {
+                "name": "Select a user"
+            },
+            "invalid_usage_limit": {
+                "name": "Usage limit must be a number"
             }
         },
         "guest_error": {

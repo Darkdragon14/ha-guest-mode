@@ -67,12 +67,45 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
     tokenGenerated = jwt.encode(token_payload, private_key, algorithm="RS256")
 
     query = """
-        INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid, is_never_expire, dashboard)
-        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO tokens (
+            userId,
+            token_name,
+            start_date,
+            end_date,
+            token_ha_id,
+            token_ha,
+            token_ha_guest_mode,
+            uid,
+            is_never_expire,
+            dashboard,
+            usage_limit,
+            managed_user,
+            managed_user_name,
+            managed_user_groups
+        )
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
     conn = sqlite3.connect(hass.config.path(DATABASE))
     cursor = conn.cursor()
-    cursor.execute(query, (user_id, token_name, startDate_iso, endDate_iso, "", "", tokenGenerated, uid, is_never_expire, dashboard))
+    cursor.execute(
+        query,
+        (
+            user_id,
+            token_name,
+            startDate_iso,
+            endDate_iso,
+            "",
+            "",
+            tokenGenerated,
+            uid,
+            is_never_expire,
+            dashboard,
+            None,
+            0,
+            None,
+            None,
+        ),
+    )
     conn.commit()
     conn.close()
 

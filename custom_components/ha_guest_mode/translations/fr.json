@@ -143,6 +143,27 @@
             },
             "usage_limit": {
                 "name": "Limite d'utilisation"
+            },
+            "create_new_user": {
+                "name": "Créer un utilisateur dédié"
+            },
+            "new_user_name": {
+                "name": "Nom de l'utilisateur invité"
+            },
+            "assign_group": {
+                "name": "Groupe supplémentaire (optionnel)"
+            },
+            "missing_token_name": {
+                "name": "Le nom du jeton est requis"
+            },
+            "missing_user_name": {
+                "name": "Le nom de l'utilisateur invité est requis"
+            },
+            "missing_user": {
+                "name": "Sélectionnez un utilisateur"
+            },
+            "invalid_usage_limit": {
+                "name": "La limite d'utilisation doit être un nombre"
             }
         },
         "guest_error": {
