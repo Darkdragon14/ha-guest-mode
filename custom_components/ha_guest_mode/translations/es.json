@@ -131,6 +131,18 @@
             },
             "energy_dashboard": {
                 "name": "Tablero de energía"
+            },
+            "first_used": {
+                "name": "Primer Uso"
+            },
+            "last_used": {
+                "name": "Último Uso"
+            },
+            "times_used": {
+                "name": "Veces Usado"
+            },
+            "usage_limit": {
+                "name": "Límite de uso"
             }
         },
         "guest_error": {
@@ -154,6 +166,9 @@
             },
             "user_not_found": {
                 "name": "El usuario no fue encontrado."
+            },
+            "usage_limit_reached": {
+                "name": "Se ha alcanzado el límite de uso para este token."
             }
         }
     }

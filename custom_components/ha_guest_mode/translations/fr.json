@@ -131,6 +131,18 @@
             },
             "energy_dashboard": {
                 "name": "Tableau de bord Énergie"
+            },
+            "first_used": {
+                "name": "Première utilisation"
+            },
+            "last_used": {
+                "name": "Dernière utilisation"
+            },
+            "times_used": {
+                "name": "Nombre d'utilisations"
+            },
+            "usage_limit": {
+                "name": "Limite d'utilisation"
             }
         },
         "guest_error": {
@@ -154,6 +166,9 @@
             },
             "user_not_found": {
                 "name": "L'utilisateur est introuvable."
+            },
+            "usage_limit_reached": {
+                "name": "La limite d'utilisation pour ce jeton a été atteinte."
             }
         }   
     }

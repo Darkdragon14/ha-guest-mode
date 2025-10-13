@@ -131,6 +131,18 @@
             },
             "energy_dashboard": {
                 "name": "Energie dashboard"
+            },
+            "first_used": {
+                "name": "Eerste Gebruik"
+            },
+            "last_used": {
+                "name": "Laatste Gebruik"
+            },
+            "times_used": {
+                "name": "Aantal Keer Gebruikt"
+            },
+            "usage_limit": {
+                "name": "Gebruikslimiet"
             }
         },
         "guest_error": {
@@ -154,6 +166,9 @@
             },
             "user_not_found": {
                 "name": "Geen gebruiker gevonden"
+            },
+            "usage_limit_reached": {
+                "name": "De gebruikslimiet voor deze token is bereikt."
             }
         }
     }

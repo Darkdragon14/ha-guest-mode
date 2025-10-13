@@ -131,6 +131,18 @@
             },
             "energy_dashboard": {
                 "name": "Cruscotto energetico"
+            },
+            "first_used": {
+                "name": "Primo Utilizzo"
+            },
+            "last_used": {
+                "name": "Ultimo Utilizzo"
+            },
+            "times_used": {
+                "name": "Numero di Utilizzi"
+            },
+            "usage_limit": {
+                "name": "Limite di utilizzo"
             }
         },
         "guest_error": {
@@ -154,6 +166,9 @@
             },
             "user_not_found": {
                 "name": "L'utente non è stato trovato."
+            },
+            "usage_limit_reached": {
+                "name": "Il limite di utilizzo per questo token è stato raggiunto."
             }
         }
     }
