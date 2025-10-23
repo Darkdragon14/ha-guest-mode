@@ -16,7 +16,6 @@ from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
 from .const import DOMAIN, DATABASE, DEST_PATH_SCRIPT_JS, SOURCE_PATH_SCRIPT_JS, SCRIPT_JS
 from .services import async_register_services
-
 from .migrations import migration
 
 CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
@@ -32,6 +31,8 @@ def get_version():
 VERSION = get_version()
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    hass.data.setdefault(DOMAIN, {})
+
     await async_register_services(hass)
 
     websocket_api.async_register_command(hass, list_users)
@@ -65,6 +66,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             uid TEXT,
             is_never_expire BOOLEAN,
             dashboard TEXT,
+            dashboards TEXT,
             first_used TEXT,
             last_used TEXT,
             times_used INTEGER,
@@ -80,7 +82,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     connection.commit()
     connection.close()
-
     source_path = hass.config.path(SOURCE_PATH_SCRIPT_JS)
     dest_dir = hass.config.path(DEST_PATH_SCRIPT_JS)
     dest_path = os.path.join(dest_dir, SCRIPT_JS)

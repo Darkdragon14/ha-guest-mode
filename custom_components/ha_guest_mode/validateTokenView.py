@@ -1,5 +1,6 @@
 import jwt
 import sqlite3
+from collections.abc import Mapping
 from datetime import timedelta, datetime
 from aiohttp import web
 from typing import Any
@@ -24,7 +25,7 @@ class ValidateTokenView(HomeAssistantView):
         key = f"component.{DOMAIN}.entity.guest_error.{label}.name"
         return translations.get(key, f"Missing translation: {key}")
 
-    async def _restore_managed_user(self, cursor, token_row: sqlite3.Row):
+    async def _restore_managed_user(self, cursor, token_row: Mapping[str, Any]):
         available_groups = []
         store = getattr(self.hass.auth, "_store", None)
         if store is not None:
@@ -94,6 +95,8 @@ class ValidateTokenView(HomeAssistantView):
         if result is None:
             return web.Response(status=404, text=self.get_translations(translations, "token_not_found"))
 
+        result = dict(result)
+
         try:
             first_used = result["first_used"]
             times_used = result["times_used"] or 0
@@ -150,7 +153,22 @@ class ValidateTokenView(HomeAssistantView):
         else:
             token = "" 
 
-        dashboard = result["dashboard"]
+        dashboards_value = result.get("dashboards") if "dashboards" in result.keys() else None
+        dashboards_list: list[str] = []
+        if dashboards_value:
+            try:
+                parsed_dashboards = json.loads(dashboards_value)
+                if isinstance(parsed_dashboards, list):
+                    dashboards_list = [item for item in parsed_dashboards if isinstance(item, str) and item]
+            except (ValueError, TypeError):
+                dashboards_list = []
+
+        if not dashboards_list:
+            fallback_dashboard = result.get("dashboard")
+            if fallback_dashboard:
+                dashboards_list = [fallback_dashboard]
+
+        dashboard = dashboards_list[0] if dashboards_list else "lovelace"
         if dashboard and dashboard.startswith('/'):
             dashboard = dashboard[1:]
         

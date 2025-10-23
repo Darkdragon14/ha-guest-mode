@@ -57,6 +57,10 @@
                 "dashboard": {
                     "name": "Tablero",
                     "description": "La ruta de la URL del tablero deseado (por ejemplo, 'lovelace-guest'). No incluya la barra inclinada inicial."
+                },
+                "dashboards": {
+                    "name": "Tableros / Vistas",
+                    "description": "Tableros o vistas que se mostrarán al usuario invitado."
                 }
             }
         }
@@ -126,6 +130,9 @@
             "dashboard": {
                 "name": "Tablero (opcional)"
             },
+            "dashboards": {
+                "name": "Tableros / Vistas"
+            },
             "default_dashboard": {
                 "name": "Tablero predeterminado"
             },
@@ -164,6 +171,9 @@
             },
             "invalid_usage_limit": {
                 "name": "El límite de uso debe ser un número"
+            },
+            "remove_dashboard": {
+                "name": "Eliminar"
             }
         },
         "guest_error": {

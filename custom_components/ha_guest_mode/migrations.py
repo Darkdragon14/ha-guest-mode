@@ -50,6 +50,9 @@ def migration(cursor):
     if "dashboard" not in columns:
         cursor.execute("ALTER TABLE tokens ADD COLUMN dashboard TEXT")
 
+    if "dashboards" not in columns:
+        cursor.execute("ALTER TABLE tokens ADD COLUMN dashboards TEXT")
+
     if "first_used" not in columns:
         cursor.execute("ALTER TABLE tokens ADD COLUMN first_used TEXT")
 

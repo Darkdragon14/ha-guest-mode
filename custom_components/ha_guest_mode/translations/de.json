@@ -57,6 +57,10 @@
                 "dashboard": {
                     "name": "Dashboard",
                     "description": "Der URL-Pfad des gewünschten Dashboards (z. B. 'lovelace-guest'). Fügen Sie den führenden Schrägstrich nicht hinzu."
+                },
+                "dashboards": {
+                    "name": "Dashboards / Ansichten",
+                    "description": "Dashboards oder Ansichten, die für den Gastbenutzer sichtbar sein sollen."
                 }
             }
         }
@@ -126,6 +130,9 @@
             "dashboard": {
                 "name": "Dashboard (optional)"
             },
+            "dashboards": {
+                "name": "Dashboards / Ansichten"
+            },
             "default_dashboard": {
                 "name": "Standard-Dashboard"
             },
@@ -164,6 +171,9 @@
             },
             "invalid_usage_limit": {
                 "name": "Nutzungslimit muss eine Zahl sein"
+            },
+            "remove_dashboard": {
+                "name": "Entfernen"
             }
         },
         "guest_error": {

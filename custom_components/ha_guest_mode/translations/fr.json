@@ -57,6 +57,10 @@
                 "dashboard": {
                     "name": "Tableau de bord",
                     "description": "Le chemin de l'URL du tableau de bord souhaité (par exemple, 'lovelace-guest'). N'incluez pas le slash au début."
+                },
+                "dashboards": {
+                    "name": "Tableaux de bord / vues",
+                    "description": "Tableaux de bord ou vues à rendre visibles pour l'utilisateur invité."
                 }
             }
         }
@@ -126,6 +130,9 @@
             "dashboard": {
                 "name": "Tableau de bord (optionnel)"
             },
+            "dashboards": {
+                "name": "Tableaux de bord / vues"
+            },
             "default_dashboard": {
                 "name": "Tableau de bord par défaut"
             },
@@ -164,6 +171,9 @@
             },
             "invalid_usage_limit": {
                 "name": "La limite d'utilisation doit être un nombre"
+            },
+            "remove_dashboard": {
+                "name": "Supprimer"
             }
         },
         "guest_error": {

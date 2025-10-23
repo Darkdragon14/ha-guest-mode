@@ -55,7 +55,8 @@ class GuestModePanel extends LitElement {
       urls: { type: Object },
       dashboards: { type: Array },
       dashboard: { type: String },
-      dashboards: { type: Array },
+      selectedDashboards: { type: Array },
+      dashboardSelection: { type: String },
       copyLinkMode: { type: Boolean },
       groups: { type: Array },
       createUser: { type: Boolean },
@@ -74,6 +75,8 @@ class GuestModePanel extends LitElement {
     this.urls = {};
     this.dashboards = [];
     this.dashboard = '';
+    this.selectedDashboards = [];
+    this.dashboardSelection = '';
     this.copyLinkMode = false;
     this.groups = [];
     this.createUser = false;
@@ -189,6 +192,10 @@ class GuestModePanel extends LitElement {
         });
         user.tokens.filter(token => token.type === 'long_lived_access_token' && token.expiration !== 315360000)
           .forEach(token => {
+            const dashboards = Array.isArray(token.dashboards) ? token.dashboards.filter(Boolean) : [];
+            const displayDashboards = dashboards.length
+              ? dashboards
+              : [token.dashboard || 'lovelace'];
             this.tokens.push({
               id: token.id,
               name: token.name,
@@ -199,7 +206,7 @@ class GuestModePanel extends LitElement {
               startDate: token.isNeverExpire ? 'N/A' : new Date(token.start_date).toLocaleString(userLocale).replace(/:\d{2}$/, ""),
               uid: token.uid,
               isNeverExpire: token.isNeverExpire,
-              dashboard: token.dashboard || 'lovelace',
+              dashboards: displayDashboards,
               first_used: token.first_used ? new Date(token.first_used).toLocaleString(userLocale).replace(/:\d{2}$/, "") : this.translate("never"),
               last_used: token.last_used ? new Date(token.last_used).toLocaleString(userLocale).replace(/:\d{2}$/, "") : this.translate("never"),
               times_used: token.times_used || 0,
@@ -236,10 +243,15 @@ class GuestModePanel extends LitElement {
     this.createUser = e.target.checked;
     if (this.createUser) {
       this.user = null;
+      if (this.dashboard && !this.selectedDashboards.includes(this.dashboard)) {
+        this.selectedDashboards = [...this.selectedDashboards, this.dashboard];
+      }
     }
     if (!this.createUser) {
       this.newUserName = '';
       this.selectedGroup = '';
+      this.selectedDashboards = [];
+      this.dashboardSelection = '';
     }
   }
 
@@ -285,6 +297,49 @@ class GuestModePanel extends LitElement {
 
   dashboardChanged(e) {
     this.dashboard = e.detail.value;
+    if (this.createUser && this.dashboard && !this.selectedDashboards.includes(this.dashboard)) {
+      this.selectedDashboards = [...this.selectedDashboards, this.dashboard];
+    }
+  }
+
+  dashboardSelected(e) {
+    const value = e.detail.value;
+    if (!value) {
+      return;
+    }
+    const selections = [];
+    if (value.includes('/')) {
+      selections.push(value);
+    } else {
+      selections.push(value);
+      const relatedViews = (this.dashboards || [])
+        .filter(item => item.url_path && item.url_path.startsWith(`${value}/`))
+        .map(item => item.url_path);
+      if (relatedViews.length) {
+        selections.push(...relatedViews);
+      }
+    }
+    const updated = [...this.selectedDashboards];
+    selections.forEach(selection => {
+      if (selection && !updated.includes(selection)) {
+        updated.push(selection);
+      }
+    });
+    this.selectedDashboards = updated;
+    this.dashboardSelection = '';
+    e.target.value = '';
+  }
+
+  removeSelectedDashboard(path) {
+    this.selectedDashboards = this.selectedDashboards.filter(item => item !== path);
+    if (this.dashboard === path) {
+      this.dashboard = this.selectedDashboards[0] || '';
+    }
+  }
+
+  getDashboardTitle(path) {
+    const entry = this.dashboards.find(d => d.url_path === path);
+    return entry ? entry.title : path;
   }
 
   groupChanged(e) {
@@ -310,6 +365,13 @@ class GuestModePanel extends LitElement {
 
     if (this.dashboard) {
       payload.dashboard = this.dashboard;
+    }
+
+    if (this.createUser && this.selectedDashboards.length) {
+      const selections = this.selectedDashboards.includes(this.dashboard)
+        ? this.selectedDashboards
+        : [this.dashboard, ...this.selectedDashboards].filter(Boolean);
+      payload.dashboards = Array.from(new Set(selections));
     }
 
     if (!this.name) {
@@ -351,6 +413,11 @@ class GuestModePanel extends LitElement {
 
     this.hass.callWS(payload).then(() => {
       this.fetchUsers();
+      this.selectedDashboards = [];
+      this.dashboardSelection = '';
+      if (!this.createUser) {
+        this.dashboard = '';
+      }
     }).catch(err => {
       this.alertType="warning";
       let messageDisplay = err.message;
@@ -664,6 +731,40 @@ class GuestModePanel extends LitElement {
                 @value-changed=${this.dashboardChanged}
               >
               </ha-combo-box>
+
+              ${this.createUser ? html`
+                <div class="dashboard-picker">
+                  <ha-combo-box
+                    .items=${this.dashboards}
+                    .itemLabelPath=${'title'}
+                    .itemValuePath=${'url_path'}
+                    .value=${this.dashboardSelection || ''}
+                    .label=${this.translate("dashboards")}
+                    @value-changed=${this.dashboardSelected}
+                  >
+                  </ha-combo-box>
+                  ${this.selectedDashboards.length
+                    ? html`
+                        <div class="selected-dashboards">
+                          ${this.selectedDashboards.map(path => html`
+                            <div class="selected-dashboard">
+                              <span>${this.getDashboardTitle(path)}</span>
+                              <button
+                                type="button"
+                                class="selected-dashboard__remove"
+                                @click=${() => this.removeSelectedDashboard(path)}
+                                title=${this.translate("remove_dashboard")}
+                                aria-label=${this.translate("remove_dashboard")}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          `)}
+                        </div>
+                      `
+                    : null}
+                </div>
+              ` : null}
               <ha-textfield
                 .label=${this.translate("usage_limit")}
                 type="number"
@@ -767,8 +868,8 @@ class GuestModePanel extends LitElement {
             html`
             <div class="cards-container">
               ${this.tokens.map(token => {
-                const dashboard = this.dashboards.find(d => d.url_path === token.dashboard);
-                const dashboardTitle = dashboard ? dashboard.title : token.dashboard;
+                const dashboardTitles = (token.dashboards || []).map(path => this.getDashboardTitle(path));
+                const dashboardsDisplay = dashboardTitles.length ? dashboardTitles.join(', ') : this.getDashboardTitle('lovelace');
                 return html`
                 <ha-card class="token-card">
                   <div class="card-content-list">
@@ -781,7 +882,7 @@ class GuestModePanel extends LitElement {
                         ${this.translate("expiration_date")}: ${token.endDate} <br>
                       `}
                       ${this.translate("used")}: ${token.isUsed ? this.translate("yes").toLowerCase() : this.translate("no").toLowerCase() } <br>
-                      ${this.translate("dashboard")}: ${dashboardTitle} <br>
+                      ${this.translate("dashboards")}: ${dashboardsDisplay} <br>
                       ${this.translate("first_used")}: ${token.first_used} <br>
                       ${this.translate("last_used")}: ${token.last_used} <br>
                       ${this.translate("times_used")}: ${token.times_used}${token.usage_limit ? ` / ${token.usage_limit}` : ''} <br>
@@ -905,9 +1006,41 @@ class GuestModePanel extends LitElement {
         flex: 1 1 auto; /* Permet aux éléments de s’adapter et d’occuper un espace égal */
         min-width: 150px; /* Assure que les petits écrans n'affichent pas trop d'éléments collés */
       }
+      .dashboard-picker {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
       ha-combo-box {
         padding: 8px 0;
         width: auto;
+      }
+      .selected-dashboards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .selected-dashboard {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 16px;
+        background-color: var(--secondary-background-color, rgba(0, 0, 0, 0.05));
+      }
+      .selected-dashboard__remove {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 1;
+        color: var(--primary-text-color);
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
       .checkbox-row {
         display: flex;

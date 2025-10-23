@@ -57,6 +57,10 @@
                 "dashboard": {
                     "name": "Cruscotto",
                     "description": "Il percorso URL del cruscotto desiderato (ad es. 'lovelace-guest'). Non includere la barra iniziale."
+                },
+                "dashboards": {
+                    "name": "Cruscotti / viste",
+                    "description": "Cruscotti o viste che devono essere visibili all'utente ospite."
                 }
             }
         }
@@ -126,6 +130,9 @@
             "dashboard": {
                 "name": "Cruscotto (opzionale)"
             },
+            "dashboards": {
+                "name": "Cruscotti / viste"
+            },
             "default_dashboard": {
                 "name": "Cruscotto predefinito"
             },
@@ -164,6 +171,9 @@
             },
             "invalid_usage_limit": {
                 "name": "Il limite di utilizzo deve essere un numero"
+            },
+            "remove_dashboard": {
+                "name": "Rimuovi"
             }
         },
         "guest_error": {
