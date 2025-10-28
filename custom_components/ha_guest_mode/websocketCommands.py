@@ -1,4 +1,3 @@
-import logging
 import sqlite3
 from datetime import timedelta, datetime, timezone
 from typing import Any
@@ -17,73 +16,6 @@ from homeassistant.helpers.network import NoURLAvailableError, get_url
 from homeassistant.helpers import config_validation as cv
 
 from .const import DATABASE
-from .lovelace_visibility import async_add_user_to_lovelace, async_remove_user_from_lovelace
-
-LOGGER = logging.getLogger(__name__)
-
-
-def _clean_dashboard_list(values: list[str] | None) -> list[str]:
-    if not values:
-        return []
-    cleaned: list[str] = []
-    for item in values:
-        if not isinstance(item, str):
-            continue
-        normalized = item.strip()
-        if not normalized or normalized in cleaned:
-            continue
-        cleaned.append(normalized)
-    return cleaned
-
-
-def _deserialize_dashboards(raw: str | None) -> list[str]:
-    if not raw:
-        return []
-    try:
-        decoded = json.loads(raw)
-    except (ValueError, TypeError):
-        return []
-    if isinstance(decoded, list):
-        return _clean_dashboard_list(decoded)
-    return []
-
-
-def _collect_token_selections(row: Any) -> list[str]:
-    data = dict(row) if not isinstance(row, dict) else row
-    dashboards = _deserialize_dashboards(data.get("dashboards"))
-    if dashboards:
-        return dashboards
-    dashboard = data.get("dashboard")
-    if dashboard:
-        return _clean_dashboard_list([dashboard])
-    return []
-
-
-def _selection_is_covered(selection: str, remaining: set[str]) -> bool:
-    if selection in remaining:
-        return True
-    if "/" in selection:
-        dashboard, _view = selection.split("/", 1)
-        return dashboard in remaining
-    return any(item.startswith(f"{selection}/") for item in remaining)
-
-
-def _selections_to_remove(
-    cursor: sqlite3.Cursor, user_id: str, token_id: int, selections: list[str]
-) -> list[str]:
-    if not selections or not user_id:
-        return []
-    cursor.execute(
-        "SELECT dashboards, dashboard FROM tokens WHERE userId = ? AND id != ?",
-        (user_id, token_id),
-    )
-    rows = cursor.fetchall()
-    remaining: set[str] = set()
-    for row in rows:
-        remaining.update(_collect_token_selections(row))
-    if not remaining:
-        return selections
-    return [selection for selection in selections if not _selection_is_covered(selection, remaining)]
 
 
 async def _async_get_all_groups(hass: HomeAssistant):
@@ -140,8 +72,6 @@ async def list_users(
     active_tokens = []
     for row in token_rows:
         token = dict(row)
-        dashboards_list = _deserialize_dashboards(token.get("dashboards"))
-        token["dashboards_list"] = dashboards_list
         is_never_expire = bool(token.get("is_never_expire"))
         end_date_str = token.get("end_date")
 
@@ -155,12 +85,6 @@ async def list_users(
                         refresh_token = hass.auth.async_get_refresh_token(refresh_token_id)
                         if refresh_token:
                             hass.auth.async_remove_refresh_token(refresh_token)
-
-                selections = dashboards_list or _clean_dashboard_list([token.get("dashboard")])
-                to_remove = _selections_to_remove(cursor, token.get("userId"), token["id"], selections)
-                if to_remove:
-                    with suppress(Exception):
-                        await async_remove_user_from_lovelace(hass, to_remove, token.get("userId"))
 
                 cursor.execute('DELETE FROM tokens WHERE id = ?', (token["id"],))
                 await remove_managed_user_if_needed(token["userId"], bool(token.get("managed_user")))
@@ -189,13 +113,6 @@ async def list_users(
                         group_ids = [gid for gid in parsed if gid in available_groups]
                 except (ValueError, TypeError):
                     group_ids = []
-
-            default_group = "system-users"
-            if len(group_ids) > 1 and default_group in group_ids:
-                group_ids = [gid for gid in group_ids if gid != default_group]
-            if not group_ids and default_group in available_groups:
-                group_ids.append(default_group)
-
             group_ids = list(dict.fromkeys(group_ids))  # preserve order, ensure unique
 
             user_name = token.get("managed_user_name") or token.get("token_name") or "Guest"
@@ -245,7 +162,6 @@ async def list_users(
                     "uid": token["uid"],
                     "isNeverExpire": is_never_expire,
                     "dashboard": token["dashboard"],
-                    "dashboards": token.get("dashboards_list", []),
                     "first_used": token["first_used"],
                     "last_used": token["last_used"],
                     "times_used": token["times_used"] or 0,
@@ -298,11 +214,10 @@ async def list_groups(
         vol.Optional("expirationDate"): int, # minutes
         vol.Optional("isNeverExpire", default=False): bool,
         vol.Optional("dashboard"): str,
-        vol.Optional("dashboards"): vol.All(cv.ensure_list, [cv.string]),
         vol.Optional("usage_limit"): vol.Any(vol.Coerce(int), None),
         vol.Optional("create_user", default=False): bool,
         vol.Optional("new_user_name"): str,
-        vol.Optional("group_id"): str,
+        vol.Optional("group_ids"): vol.All(cv.ensure_list, [cv.string]),
     }
 )
 @websocket_api.require_admin
@@ -314,8 +229,7 @@ async def create_token(
         is_never_expire = msg.get("isNeverExpire", False)
         startDate_iso = None
         endDate_iso = None
-        dashboards_list = _clean_dashboard_list(msg.get("dashboards"))
-        primary_dashboard = dashboards_list[0] if dashboards_list else (msg.get("dashboard") or "lovelace")
+        dashboard = msg.get("dashboard", "lovelace")
         usage_limit = msg.get("usage_limit")
         create_user = msg.get("create_user", False)
         user_id = msg.get("user_id")
@@ -354,18 +268,12 @@ async def create_token(
                 return
 
             groups = await _async_get_all_groups(hass)
-            default_group_id = next((group.id for group in groups if group.id == "system-users"), None)
-            if default_group_id is None and groups:
-                default_group_id = groups[0].id
-
-            requested_group_id = msg.get("group_id")
             valid_group_ids = {group.id for group in groups}
-            group_ids: list[str] = []
-
-            if requested_group_id and requested_group_id in valid_group_ids:
-                group_ids.append(requested_group_id)
-            elif default_group_id:
-                group_ids.append(default_group_id)
+            requested_group_ids = msg.get("group_ids") or []
+            if isinstance(requested_group_ids, str):
+                requested_group_ids = [requested_group_ids]
+            group_ids = [gid for gid in requested_group_ids if gid in valid_group_ids]
+            group_ids = list(dict.fromkeys(group_ids))
 
             try:
                 user = await hass.auth.async_create_user(new_user_name, group_ids=group_ids or None)
@@ -404,44 +312,33 @@ async def create_token(
         
         tokenGenerated = jwt.encode(token_payload, private_key, algorithm="RS256")
 
-        dashboards_json = json.dumps(dashboards_list) if dashboards_list else None
-
         query = """
-            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid, is_never_expire, dashboard, dashboards, usage_limit, managed_user, managed_user_name, managed_user_groups)
-            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid, is_never_expire, dashboard, usage_limit, managed_user, managed_user_name, managed_user_groups)
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         conn = sqlite3.connect(hass.config.path(DATABASE))
-        try:
-            cursor = conn.cursor()
-            cursor.execute(
-                query,
-                (
-                    user_id,
-                    msg["name"],
-                    startDate_iso,
-                    endDate_iso,
-                    "",
-                    "",
-                    tokenGenerated,
-                    uid,
-                    is_never_expire,
-                    primary_dashboard,
-                    dashboards_json,
-                    usage_limit,
-                    1 if managed_user else 0,
-                    managed_user_name,
-                    managed_user_groups,
-                ),
-            )
-            conn.commit()
-        finally:
-            conn.close()
-
-        if dashboards_list:
-            try:
-                await async_add_user_to_lovelace(hass, dashboards_list, user_id)
-            except Exception as err:
-                LOGGER.warning("Failed to update Lovelace visibility for user %s: %s", user_id, err)
+        cursor = conn.cursor()
+        cursor.execute(
+            query,
+            (
+                user_id,
+                msg["name"],
+                startDate_iso,
+                endDate_iso,
+                "",
+                "",
+                tokenGenerated,
+                uid,
+                is_never_expire,
+                dashboard,
+                usage_limit,
+                1 if managed_user else 0,
+                managed_user_name,
+                managed_user_groups,
+            ),
+        )
+        conn.commit()
+        conn.close()
 
         await hass.services.async_call("homeassistant", "update_entity", {"entity_id": "image.guest_qr_code"}, blocking=True)
 
@@ -468,21 +365,13 @@ async def delete_token(
     conn = sqlite3.connect(hass.config.path(DATABASE))
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute('SELECT token_ha_id, userId, managed_user, dashboards, dashboard FROM tokens WHERE id = ?', (msg["token_id"],))
+    cursor.execute('SELECT token_ha_id, userId, managed_user FROM tokens WHERE id = ?', (msg["token_id"],))
     token = cursor.fetchone()
 
     if token is None:
         conn.close()
         connection.send_result(msg["id"], False)
         return
-
-    selections = _collect_token_selections(token)
-    to_remove = _selections_to_remove(cursor, token["userId"], msg["token_id"], selections)
-    if to_remove:
-        try:
-            await async_remove_user_from_lovelace(hass, to_remove, token["userId"])
-        except Exception as err:
-            LOGGER.warning("Failed to remove Lovelace visibility for user %s: %s", token["userId"], err)
 
     if token["token_ha_id"]:
         try:

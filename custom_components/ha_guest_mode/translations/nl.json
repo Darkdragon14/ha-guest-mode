@@ -57,10 +57,6 @@
                 "dashboard": {
                     "name": "Dashboard",
                     "description": "Het URL-pad van het gewenste dashboard (bijv. 'lovelace-guest'). Voeg de voorloop-slash niet toe."
-                },
-                "dashboards": {
-                    "name": "Dashboards / weergaven",
-                    "description": "Dashboards of weergaven die zichtbaar moeten zijn voor de gastgebruiker."
                 }
             }
         }
@@ -130,9 +126,6 @@
             "dashboard": {
                 "name": "Dashboard (optioneel)"
             },
-            "dashboards": {
-                "name": "Dashboards / weergaven"
-            },
             "default_dashboard": {
                 "name": "Standaard dashboard"
             },
@@ -158,7 +151,10 @@
                 "name": "Naam van de gastgebruiker"
             },
             "assign_group": {
-                "name": "Extra groep (optioneel)"
+                "name": "Extra groepen (optioneel)"
+            },
+            "remove_group": {
+                "name": "Verwijderen"
             },
             "missing_token_name": {
                 "name": "Tokennaam is verplicht"
@@ -171,9 +167,6 @@
             },
             "invalid_usage_limit": {
                 "name": "Gebruikslimiet moet een getal zijn"
-            },
-            "remove_dashboard": {
-                "name": "Verwijderen"
             }
         },
         "guest_error": {

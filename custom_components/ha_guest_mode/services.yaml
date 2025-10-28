@@ -22,9 +22,3 @@ create_token:
       example: "lovelace-guest"
       selector:
         text: {}
-    dashboards:
-      example:
-        - "lovelace/overview"
-        - "energy/solar"
-      selector:
-        object: {}

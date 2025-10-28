@@ -66,7 +66,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             uid TEXT,
             is_never_expire BOOLEAN,
             dashboard TEXT,
-            dashboards TEXT,
             first_used TEXT,
             last_used TEXT,
             times_used INTEGER,

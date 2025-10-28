@@ -57,10 +57,6 @@
                 "dashboard": {
                     "name": "Dashboard",
                     "description": "The URL path of the desired dashboard (e.g., 'lovelace-guest'). Do not include the leading slash."
-                },
-                "dashboards": {
-                    "name": "Dashboards / Views",
-                    "description": "Dashboards or views that should be visible when the guest user signs in."
                 }
             }
         }
@@ -130,9 +126,6 @@
             "dashboard": {
                 "name": "Dashboard (optional)"
             },
-            "dashboards": {
-                "name": "Dashboards / Views"
-            },
             "default_dashboard": {
                 "name": "Default Dashboard"
             },
@@ -158,7 +151,10 @@
                 "name": "Guest user name"
             },
             "assign_group": {
-                "name": "Additional group (optional)"
+                "name": "Additional groups (optional)"
+            },
+            "remove_group": {
+                "name": "Remove"
             },
             "missing_token_name": {
                 "name": "Token name is required"
@@ -171,9 +167,6 @@
             },
             "invalid_usage_limit": {
                 "name": "Usage limit must be a number"
-            },
-            "remove_dashboard": {
-                "name": "Remove"
             }
         },
         "guest_error": {

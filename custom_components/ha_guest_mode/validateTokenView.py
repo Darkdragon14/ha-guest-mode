@@ -1,6 +1,5 @@
 import jwt
 import sqlite3
-from collections.abc import Mapping
 from datetime import timedelta, datetime
 from aiohttp import web
 from typing import Any
@@ -25,7 +24,7 @@ class ValidateTokenView(HomeAssistantView):
         key = f"component.{DOMAIN}.entity.guest_error.{label}.name"
         return translations.get(key, f"Missing translation: {key}")
 
-    async def _restore_managed_user(self, cursor, token_row: Mapping[str, Any]):
+    async def _restore_managed_user(self, cursor, token_row: sqlite3.Row):
         available_groups = []
         store = getattr(self.hass.auth, "_store", None)
         if store is not None:
@@ -52,12 +51,6 @@ class ValidateTokenView(HomeAssistantView):
                     group_ids = [gid for gid in parsed if gid in available_group_ids]
             except (ValueError, TypeError):
                 group_ids = []
-
-        default_group = "system-users"
-        if len(group_ids) > 1 and default_group in group_ids:
-            group_ids = [gid for gid in group_ids if gid != default_group]
-        if not group_ids and default_group in available_group_ids:
-            group_ids.append(default_group)
 
         group_ids = list(dict.fromkeys(group_ids))
 
@@ -94,8 +87,6 @@ class ValidateTokenView(HomeAssistantView):
         
         if result is None:
             return web.Response(status=404, text=self.get_translations(translations, "token_not_found"))
-
-        result = dict(result)
 
         try:
             first_used = result["first_used"]
@@ -153,22 +144,7 @@ class ValidateTokenView(HomeAssistantView):
         else:
             token = "" 
 
-        dashboards_value = result.get("dashboards") if "dashboards" in result.keys() else None
-        dashboards_list: list[str] = []
-        if dashboards_value:
-            try:
-                parsed_dashboards = json.loads(dashboards_value)
-                if isinstance(parsed_dashboards, list):
-                    dashboards_list = [item for item in parsed_dashboards if isinstance(item, str) and item]
-            except (ValueError, TypeError):
-                dashboards_list = []
-
-        if not dashboards_list:
-            fallback_dashboard = result.get("dashboard")
-            if fallback_dashboard:
-                dashboards_list = [fallback_dashboard]
-
-        dashboard = dashboards_list[0] if dashboards_list else "lovelace"
+        dashboard = result["dashboard"]
         if dashboard and dashboard.startswith('/'):
             dashboard = dashboard[1:]
         
