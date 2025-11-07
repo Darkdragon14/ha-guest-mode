@@ -61,3 +61,12 @@ def migration(cursor):
 
     if "usage_limit" not in columns:
         cursor.execute("ALTER TABLE tokens ADD COLUMN usage_limit INTEGER")
+
+    if "managed_user" not in columns:
+        cursor.execute("ALTER TABLE tokens ADD COLUMN managed_user BOOLEAN DEFAULT 0")
+
+    if "managed_user_name" not in columns:
+        cursor.execute("ALTER TABLE tokens ADD COLUMN managed_user_name TEXT")
+
+    if "managed_user_groups" not in columns:
+        cursor.execute("ALTER TABLE tokens ADD COLUMN managed_user_groups TEXT")

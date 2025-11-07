@@ -10,6 +10,7 @@ We recognize contributions of all kinds, including but not limited to:
 | [@kcsoft](https://github.com/kcsoft)              | 🙏 Original project inspiration |
 | [@physje](https://github.com/physje)              | 🌍 Translation (Dutch) |
 | [@autohhacs](https://github.com/autohhacs)        | 💡Propose many ideas (see [this issue](https://github.com/Darkdragon14/ha-guest-mode/issues/15)) |
+| [@xBelladonna](https://github.com/xBelladonna)    | 💡🧪 Contributed to the temporary user feature (see [this issue](https://github.com/Darkdragon14/ha-guest-mode/issues/36)) |
 | [@Gronsak](https://github.com/Gronsak)            | 💡 Add an option for a simple copy link mode |
 | [@shorty89](https://github.com/shorty89)          | 💡 Display a Qr code |
 | [@19stth85](https://github.com/19stth85)          | 💡 Display a Qr code in entity and add action to create token |

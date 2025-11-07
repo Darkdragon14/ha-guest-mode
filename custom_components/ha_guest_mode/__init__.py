@@ -11,12 +11,11 @@ from homeassistant.components import websocket_api
 from homeassistant.components.panel_custom import async_register_panel
 from homeassistant.helpers import config_validation as cv
 
-from .websocketCommands import list_users, create_token, delete_token, get_path_to_login, get_urls, get_panels, get_copy_link_mode
+from .websocketCommands import list_users, list_groups, create_token, delete_token, get_path_to_login, get_urls, get_panels, get_copy_link_mode
 from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
 from .const import DOMAIN, DATABASE, DEST_PATH_SCRIPT_JS, SOURCE_PATH_SCRIPT_JS, SCRIPT_JS
 from .services import async_register_services
-
 from .migrations import migration
 
 CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
@@ -32,9 +31,12 @@ def get_version():
 VERSION = get_version()
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    hass.data.setdefault(DOMAIN, {})
+
     await async_register_services(hass)
 
     websocket_api.async_register_command(hass, list_users)
+    websocket_api.async_register_command(hass, list_groups)
     websocket_api.async_register_command(hass, create_token)
     websocket_api.async_register_command(hass, delete_token)
     websocket_api.async_register_command(hass, get_path_to_login)
@@ -50,24 +52,35 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     connection = sqlite3.connect(hass.config.path(DATABASE))
     cursor = connection.cursor()
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS tokens (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId TEXT NOT NULL,
-        token_name TEXT NOT NULL,
-        start_date TEXT NOT NULL,
-        end_date TEXT NOT NULL,
-        token_ha_id INTERGER,
-        token_ha TEXT,
-        token_ha_guest_mode TEXT NOT NULL
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            userId TEXT NOT NULL,
+            token_name TEXT NOT NULL,
+            start_date TEXT,
+            end_date TEXT,
+            token_ha_id TEXT,
+            token_ha TEXT,
+            token_ha_guest_mode TEXT NOT NULL,
+            uid TEXT,
+            is_never_expire BOOLEAN,
+            dashboard TEXT,
+            first_used TEXT,
+            last_used TEXT,
+            times_used INTEGER,
+            usage_limit INTEGER,
+            managed_user BOOLEAN DEFAULT 0,
+            managed_user_name TEXT,
+            managed_user_groups TEXT
+        )
+        """
     )
-    """)
 
     migration(cursor)
 
     connection.commit()
     connection.close()
-
     source_path = hass.config.path(SOURCE_PATH_SCRIPT_JS)
     dest_dir = hass.config.path(DEST_PATH_SCRIPT_JS)
     dest_path = os.path.join(dest_dir, SCRIPT_JS)

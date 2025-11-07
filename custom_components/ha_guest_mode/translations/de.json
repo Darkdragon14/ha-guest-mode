@@ -143,6 +143,30 @@
             },
             "usage_limit": {
                 "name": "Nutzungslimit"
+            },
+            "create_new_user": {
+                "name": "Dedizierten Benutzer erstellen"
+            },
+            "new_user_name": {
+                "name": "Name des Gastbenutzers"
+            },
+            "assign_group": {
+                "name": "Zusätzliche Gruppen (optional)"
+            },
+            "remove_group": {
+                "name": "Entfernen"
+            },
+            "missing_token_name": {
+                "name": "Token-Name ist erforderlich"
+            },
+            "missing_user_name": {
+                "name": "Name des Gastbenutzers ist erforderlich"
+            },
+            "missing_user": {
+                "name": "Wählen Sie einen Benutzer aus"
+            },
+            "invalid_usage_limit": {
+                "name": "Nutzungslimit muss eine Zahl sein"
             }
         },
         "guest_error": {

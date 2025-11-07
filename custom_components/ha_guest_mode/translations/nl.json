@@ -143,6 +143,30 @@
             },
             "usage_limit": {
                 "name": "Gebruikslimiet"
+            },
+            "create_new_user": {
+                "name": "Aparte gebruiker aanmaken"
+            },
+            "new_user_name": {
+                "name": "Naam van de gastgebruiker"
+            },
+            "assign_group": {
+                "name": "Extra groepen (optioneel)"
+            },
+            "remove_group": {
+                "name": "Verwijderen"
+            },
+            "missing_token_name": {
+                "name": "Tokennaam is verplicht"
+            },
+            "missing_user_name": {
+                "name": "Naam van de gastgebruiker is verplicht"
+            },
+            "missing_user": {
+                "name": "Selecteer een gebruiker"
+            },
+            "invalid_usage_limit": {
+                "name": "Gebruikslimiet moet een getal zijn"
             }
         },
         "guest_error": {
