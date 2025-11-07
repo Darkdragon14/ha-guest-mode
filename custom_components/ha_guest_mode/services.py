@@ -28,7 +28,18 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
             break
     
     if user_id is None:
-        raise vol.Invalid(translations.get("component.ha_guest_mode.config.error.user_not_found").format(username))
+        user_not_found_template = translations.get(
+            "component.ha_guest_mode.config.error.user_not_found"
+        )
+
+        if isinstance(user_not_found_template, str):
+            user_not_found_message = user_not_found_template
+        else:
+            user_not_found_message = "User not found"
+
+        user_not_found_message = f"{user_not_found_message}: {username}"
+
+        raise vol.Invalid(user_not_found_message)
 
     if expiration_duration is not None and expiration_date is not None:
         raise vol.Invalid(translations.get("component.ha_guest_mode.config.error.expiration_exclusive"))
