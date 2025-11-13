@@ -105,6 +105,7 @@ async def list_users(
         available_groups = {group.id: group for group in await _async_get_all_groups(hass)}
         for token in managed_tokens_missing_user:
             stored_groups = token.get("managed_user_groups")
+            stored_local_only = token.get("managed_user_local_only")
             group_ids: list[str] = []
             if stored_groups:
                 try:
@@ -115,21 +116,35 @@ async def list_users(
                     group_ids = []
             group_ids = list(dict.fromkeys(group_ids))  # preserve order, ensure unique
 
+            local_only_flag = None
+            if stored_local_only is not None:
+                local_only_flag = bool(stored_local_only)
+
             user_name = token.get("managed_user_name") or token.get("token_name") or "Guest"
-            new_user = await hass.auth.async_create_user(user_name, group_ids=group_ids or None)
+            new_user = await hass.auth.async_create_user(
+                user_name,
+                group_ids=group_ids or None,
+                local_only=local_only_flag,
+            )
             existing_users[new_user.id] = new_user
 
             token["userId"] = new_user.id
             token["managed_user_name"] = new_user.name
 
             stored_group_value = json.dumps(group_ids) if group_ids else None
+            managed_user_local_only_value = 1 if new_user.local_only else 0
 
             cursor.execute(
-                "UPDATE tokens SET userId = ?, managed_user_name = ?, managed_user_groups = ? WHERE id = ?",
-                (new_user.id, new_user.name, stored_group_value, token["id"]),
+                """
+                UPDATE tokens
+                SET userId = ?, managed_user_name = ?, managed_user_groups = ?, managed_user_local_only = ?
+                WHERE id = ?
+                """,
+                (new_user.id, new_user.name, stored_group_value, managed_user_local_only_value, token["id"]),
             )
 
             token["managed_user_groups"] = stored_group_value
+            token["managed_user_local_only"] = managed_user_local_only_value
 
         conn.commit()
         existing_users = {user.id: user for user in await hass.auth.async_get_users()}
@@ -218,6 +233,7 @@ async def list_groups(
         vol.Optional("create_user", default=False): bool,
         vol.Optional("new_user_name"): str,
         vol.Optional("group_ids"): vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional("new_user_local_only", default=False): bool,
     }
 )
 @websocket_api.require_admin
@@ -236,6 +252,7 @@ async def create_token(
         managed_user = False
         managed_user_name = None
         managed_user_groups = None
+        managed_user_local_only = None
 
         if not is_never_expire:
             if "startDate" not in msg or "expirationDate" not in msg:
@@ -267,6 +284,7 @@ async def create_token(
                 )
                 return
 
+            new_user_local_only = bool(msg.get("new_user_local_only", False))
             groups = await _async_get_all_groups(hass)
             valid_group_ids = {group.id for group in groups}
             requested_group_ids = msg.get("group_ids") or []
@@ -276,7 +294,11 @@ async def create_token(
             group_ids = list(dict.fromkeys(group_ids))
 
             try:
-                user = await hass.auth.async_create_user(new_user_name, group_ids=group_ids or None)
+                user = await hass.auth.async_create_user(
+                    new_user_name,
+                    group_ids=group_ids or None,
+                    local_only=new_user_local_only,
+                )
             except ValueError as err:
                 connection.send_message(
                     websocket_api.error_message(
@@ -289,6 +311,7 @@ async def create_token(
             managed_user = True
             managed_user_name = user.name
             managed_user_groups = json.dumps(group_ids) if group_ids else None
+            managed_user_local_only = 1 if user.local_only else 0
 
         if not user_id:
             connection.send_message(
@@ -313,8 +336,24 @@ async def create_token(
         tokenGenerated = jwt.encode(token_payload, private_key, algorithm="RS256")
 
         query = """
-            INSERT INTO tokens (userId, token_name, start_date, end_date, token_ha_id, token_ha, token_ha_guest_mode, uid, is_never_expire, dashboard, usage_limit, managed_user, managed_user_name, managed_user_groups)
-            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO tokens (
+                userId,
+                token_name,
+                start_date,
+                end_date,
+                token_ha_id,
+                token_ha,
+                token_ha_guest_mode,
+                uid,
+                is_never_expire,
+                dashboard,
+                usage_limit,
+                managed_user,
+                managed_user_name,
+                managed_user_groups,
+                managed_user_local_only
+            )
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         conn = sqlite3.connect(hass.config.path(DATABASE))
         cursor = conn.cursor()
@@ -335,6 +374,7 @@ async def create_token(
                 1 if managed_user else 0,
                 managed_user_name,
                 managed_user_groups,
+                managed_user_local_only,
             ),
         )
         conn.commit()

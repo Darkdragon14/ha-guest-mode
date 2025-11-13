@@ -147,6 +147,9 @@
             "create_new_user": {
                 "name": "Crear un usuario dedicado"
             },
+            "local_only": {
+                "name": "Solo acceso local"
+            },
             "new_user_name": {
                 "name": "Nombre del usuario invitado"
             },

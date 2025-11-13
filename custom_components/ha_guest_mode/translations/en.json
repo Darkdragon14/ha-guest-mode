@@ -147,6 +147,9 @@
             "create_new_user": {
                 "name": "Create a dedicated user"
             },
+            "local_only": {
+                "name": "Local access only"
+            },
             "new_user_name": {
                 "name": "Guest user name"
             },

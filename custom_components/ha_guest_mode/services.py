@@ -92,9 +92,10 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
             usage_limit,
             managed_user,
             managed_user_name,
-            managed_user_groups
+            managed_user_groups,
+            managed_user_local_only
         )
-        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
     conn = sqlite3.connect(hass.config.path(DATABASE))
     cursor = conn.cursor()
@@ -113,6 +114,7 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
             dashboard,
             None,
             0,
+            None,
             None,
             None,
         ),

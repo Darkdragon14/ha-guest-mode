@@ -72,7 +72,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             usage_limit INTEGER,
             managed_user BOOLEAN DEFAULT 0,
             managed_user_name TEXT,
-            managed_user_groups TEXT
+            managed_user_groups TEXT,
+            managed_user_local_only BOOLEAN
         )
         """
     )
