@@ -59,6 +59,7 @@ class GuestModePanel extends LitElement {
       groups: { type: Array },
       createUser: { type: Boolean },
       newUserName: { type: String },
+      newUserLocalOnly: { type: Boolean },
       selectedGroups: { type: Array },
       groupSelection: { type: String },
     };
@@ -78,6 +79,7 @@ class GuestModePanel extends LitElement {
     this.groups = [];
     this.createUser = false;
     this.newUserName = '';
+    this.newUserLocalOnly = false;
     this.selectedGroups = [];
     this.groupSelection = '';
 
@@ -239,6 +241,7 @@ class GuestModePanel extends LitElement {
       this.user = null;
     } else {
       this.newUserName = '';
+      this.newUserLocalOnly = false;
       this.selectedGroups = [];
       this.groupSelection = '';
     }
@@ -250,6 +253,10 @@ class GuestModePanel extends LitElement {
 
   newUserNameChanged(e) {
     this.newUserName = e.target.value;
+  }
+
+  newUserLocalOnlyChanged(e) {
+    this.newUserLocalOnly = e.target.checked;
   }
 
   startDateChanged(e) {
@@ -357,6 +364,7 @@ class GuestModePanel extends LitElement {
         cleanedGroups.push("system-users");
       }
       payload.group_ids = cleanedGroups;
+      payload.new_user_local_only = this.newUserLocalOnly;
     } else {
       if (!this.user) {
         this.alertType = "warning";
@@ -658,6 +666,13 @@ class GuestModePanel extends LitElement {
                       .value=${this.newUserName}
                       @input=${this.newUserNameChanged}
                     ></ha-textfield>
+                    <div class="checkbox-row">
+                      <mwc-checkbox
+                        .checked=${this.newUserLocalOnly}
+                        @change=${this.newUserLocalOnlyChanged}
+                      ></mwc-checkbox>
+                      <span>${this.translate("local_only")}</span>
+                    </div>
                     <div class="group-picker">
                       <ha-combo-box
                         .items=${groupOptions}

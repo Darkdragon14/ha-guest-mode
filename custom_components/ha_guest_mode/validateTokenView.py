@@ -43,6 +43,7 @@ class ValidateTokenView(HomeAssistantView):
         available_group_ids = {group.id for group in available_groups}
 
         stored_groups = token_row["managed_user_groups"]
+        stored_local_only = token_row["managed_user_local_only"]
         group_ids: list[str] = []
         if stored_groups:
             try:
@@ -56,14 +57,27 @@ class ValidateTokenView(HomeAssistantView):
 
         user_name = token_row["managed_user_name"] or token_row["token_name"] or "Guest"
 
+        local_only_flag = None
+        if stored_local_only is not None:
+            local_only_flag = bool(stored_local_only)
+
         try:
-            user = await self.hass.auth.async_create_user(user_name, group_ids=group_ids or None)
+            user = await self.hass.auth.async_create_user(
+                user_name,
+                group_ids=group_ids or None,
+                local_only=local_only_flag,
+            )
         except ValueError:
             return None
 
+        local_only_value = 1 if user.local_only else 0
         cursor.execute(
-            "UPDATE tokens SET userId = ?, managed_user_name = ?, managed_user_groups = ? WHERE id = ?",
-            (user.id, user.name, json.dumps(group_ids) if group_ids else None, token_row["id"]),
+            """
+            UPDATE tokens
+            SET userId = ?, managed_user_name = ?, managed_user_groups = ?, managed_user_local_only = ?
+            WHERE id = ?
+            """,
+            (user.id, user.name, json.dumps(group_ids) if group_ids else None, local_only_value, token_row["id"]),
         )
         return user
 

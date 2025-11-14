@@ -147,6 +147,9 @@
             "create_new_user": {
                 "name": "Aparte gebruiker aanmaken"
             },
+            "local_only": {
+                "name": "Alleen lokale toegang"
+            },
             "new_user_name": {
                 "name": "Naam van de gastgebruiker"
             },

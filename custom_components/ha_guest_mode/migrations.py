@@ -70,3 +70,6 @@ def migration(cursor):
 
     if "managed_user_groups" not in columns:
         cursor.execute("ALTER TABLE tokens ADD COLUMN managed_user_groups TEXT")
+
+    if "managed_user_local_only" not in columns:
+        cursor.execute("ALTER TABLE tokens ADD COLUMN managed_user_local_only BOOLEAN")
