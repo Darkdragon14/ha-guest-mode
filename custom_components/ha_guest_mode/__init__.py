@@ -14,7 +14,7 @@ from homeassistant.helpers import config_validation as cv
 from .websocketCommands import list_users, list_groups, create_token, delete_token, get_path_to_login, get_urls, get_panels, get_copy_link_mode
 from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
-from .const import DOMAIN, DATABASE, DEST_PATH_SCRIPT_JS, SOURCE_PATH_SCRIPT_JS, SCRIPT_JS
+from .const import DOMAIN, DATABASE, DEST_PATH_SCRIPT_JS, LEGACY_DATABASE, SOURCE_PATH_SCRIPT_JS, SCRIPT_JS
 from .services import async_register_services
 from .migrations import migration
 
@@ -29,6 +29,17 @@ def get_version():
         return "dev"
 
 VERSION = get_version()
+
+def _ensure_database_location(hass: HomeAssistant) -> str:
+    """Make sure the DB lives in .storage and migrate existing files."""
+    new_path = hass.config.path(DATABASE)
+    os.makedirs(os.path.dirname(new_path), exist_ok=True)
+
+    legacy_path = hass.config.path(LEGACY_DATABASE)
+    if os.path.exists(legacy_path) and not os.path.exists(new_path):
+        os.replace(legacy_path, new_path)
+
+    return new_path
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.data.setdefault(DOMAIN, {})
@@ -49,7 +60,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.data["private_key"] = key_manager.get_private_key()
     hass.data["public_key"] = key_manager.get_public_key()
 
-    connection = sqlite3.connect(hass.config.path(DATABASE))
+    database_path = _ensure_database_location(hass)
+    connection = sqlite3.connect(database_path)
     cursor = connection.cursor()
 
     cursor.execute(
