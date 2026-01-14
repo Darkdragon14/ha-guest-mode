@@ -231,8 +231,9 @@ class GuestModePanel extends LitElement {
     super.update(changedProperties);
   }
 
-  userChanged(e) {
-    this.user = e.detail.value;
+  changeUser(e) {
+    const value = e.detail?.value?.user;
+    this.user = value || null;
   }
 
   toggleCreateUser(e) {
@@ -292,11 +293,12 @@ class GuestModePanel extends LitElement {
   }
 
   dashboardChanged(e) {
-    this.dashboard = e.detail.value;
+    const value = e.detail?.value?.dashboard;
+    this.dashboard = value || "";
   }
 
   groupSelected(e) {
-    const value = e.detail.value;
+    const value = e.detail?.value?.group;
     if (!value) {
       return;
     }
@@ -308,9 +310,6 @@ class GuestModePanel extends LitElement {
     }
 
     this.groupSelection = '';
-    if (e.target) {
-      e.target.value = '';
-    }
   }
 
   removeSelectedGroup(groupId) {
@@ -620,6 +619,51 @@ class GuestModePanel extends LitElement {
     const availableGroups = Array.isArray(this.groups) ? this.groups : [];
     const selectedGroupSet = new Set(this.selectedGroups || []);
     const groupOptions = availableGroups.filter(group => !selectedGroupSet.has(group.id));
+    const userSchema = [
+      {
+        name: "user",
+        label: this.translate("user"),
+        selector: {
+          select: {
+            mode: "dropdown",
+            options: this.users.map((user) => ({
+              label: user.name,
+              value: user.id,
+            })),
+          },
+        },
+      },
+    ];
+    const groupSchema = [
+      {
+        name: "group",
+        label: this.translate("assign_group"),
+        selector: {
+          select: {
+            mode: "dropdown",
+            options: groupOptions.map((group) => ({
+              label: group.name || group.id,
+              value: group.id,
+            })),
+          },
+        },
+      },
+    ];
+    const dashboardSchema = [
+      {
+        name: "dashboard",
+        label: this.translate("dashboard"),
+        selector: {
+          select: {
+            mode: "dropdown",
+            options: this.dashboards.map((dashboard) => ({
+              label: dashboard.title,
+              value: dashboard.url_path,
+            })),
+          },
+        },
+      },
+    ];
     return html`
       <div>
         <header class="mdc-top-app-bar mdc-top-app-bar--fixed">
@@ -674,15 +718,12 @@ class GuestModePanel extends LitElement {
                       <span>${this.translate("local_only")}</span>
                     </div>
                     <div class="group-picker">
-                      <ha-combo-box
-                        .items=${groupOptions}
-                        .itemLabelPath=${'name'}
-                        .itemValuePath=${'id'}
-                        .value=${this.groupSelection || ''}
-                        .label=${this.translate("assign_group")}
+                      <ha-form
+                        .hass=${this.hass}
+                        .schema=${groupSchema}
+                        .data=${{ group: this.groupSelection || "" }}
                         @value-changed=${this.groupSelected}
-                      >
-                      </ha-combo-box>
+                      ></ha-form>
                       ${this.selectedGroups.length
                         ? html`
                             <div class="selected-groups">
@@ -706,26 +747,20 @@ class GuestModePanel extends LitElement {
                     </div>
                   `
                 : html`
-                    <ha-combo-box
-                      .items=${this.users}
-                      .itemLabelPath=${'name'}
-                      .itemValuePath=${'id'}
-                      .value=${this.user || ''}
-                      .label=${this.translate("user")}
-                      @value-changed=${this.userChanged}
-                    >
-                    </ha-combo-box>
+                    <ha-form
+                      .hass=${this.hass}
+                      .schema=${userSchema}
+                      .data=${{ user: this.user || "" }}
+                      @value-changed=${this.changeUser}
+                    ></ha-form>
                   `}
 
-              <ha-combo-box
-                .items=${this.dashboards}
-                .itemLabelPath=${'title'}
-                .itemValuePath=${'url_path'}
-                .value=${this.dashboard || ''}
-                .label=${this.translate("dashboard")}
+              <ha-form
+                .hass=${this.hass}
+                .schema=${dashboardSchema}
+                .data=${{ dashboard: this.dashboard || "" }}
                 @value-changed=${this.dashboardChanged}
-              >
-              </ha-combo-box>
+              ></ha-form>
               <ha-textfield
                 .label=${this.translate("usage_limit")}
                 type="number"
