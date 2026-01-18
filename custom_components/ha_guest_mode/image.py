@@ -60,25 +60,35 @@ class GuestQRCodeImage(ImageEntity):
 
     async def async_update(self):
         """Update the QR code and attributes."""
-        token_row = await self.hass.async_add_executor_job(self._get_latest_token_row)
         self._token_attributes = {}
         self._image_bytes = None
 
-        if token_row:
-            user_name = await self._resolve_user_name(token_row.get("userId"), token_row.get("managed_user_name"))
-            self._token_attributes = {
-                "user": user_name,
-                "start_date": token_row.get("start_date"),
-                "end_date": token_row.get("end_date"),
-                "first_used": token_row.get("first_used"),
-                "last_used": token_row.get("last_used"),
-                "times_used": token_row.get("times_used"),
-                "usage_limit": token_row.get("usage_limit"),
-            }
+        token_rows = await self.hass.async_add_executor_job(self._get_all_token_rows)
 
-            uid = token_row.get("uid")
-            if uid:
-                self._image_bytes = await self.hass.async_add_executor_job(self._generate_qr_code, uid)
+        if token_rows:
+            tokens = []
+            for row in token_rows:
+                user_name = await self._resolve_user_name(row.get("userId"), row.get("managed_user_name"))
+                tokens.append(
+                    {
+                        "user": user_name,
+                        "token_name": row.get("token_name"),
+                        "dashboard": row.get("dashboard"),
+                        "start_date": row.get("start_date"),
+                        "end_date": row.get("end_date"),
+                        "first_used": row.get("first_used"),
+                        "last_used": row.get("last_used"),
+                        "times_used": row.get("times_used"),
+                        "usage_limit": row.get("usage_limit"),
+                        "uid": row.get("uid"),
+                    }
+                )
+
+            self._token_attributes = {"tokens": tokens}
+
+            first_uid = token_rows[0].get("uid")
+            if first_uid:
+                self._image_bytes = await self.hass.async_add_executor_job(self._generate_qr_code, first_uid)
 
     async def async_image(self):
         """Return bytes of image."""
@@ -86,22 +96,21 @@ class GuestQRCodeImage(ImageEntity):
             await self.async_update()
         return self._image_bytes
  
-    def _get_latest_token_row(self):
-        """Fetch the most recent token row from the database."""
+    def _get_all_token_rows(self):
+        """Fetch all token rows from the database ordered by newest first."""
         conn = sqlite3.connect(self.hass.config.path(DATABASE))
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT userId, start_date, end_date, first_used, last_used, times_used, usage_limit, uid, managed_user_name
+            SELECT userId, token_name, dashboard, start_date, end_date, first_used, last_used, times_used, usage_limit, uid, managed_user_name
             FROM tokens
             ORDER BY id DESC
-            LIMIT 1
             """
         )
-        row = cursor.fetchone()
+        rows = cursor.fetchall()
         conn.close()
-        return dict(row) if row else None
+        return [dict(row) for row in rows] if rows else []
 
     async def _resolve_user_name(self, user_id, managed_user_name):
         """Resolve a human-friendly user label for attributes."""
