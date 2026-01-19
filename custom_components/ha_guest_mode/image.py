@@ -26,7 +26,8 @@ class GuestQRCodeImage(ImageEntity):
         self._attr_unique_id = f"{DOMAIN}_guest_qr_code"
         self._attr_should_poll = True
         self._image_bytes = None
-        self.content_type = "image/png"
+        self._token_attributes = {}
+        self._attr_content_type = "image/png"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -46,42 +47,96 @@ class GuestQRCodeImage(ImageEntity):
     @property
     def state(self):
         return "Ready" if self._image_bytes else "No token"
+
+    @property
+    def extra_state_attributes(self):
+        return self._token_attributes
     
     async def async_added_to_hass(self):
         """Called when entity is added to hass."""
         await self.async_update()
         self.async_write_ha_state()
 
+
     async def async_update(self):
-        """Update the QR code."""
-        self._image_bytes = await self.hass.async_add_executor_job(self._generate_qr_code)
+        """Update the QR code and attributes."""
+        self._token_attributes = {}
+        self._image_bytes = None
+
+        token_rows = await self.hass.async_add_executor_job(self._get_all_token_rows)
+
+        if token_rows:
+            tokens = []
+            for row in token_rows:
+                user_name = await self._resolve_user_name(row.get("userId"), row.get("managed_user_name"))
+                tokens.append(
+                    {
+                        "user": user_name,
+                        "token_name": row.get("token_name"),
+                        "dashboard": row.get("dashboard"),
+                        "start_date": row.get("start_date"),
+                        "end_date": row.get("end_date"),
+                        "first_used": row.get("first_used"),
+                        "last_used": row.get("last_used"),
+                        "times_used": row.get("times_used"),
+                        "usage_limit": row.get("usage_limit"),
+                        "uid": row.get("uid"),
+                    }
+                )
+
+            self._token_attributes = {"tokens": tokens}
+
+            first_uid = token_rows[0].get("uid")
+            if first_uid:
+                self._image_bytes = await self.hass.async_add_executor_job(self._generate_qr_code, first_uid)
 
     async def async_image(self):
         """Return bytes of image."""
         if self._image_bytes is None:
-            self._image_bytes = await self.hass.async_add_executor_job(self._generate_qr_code)
+            await self.async_update()
         return self._image_bytes
-
-    def _generate_qr_code(self):
-        """Generate the QR code for the last token."""
+ 
+    def _get_all_token_rows(self):
+        """Fetch all token rows from the database ordered by newest first."""
         conn = sqlite3.connect(self.hass.config.path(DATABASE))
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        cursor.execute("SELECT uid FROM tokens ORDER BY id DESC LIMIT 1")
-        result = cursor.fetchone()
+        cursor.execute(
+            """
+            SELECT userId, token_name, dashboard, start_date, end_date, first_used, last_used, times_used, usage_limit, uid, managed_user_name
+            FROM tokens
+            ORDER BY id DESC
+            """
+        )
+        rows = cursor.fetchall()
         conn.close()
+        return [dict(row) for row in rows] if rows else []
 
-        if result:
-            token = result[0]
-            try:
-                base_url = get_url(self.hass, prefer_external=True)
-            except NoURLAvailableError:
-                base_url = get_url(self.hass)
-            guest_login_path = self.hass.data.get("get_path_to_login", "/guest-mode/login")
-            full_url = f"{base_url}{guest_login_path}?token={token}"
-            
-            img = qrcode.make(full_url)
-            buf = io.BytesIO()
-            img.save(buf, "PNG")
-            return buf.getvalue()
+    async def _resolve_user_name(self, user_id, managed_user_name):
+        """Resolve a human-friendly user label for attributes."""
+        if not user_id:
+            return managed_user_name
+
+        user = await self.hass.auth.async_get_user(user_id)
+        if user:
+            return user.name
+
+        return managed_user_name or user_id
+ 
+    def _generate_qr_code(self, uid):
+        """Generate the QR code for the provided token uid."""
+        if not uid:
+            return None
+
+        try:
+            base_url = get_url(self.hass, prefer_external=True)
+        except NoURLAvailableError:
+            base_url = get_url(self.hass)
+        guest_login_path = self.hass.data.get("get_path_to_login", "/guest-mode/login")
+        full_url = f"{base_url}{guest_login_path}?token={uid}"
         
-        return None
+        img = qrcode.make(full_url)
+        buf = io.BytesIO()
+        img.save(buf, "PNG")
+        return buf.getvalue()
+
