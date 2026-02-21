@@ -1,0 +1,30 @@
+name: Build Release Asset
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create zip
+        run: |
+          cd custom_components/ha_guest_mode
+          zip ha-guest-mode.zip -r ./
+
+      - name: Upload release asset
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: custom_components/ha_guest_mode/ha-guest-mode.zip
+          asset_name: ha-guest-mode.zip
+          tag: ${{ github.ref }}
+          overwrite: true
