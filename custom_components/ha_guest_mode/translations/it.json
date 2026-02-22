@@ -182,6 +182,12 @@
             },
             "create_token": {
                 "name": "Crea token"
+            },
+            "no_tokens_title": {
+                "name": "Nessun token attivo"
+            },
+            "no_tokens_description": {
+                "name": "Creane uno ora per condividere l'accesso ospite."
             }
         },
         "guest_error": {

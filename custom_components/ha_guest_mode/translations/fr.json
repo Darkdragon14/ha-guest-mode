@@ -182,6 +182,12 @@
             },
             "create_token": {
                 "name": "Créer un jeton"
+            },
+            "no_tokens_title": {
+                "name": "Aucun jeton actif"
+            },
+            "no_tokens_description": {
+                "name": "Créez-en un maintenant pour partager un accès invité."
             }
         },
         "guest_error": {

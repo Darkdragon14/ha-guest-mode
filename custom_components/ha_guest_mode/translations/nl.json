@@ -182,6 +182,12 @@
             },
             "create_token": {
                 "name": "Token aanmaken"
+            },
+            "no_tokens_title": {
+                "name": "Geen actieve tokens"
+            },
+            "no_tokens_description": {
+                "name": "Maak er nu een om gasttoegang te delen."
             }
         },
         "guest_error": {

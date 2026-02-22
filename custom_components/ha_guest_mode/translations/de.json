@@ -182,6 +182,12 @@
             },
             "create_token": {
                 "name": "Token erstellen"
+            },
+            "no_tokens_title": {
+                "name": "Keine aktiven Tokens"
+            },
+            "no_tokens_description": {
+                "name": "Erstellen Sie jetzt eins, um Gastzugriff zu teilen."
             }
         },
         "guest_error": {
