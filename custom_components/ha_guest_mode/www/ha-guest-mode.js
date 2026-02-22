@@ -62,6 +62,7 @@ class GuestModePanel extends LitElement {
       newUserLocalOnly: { type: Boolean },
       selectedGroups: { type: Array },
       groupSelection: { type: String },
+      isCreateDialogOpen: { type: Boolean },
     };
   }
 
@@ -82,6 +83,7 @@ class GuestModePanel extends LitElement {
     this.newUserLocalOnly = false;
     this.selectedGroups = [];
     this.groupSelection = '';
+    this.isCreateDialogOpen = false;
 
     // form inputs
     this.name = null;
@@ -95,6 +97,18 @@ class GuestModePanel extends LitElement {
     this.isNeverExpire = false;
     this.useDuration = false;
     this.duration = 1;
+
+    this._boundHandleGlobalKeydown = this.handleGlobalKeydown.bind(this);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('keydown', this._boundHandleGlobalKeydown);
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('keydown', this._boundHandleGlobalKeydown);
+    super.disconnectedCallback();
   }
 
   async getCopyLinkMode() {
@@ -386,6 +400,7 @@ class GuestModePanel extends LitElement {
 
     this.hass.callWS(payload).then(() => {
       this.fetchUsers();
+      this.isCreateDialogOpen = false;
     }).catch(err => {
       this.alertType="warning";
       let messageDisplay = err.message;
@@ -614,6 +629,218 @@ class GuestModePanel extends LitElement {
     return this.hass.localize(`component.ha_guest_mode.entity.frontend.${key}.name`);
   }
 
+  openCreateDialog() {
+    this.isCreateDialogOpen = true;
+  }
+
+  closeCreateDialog() {
+    this.isCreateDialogOpen = false;
+  }
+
+  handleGlobalKeydown(e) {
+    if (e.defaultPrevented || e.repeat) {
+      return;
+    }
+
+    const target = e.composedPath ? e.composedPath()[0] : e.target;
+    const tagName = target?.tagName ? target.tagName.toLowerCase() : "";
+    const isEditable =
+      target?.isContentEditable ||
+      tagName === "input" ||
+      tagName === "textarea" ||
+      tagName === "select" ||
+      tagName === "ha-textfield" ||
+      tagName === "ha-combo-box";
+
+    if (isEditable) {
+      return;
+    }
+
+    if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey && e.key?.toLowerCase() === 'n') {
+      e.preventDefault();
+      if (!this.isCreateDialogOpen) {
+        this.openCreateDialog();
+      }
+    }
+  }
+
+  renderCreateTokenForm(userSchema, groupSchema, dashboardSchema) {
+    return html`
+      <div class="form-layout">
+        <section class="form-section">
+          <h3 class="section-title">${this.translate("section_token") || "Token"}</h3>
+          <div class="section-grid">
+            <ha-textfield
+              .label=${this.translate("key_name")}
+              .value=${this.name || ""}
+              @input=${this.nameChanged}
+            ></ha-textfield>
+            <ha-form
+              .hass=${this.hass}
+              .schema=${dashboardSchema}
+              .data=${{ dashboard: this.dashboard || "" }}
+              @value-changed=${this.dashboardChanged}
+            ></ha-form>
+            <ha-textfield
+              .label=${this.translate("usage_limit")}
+              type="number"
+              min="0"
+              .value=${this.usage_limit || ""}
+              @input=${this.usageLimitChanged}
+            ></ha-textfield>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h3 class="section-title">${this.translate("section_access") || "Access"}</h3>
+          <div class="section-grid">
+            <div class="checkbox-row span-2">
+              <mwc-checkbox
+                .checked=${this.createUser}
+                @change=${this.toggleCreateUser}
+              ></mwc-checkbox>
+              <span>${this.translate("create_new_user")}</span>
+            </div>
+
+            ${this.createUser
+              ? html`
+                  <ha-textfield
+                    .label=${this.translate("new_user_name")}
+                    .value=${this.newUserName}
+                    @input=${this.newUserNameChanged}
+                  ></ha-textfield>
+                  <div class="checkbox-row">
+                    <mwc-checkbox
+                      .checked=${this.newUserLocalOnly}
+                      @change=${this.newUserLocalOnlyChanged}
+                    ></mwc-checkbox>
+                    <span>${this.translate("local_only")}</span>
+                  </div>
+                  <div class="group-picker span-2">
+                    <ha-form
+                      .hass=${this.hass}
+                      .schema=${groupSchema}
+                      .data=${{ group: this.groupSelection || "" }}
+                      @value-changed=${this.groupSelected}
+                    ></ha-form>
+                    ${this.selectedGroups.length
+                      ? html`
+                          <div class="selected-groups">
+                            ${this.selectedGroups.map(groupId => html`
+                              <div class="selected-group">
+                                <span>${this.getGroupName(groupId)}</span>
+                                <button
+                                  type="button"
+                                  class="selected-group__remove"
+                                  @click=${() => this.removeSelectedGroup(groupId)}
+                                  title=${this.translate("remove_group")}
+                                  aria-label=${this.translate("remove_group")}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            `)}
+                          </div>
+                        `
+                      : null}
+                  </div>
+                `
+              : html`
+                  <div class="span-2">
+                    <ha-form
+                      .hass=${this.hass}
+                      .schema=${userSchema}
+                      .data=${{ user: this.user || "" }}
+                      @value-changed=${this.changeUser}
+                    ></ha-form>
+                  </div>
+                `}
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h3 class="section-title">${this.translate("section_validity") || "Validity"}</h3>
+          <div class="section-grid">
+            <div class="checkbox-row span-2">
+              <mwc-checkbox
+                .checked=${this.isNeverExpire}
+                @change=${this.isNeverExpireChanged}
+              ></mwc-checkbox>
+              <span>${this.translate("never_expire")}</span>
+            </div>
+
+            ${!this.isNeverExpire
+              ? html`
+                  <div class="checkbox-row span-2">
+                    <mwc-checkbox
+                      .checked=${this.enableStartDate}
+                      @change=${this.toggleEnableStartDate}
+                    ></mwc-checkbox>
+                    <span>${this.translate("use_start_date")}</span>
+                  </div>
+
+                  ${this.enableStartDate
+                    ? html`
+                        <div class="span-2">
+                          <ha-selector
+                            .selector=${{
+                              datetime: {
+                                mode: "both",
+                              }
+                            }}
+                            .label=${this.translate("start_date")}
+                            .hass=${this.hass}
+                            .required=${false}
+                            .value=${this.startDate}
+                            @value-changed=${this.startDateChanged}
+                          >
+                          </ha-selector>
+                        </div>
+                      `
+                    : ""}
+
+                  <div class="checkbox-row span-2">
+                    <mwc-checkbox
+                      .checked=${this.useDuration}
+                      @change=${this.toggleUseDuration}
+                    ></mwc-checkbox>
+                    <span>${this.translate("use_duration")}</span>
+                  </div>
+
+                  ${this.useDuration
+                    ? html`
+                        <ha-textfield
+                          .label=${this.translate("duration_in_hours")}
+                          .value=${this.duration}
+                          @input=${this.durationChanged}
+                          type="number"
+                        ></ha-textfield>
+                      `
+                    : html`
+                        <div class="span-2">
+                          <ha-selector
+                            .selector=${{
+                              datetime: {
+                                mode: "both",
+                              }
+                            }}
+                            .label=${this.translate("expiration_date")}
+                            .hass=${this.hass}
+                            .required=${false}
+                            .value=${this.expirationDate}
+                            @value-changed=${this.expirationDateChanged}
+                          >
+                          </ha-selector>
+                        </div>
+                      `}
+                `
+              : ""}
+          </div>
+        </section>
+      </div>
+    `;
+  }
+
   render() {
     this.getLoginPath();
     const availableGroups = Array.isArray(this.groups) ? this.groups : [];
@@ -681,172 +908,33 @@ class GuestModePanel extends LitElement {
               </span>
             </section>
             <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" id="actions" role="toolbar">
+              <mwc-icon-button
+                class="header-create-button"
+                title=${`${this.translate("create_token") || "Create token"} (Alt+Shift+N)`}
+                aria-label=${this.translate("create_token") || "Create token"}
+                @click=${this.openCreateDialog}
+              >
+                <ha-icon icon="mdi:plus"></ha-icon>
+              </mwc-icon-button>
               <slot name="actionItems"></slot>
             </section>
           </div>
         </header>
 
         <div class="mdc-top-app-bar--fixed-adjust flex content">
-          <ha-card>
-            <div class="card-content">
-              <div class="checkbox-row">
-                <mwc-checkbox
-                  .checked=${this.createUser}
-                  @change=${this.toggleCreateUser}
-                ></mwc-checkbox>
-                <span>${this.translate("create_new_user")}</span>
+          ${this.isCreateDialogOpen ? html`
+            <ha-dialog open .heading=${this.translate("create_token") || "Create token"} @closed=${this.closeCreateDialog}>
+              <div class="dialog-content">
+                ${this.renderCreateTokenForm(userSchema, groupSchema, dashboardSchema)}
               </div>
-
-              <ha-textfield 
-                .label=${this.translate("key_name")}
-                value="" 
-                @input="${this.nameChanged}"
-              ></ha-textfield>
-
-              ${this.createUser
-                ? html`
-                    <ha-textfield
-                      .label=${this.translate("new_user_name")}
-                      .value=${this.newUserName}
-                      @input=${this.newUserNameChanged}
-                    ></ha-textfield>
-                    <div class="checkbox-row">
-                      <mwc-checkbox
-                        .checked=${this.newUserLocalOnly}
-                        @change=${this.newUserLocalOnlyChanged}
-                      ></mwc-checkbox>
-                      <span>${this.translate("local_only")}</span>
-                    </div>
-                    <div class="group-picker">
-                      <ha-form
-                        .hass=${this.hass}
-                        .schema=${groupSchema}
-                        .data=${{ group: this.groupSelection || "" }}
-                        @value-changed=${this.groupSelected}
-                      ></ha-form>
-                      ${this.selectedGroups.length
-                        ? html`
-                            <div class="selected-groups">
-                              ${this.selectedGroups.map(groupId => html`
-                                <div class="selected-group">
-                                  <span>${this.getGroupName(groupId)}</span>
-                                  <button
-                                    type="button"
-                                    class="selected-group__remove"
-                                    @click=${() => this.removeSelectedGroup(groupId)}
-                                    title=${this.translate("remove_group")}
-                                    aria-label=${this.translate("remove_group")}
-                                  >
-                                    ×
-                                  </button>
-                                </div>
-                              `)}
-                            </div>
-                          `
-                        : null}
-                    </div>
-                  `
-                : html`
-                    <ha-form
-                      .hass=${this.hass}
-                      .schema=${userSchema}
-                      .data=${{ user: this.user || "" }}
-                      @value-changed=${this.changeUser}
-                    ></ha-form>
-                  `}
-
-              <ha-form
-                .hass=${this.hass}
-                .schema=${dashboardSchema}
-                .data=${{ dashboard: this.dashboard || "" }}
-                @value-changed=${this.dashboardChanged}
-              ></ha-form>
-              <ha-textfield
-                .label=${this.translate("usage_limit")}
-                type="number"
-                min="0"
-                .value=${this.usage_limit || ''}
-                @input=${this.usageLimitChanged}
-              ></ha-textfield>
-              <span style="min-width: auto">:</span>
-
-              <div style="display: flex; align-items: center; gap: 4px;">
-                <mwc-checkbox
-                  .checked=${this.isNeverExpire}
-                  @change=${this.isNeverExpireChanged}
-                ></mwc-checkbox>
-                <span>${this.translate("never_expire")}</span>
-              </div>
-
-              ${!this.isNeverExpire ? html`
-                <div style="display: flex; align-items: center; gap: 4px;">
-                  <mwc-checkbox
-                    .checked=${this.enableStartDate}
-                    @change=${this.toggleEnableStartDate}
-                  ></mwc-checkbox>
-                  <span>${this.translate("use_start_date")}</span>
-                </div>
-
-                ${this.enableStartDate ?
-                  html`
-                    <ha-selector
-                      .selector=${{
-                        datetime: {
-                          mode: "both",
-                        }
-                      }}
-                      .label=${this.translate("start_date")}
-                      .hass=${this.hass}
-                      .required=${false}
-                      .value=${this.startDate}
-                      @value-changed=${this.startDateChanged}
-                    >
-                    </ha-selector>
-                  ` : ''
-                }
-
-                <div style="display: flex; align-items: center; gap: 4px;">
-                  <mwc-checkbox
-                    .checked=${this.useDuration}
-                    @change=${this.toggleUseDuration}
-                  ></mwc-checkbox>
-                  <span>${this.translate("use_duration")}</span>
-                </div>
-
-                ${this.useDuration ? html`
-                  <ha-textfield
-                    .label=${this.translate("duration_in_hours")}
-                    .value=${this.duration}
-                    @input=${this.durationChanged}
-                    type="number"
-                    style="max-width: 250px;"
-                  ></ha-textfield>
-                ` : html`
-                  <ha-selector
-                    .selector=${{
-                      datetime: {
-                        mode: "both",
-                      }
-                    }}
-                    .label=${this.translate("expiration_date")}
-                    .hass=${this.hass}
-                    .required=${false}
-                    .value=${this.expirationDate}
-                    @value-changed=${this.expirationDateChanged}
-                  >
-                  </ha-selector>
-                `}
-              ` : ''}
-
-              <ha-button
-                @click=${this.addClick}
-                size="small"
-                style="max-width: 250px;"
-              >
+              <ha-button slot="secondaryAction" @click=${this.closeCreateDialog}>
+                ${this.translate("close") || "Close"}
+              </ha-button>
+              <ha-button slot="primaryAction" @click=${this.addClick}>
                 ${this.translate("add")}
               </ha-button>
-            </div>
-          </ha-card>
+            </ha-dialog>
+          ` : null}
 
           ${this.alert.length ? 
             html`
@@ -923,7 +1011,8 @@ class GuestModePanel extends LitElement {
         background-color: var(--app-header-background-color,var(--mdc-theme-primary));
         width: var(--mdc-top-app-bar-width,100%);
         display: flex;
-        position: fixed;
+        position: sticky;
+        top: 0;
         flex-direction: column;
         justify-content: space-between;
         box-sizing: border-box;
@@ -934,7 +1023,7 @@ class GuestModePanel extends LitElement {
         transition: box-shadow 0.2s linear 0s;
       }
       .mdc-top-app-bar--fixed-adjust {
-        padding-top: var(--header-height, 64px);
+        padding-top: 0;
       }
       .mdc-top-app-bar__row {
         height: var(--header-height);
@@ -949,6 +1038,16 @@ class GuestModePanel extends LitElement {
         justify-content: flex-start;
         order: -1;
       }
+      .mdc-top-app-bar__section--align-end {
+        justify-content: flex-end;
+        gap: 4px;
+      }
+      #actions {
+        flex: 0 0 auto;
+        min-width: auto;
+        margin-left: auto;
+        padding-right: 8px;
+      }
       .mdc-top-app-bar__section {
         display: inline-flex;
         flex: 1 1 auto;
@@ -956,6 +1055,20 @@ class GuestModePanel extends LitElement {
         min-width: 0px;
         padding: 8px 12px;
         z-index: 1;
+      }
+      .header-create-button {
+        color: inherit;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        width: 40px;
+        height: 40px;
+        --mdc-icon-button-size: 40px;
+      }
+      .header-create-button ha-icon {
+        display: block;
+        line-height: 1;
       }
       .mdc-top-app-bar__title {
         -webkit-font-smoothing: antialiased;
@@ -968,6 +1081,8 @@ class GuestModePanel extends LitElement {
         text-transform: var(--mdc-typography-headline6-text-transform,inherit);
         padding-left: 20px;
         padding-right: 0px;
+        display: inline-flex;
+        align-items: center;
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;
@@ -991,16 +1106,32 @@ class GuestModePanel extends LitElement {
         color: var(--primary-text-color);
       }
 
-      .card-content {
+      .form-layout {
         display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
+        flex-direction: column;
+        gap: 14px;
       }
-
-      .card-content > * {
-        flex: 1 1 auto; /* Permet aux éléments de s’adapter et d’occuper un espace égal */
-        min-width: 150px; /* Assure que les petits écrans n'affichent pas trop d'éléments collés */
+      .form-section {
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+        padding: 12px;
+      }
+      .section-title {
+        margin: 0 0 12px;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+      .section-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        align-items: start;
+      }
+      .section-grid > * {
+        min-width: 0;
+      }
+      .span-2 {
+        grid-column: 1 / -1;
       }
       ha-combo-box {
         padding: 8px 0;
@@ -1010,6 +1141,7 @@ class GuestModePanel extends LitElement {
         display: flex;
         align-items: center;
         gap: 8px;
+        min-height: 40px;
       }
       .group-picker {
         display: flex;
@@ -1042,11 +1174,13 @@ class GuestModePanel extends LitElement {
       .selected-group__remove:hover {
         opacity: 0.8;
       }
-      ha-button {
-        padding: 16px 0;
+      .dialog-content {
+        max-height: min(72vh, 680px);
+        overflow-y: auto;
+        padding-right: 4px;
       }
       .content {
-        padding-bottom: 16px;
+        padding: 0 8px 16px;
       }
       .flex {
         flex: 1 1 1e-9px;
@@ -1108,12 +1242,13 @@ class GuestModePanel extends LitElement {
           display: inline-flex;
         }
       }
-      .card-content > ha-button {
-        flex: none;
-        margin-left: auto;
+      @media screen and (max-width: 870px) {
+        .section-grid {
+          grid-template-columns: 1fr;
+        }
       }
     `;
   }
-} 
+}
 
 customElements.define('guest-mode-panel', GuestModePanel);

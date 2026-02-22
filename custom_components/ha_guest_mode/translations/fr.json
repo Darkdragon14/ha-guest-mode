@@ -170,6 +170,18 @@
             },
             "invalid_usage_limit": {
                 "name": "La limite d'utilisation doit être un nombre"
+            },
+            "section_token": {
+                "name": "Jeton"
+            },
+            "section_access": {
+                "name": "Accès"
+            },
+            "section_validity": {
+                "name": "Validité"
+            },
+            "create_token": {
+                "name": "Créer un jeton"
             }
         },
         "guest_error": {

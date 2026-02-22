@@ -170,6 +170,18 @@
             },
             "invalid_usage_limit": {
                 "name": "Gebruikslimiet moet een getal zijn"
+            },
+            "section_token": {
+                "name": "Token"
+            },
+            "section_access": {
+                "name": "Toegang"
+            },
+            "section_validity": {
+                "name": "Geldigheid"
+            },
+            "create_token": {
+                "name": "Token aanmaken"
             }
         },
         "guest_error": {
