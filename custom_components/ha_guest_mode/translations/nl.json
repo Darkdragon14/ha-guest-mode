@@ -170,6 +170,24 @@
             },
             "invalid_usage_limit": {
                 "name": "Gebruikslimiet moet een getal zijn"
+            },
+            "section_token": {
+                "name": "Token"
+            },
+            "section_access": {
+                "name": "Toegang"
+            },
+            "section_validity": {
+                "name": "Geldigheid"
+            },
+            "create_token": {
+                "name": "Token aanmaken"
+            },
+            "no_tokens_title": {
+                "name": "Geen actieve tokens"
+            },
+            "no_tokens_description": {
+                "name": "Maak er nu een om gasttoegang te delen."
             }
         },
         "guest_error": {

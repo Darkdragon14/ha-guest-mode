@@ -170,6 +170,24 @@
             },
             "invalid_usage_limit": {
                 "name": "Nutzungslimit muss eine Zahl sein"
+            },
+            "section_token": {
+                "name": "Token"
+            },
+            "section_access": {
+                "name": "Zugriff"
+            },
+            "section_validity": {
+                "name": "Gültigkeit"
+            },
+            "create_token": {
+                "name": "Token erstellen"
+            },
+            "no_tokens_title": {
+                "name": "Keine aktiven Tokens"
+            },
+            "no_tokens_description": {
+                "name": "Erstellen Sie jetzt eins, um Gastzugriff zu teilen."
             }
         },
         "guest_error": {
