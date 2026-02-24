@@ -655,6 +655,15 @@ class GuestModePanel extends LitElement {
     this.modalAlert = '';
   }
 
+  isMacOS() {
+    const platform = navigator.userAgentData?.platform || navigator.platform || '';
+    return platform.toLowerCase().includes('mac');
+  }
+
+  getCreateTokenShortcutLabel() {
+    return this.isMacOS() ? 'Cmd+Option+N' : 'Alt+Shift+N';
+  }
+
   handleGlobalKeydown(e) {
     if (e.defaultPrevented || e.repeat) {
       return;
@@ -674,7 +683,25 @@ class GuestModePanel extends LitElement {
       return;
     }
 
-    if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey && e.key?.toLowerCase() === 'n') {
+    const isMac = this.isMacOS();
+
+    const isMacShortcut =
+      isMac &&
+      e.metaKey &&
+      e.altKey &&
+      !e.ctrlKey &&
+      !e.shiftKey &&
+      e.key?.toLowerCase() === 'n';
+
+    const isNonMacShortcut =
+      !isMac &&
+      e.altKey &&
+      e.shiftKey &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      e.key?.toLowerCase() === 'n';
+
+    if (isMacShortcut || isNonMacShortcut) {
       e.preventDefault();
       if (!this.isCreateDialogOpen) {
         this.openCreateDialog();
@@ -932,7 +959,7 @@ class GuestModePanel extends LitElement {
             <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" id="actions" role="toolbar">
               <mwc-icon-button
                 class="header-create-button"
-                title=${`${this.translate("create_token") || "Create token"} (Alt+Shift+N)`}
+                title=${`${this.translate("create_token") || "Create token"} (${this.getCreateTokenShortcutLabel()})`}
                 aria-label=${this.translate("create_token") || "Create token"}
                 @click=${this.openCreateDialog}
               >
