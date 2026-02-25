@@ -7,7 +7,13 @@
                     "tab_name": "Tab Name",
                     "path_to_admin_ui": "Path to Admin Interface",
                     "login_path": "Guest Login Path",
-                    "copy_link_mode": "Copy link directly (skips sharing)"
+                    "copy_link_mode": "Copy link directly (skips sharing)",
+                    "default_user": "Default User Name",
+                    "default_dashboard": "Default Dashboard/View Path"
+                },
+                "data_description": {
+                    "default_user": "Matches the Home Assistant user's Name field.",
+                    "default_dashboard": "Use dashboard or dashboard/view (example: lovelace-guest or lovelace-guest/entry). Do not include a leading slash."
                 }
             }
         },
@@ -24,7 +30,13 @@
                     "tab_name": "Tab Name",
                     "path_to_admin_ui": "Path to Admin Interface",
                     "login_path": "Guest Login Path",
-                    "copy_link_mode": "Copy link directly (skips sharing)"
+                    "copy_link_mode": "Copy link directly (skips sharing)",
+                    "default_user": "Default User Name",
+                    "default_dashboard": "Default Dashboard/View Path"
+                },
+                "data_description": {
+                    "default_user": "Matches the Home Assistant user's Name field.",
+                    "default_dashboard": "Use dashboard or dashboard/view (example: lovelace-guest or lovelace-guest/entry). Do not include a leading slash."
                 }
             }
         }

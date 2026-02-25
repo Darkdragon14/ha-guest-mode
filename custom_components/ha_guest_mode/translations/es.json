@@ -7,7 +7,13 @@
                     "tab_name": "Nombre de pestaña",
                     "path_to_admin_ui": "Ruta a la interfaz de administración",
                     "login_path": "Ruta de inicio de sesión de invitado",
-                    "copy_link_mode": "Copiar enlace directamente (omite compartir)"
+                    "copy_link_mode": "Copiar enlace directamente (omite compartir)",
+                    "default_user": "Nombre de usuario predeterminado",
+                    "default_dashboard": "Ruta predeterminada de tablero/vista"
+                },
+                "data_description": {
+                    "default_user": "Coincide con el campo Nombre del usuario de Home Assistant.",
+                    "default_dashboard": "Use dashboard o dashboard/view (por ejemplo: lovelace-guest o lovelace-guest/entrada). No incluya la barra inicial."
                 }
             }
         },
@@ -24,7 +30,13 @@
                     "tab_name": "Nombre de pestaña",
                     "path_to_admin_ui": "Ruta a la interfaz de administración",
                     "login_path": "Ruta de inicio de sesión de invitado",
-                    "copy_link_mode": "Copiar enlace directamente (omite compartir)"
+                    "copy_link_mode": "Copiar enlace directamente (omite compartir)",
+                    "default_user": "Nombre de usuario predeterminado",
+                    "default_dashboard": "Ruta predeterminada de tablero/vista"
+                },
+                "data_description": {
+                    "default_user": "Coincide con el campo Nombre del usuario de Home Assistant.",
+                    "default_dashboard": "Use dashboard o dashboard/view (por ejemplo: lovelace-guest o lovelace-guest/entrada). No incluya la barra inicial."
                 }
             }
         }

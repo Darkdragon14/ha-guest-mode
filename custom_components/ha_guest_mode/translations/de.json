@@ -7,7 +7,13 @@
                     "tab_name": "Tab-Name",
                     "path_to_admin_ui": "Pfad zur Admin-Oberfläche",
                     "login_path": "Gast-Login-Pfad",
-                    "copy_link_mode": "Link direkt kopieren (überspringt das Teilen)"
+                    "copy_link_mode": "Link direkt kopieren (überspringt das Teilen)",
+                    "default_user": "Standard-Benutzername",
+                    "default_dashboard": "Standard-Dashboard-/View-Pfad"
+                },
+                "data_description": {
+                    "default_user": "Entspricht dem Feld Name des Home-Assistant-Benutzers.",
+                    "default_dashboard": "Verwenden Sie dashboard oder dashboard/view (z. B. lovelace-guest oder lovelace-guest/eingang). Keinen führenden Schrägstrich angeben."
                 }
             }
         },
@@ -24,7 +30,13 @@
                     "tab_name": "Tab-Name",
                     "path_to_admin_ui": "Pfad zur Admin-Oberfläche",
                     "login_path": "Gast-Login-Pfad",
-                    "copy_link_mode": "Link direkt kopieren (überspringt das Teilen)"
+                    "copy_link_mode": "Link direkt kopieren (überspringt das Teilen)",
+                    "default_user": "Standard-Benutzername",
+                    "default_dashboard": "Standard-Dashboard-/View-Pfad"
+                },
+                "data_description": {
+                    "default_user": "Entspricht dem Feld Name des Home-Assistant-Benutzers.",
+                    "default_dashboard": "Verwenden Sie dashboard oder dashboard/view (z. B. lovelace-guest oder lovelace-guest/eingang). Keinen führenden Schrägstrich angeben."
                 }
             }
         }

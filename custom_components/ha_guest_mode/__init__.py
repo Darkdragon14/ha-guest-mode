@@ -7,11 +7,11 @@ from pathlib import Path
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.components import websocket_api
+from homeassistant.components import frontend, websocket_api
 from homeassistant.components.panel_custom import async_register_panel
 from homeassistant.helpers import config_validation as cv
 
-from .websocketCommands import list_users, list_groups, create_token, delete_token, get_path_to_login, get_urls, get_panels, get_copy_link_mode
+from .websocketCommands import list_users, list_groups, create_token, delete_token, get_path_to_login, get_urls, get_panels, get_copy_link_mode, get_token_defaults
 from .validateTokenView import ValidateTokenView
 from .keyManager import KeyManager
 from .const import DOMAIN, DATABASE, DEST_PATH_SCRIPT_JS, LEGACY_DATABASE, SOURCE_PATH_SCRIPT_JS, SCRIPT_JS
@@ -54,6 +54,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     websocket_api.async_register_command(hass, get_urls)
     websocket_api.async_register_command(hass, get_panels)
     websocket_api.async_register_command(hass, get_copy_link_mode)
+    websocket_api.async_register_command(hass, get_token_defaults)
 
     key_manager = KeyManager()
     await key_manager.load_or_generate_key()
@@ -115,6 +116,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     hass.data.setdefault(DOMAIN, {})
 
     hass.data["copy_link_mode"] = config_entry.options.get("copy_link_mode", config_entry.data.get("copy_link_mode", False))
+    hass.data["default_user"] = config_entry.options.get("default_user", config_entry.data.get("default_user", ""))
+    hass.data["default_dashboard"] = config_entry.options.get("default_dashboard", config_entry.data.get("default_dashboard", ""))
 
     get_path_to_login = config_entry.options.get("login_path", config_entry.data.get("login_path", "/guest-mode/login"))
     if not get_path_to_login.startswith('/'):
@@ -129,7 +132,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     panels = hass.data.get("frontend_panels", {})
     if path in panels:
-        hass.components.frontend.async_remove_panel(path)
+        frontend.async_remove_panel(hass, path)
 
     hass.async_create_task(
         async_register_panel(
@@ -157,7 +160,9 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
     panels = hass.data.get("frontend_panels", {})
     if path in panels:
-        hass.components.frontend.async_remove_panel(path)
+        frontend.async_remove_panel(hass, path)
+
+    await hass.config_entries.async_unload_platforms(config_entry, ["image"])
     return True
 
 async def async_copy_file(source_path, dest_path):
