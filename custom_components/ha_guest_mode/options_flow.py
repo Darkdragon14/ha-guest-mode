@@ -23,6 +23,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         path = self.config_entry.options.get("path_to_admin_ui", self.config_entry.data.get("path_to_admin_ui", "/guest-mode"))
         login_path = self.config_entry.options.get("login_path", self.config_entry.data.get("login_path", "/guest-mode/login"))
         copy_link = self.config_entry.options.get("copy_link_mode", self.config_entry.data.get("copy_link_mode", False))
+        default_user = self.config_entry.options.get("default_user", self.config_entry.data.get("default_user", ""))
+        default_dashboard = self.config_entry.options.get("default_dashboard", self.config_entry.data.get("default_dashboard", ""))
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema({
@@ -31,5 +33,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Optional("path_to_admin_ui", default=path): str,
                 vol.Optional("login_path", default=login_path): str,
                 vol.Optional("copy_link_mode", default=copy_link): bool,
+                vol.Optional("default_user", default=default_user): str,
+                vol.Optional("default_dashboard", default=default_dashboard): str,
             }),
         )

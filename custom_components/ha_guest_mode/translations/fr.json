@@ -7,7 +7,13 @@
                     "tab_name": "Nom de l'onglet",
                     "path_to_admin_ui": "Chemin vers l'interface d'administration",
                     "login_path": "Chemin de connexion des invités",
-                    "copy_link_mode": "Copier le lien directement (ignore le partage)"
+                    "copy_link_mode": "Copier le lien directement (ignore le partage)",
+                    "default_user": "Nom de l'utilisateur par défaut",
+                    "default_dashboard": "Chemin tableau de bord/vue par défaut"
+                },
+                "data_description": {
+                    "default_user": "Correspond au champ Nom de l'utilisateur Home Assistant.",
+                    "default_dashboard": "Utilisez dashboard ou dashboard/view (exemple : lovelace-guest ou lovelace-guest/entree). N'incluez pas de slash initial."
                 }
             }
         },
@@ -24,7 +30,13 @@
                     "tab_name": "Nom de l'onglet",
                     "path_to_admin_ui": "Chemin vers l'interface d'administration",
                     "login_path": "Chemin de connexion des invités",
-                    "copy_link_mode": "Copier le lien directement (ignore le partage)"
+                    "copy_link_mode": "Copier le lien directement (ignore le partage)",
+                    "default_user": "Nom de l'utilisateur par défaut",
+                    "default_dashboard": "Chemin tableau de bord/vue par défaut"
+                },
+                "data_description": {
+                    "default_user": "Correspond au champ Nom de l'utilisateur Home Assistant.",
+                    "default_dashboard": "Utilisez dashboard ou dashboard/view (exemple : lovelace-guest ou lovelace-guest/entree). N'incluez pas de slash initial."
                 }
             }
         }

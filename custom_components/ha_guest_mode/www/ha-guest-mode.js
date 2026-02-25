@@ -56,6 +56,8 @@ class GuestModePanel extends LitElement {
       dashboards: { type: Array },
       dashboard: { type: String },
       copyLinkMode: { type: Boolean },
+      defaultUser: { type: String },
+      defaultDashboard: { type: String },
       groups: { type: Array },
       createUser: { type: Boolean },
       newUserName: { type: String },
@@ -77,8 +79,10 @@ class GuestModePanel extends LitElement {
     this.loginPath = '';
     this.urls = {};
     this.dashboards = [];
-   this.dashboard = '';
-   this.copyLinkMode = false;
+    this.dashboard = '';
+    this.copyLinkMode = false;
+    this.defaultUser = '';
+    this.defaultDashboard = '';
     this.groups = [];
     this.createUser = false;
     this.newUserName = '';
@@ -123,6 +127,64 @@ class GuestModePanel extends LitElement {
     } catch (err) {
       console.error('Error fetching copy link mode:', err);
       this.copyLinkMode = false; // Default to false if there's an error
+    }
+  }
+
+  normalizeDashboardPath(path) {
+    if (typeof path !== 'string') {
+      return '';
+    }
+    return path.trim().replace(/^\/+/, '');
+  }
+
+  findDefaultUserId() {
+    const normalizedDefaultUser = (this.defaultUser || '').trim().toLowerCase();
+    if (!normalizedDefaultUser) {
+      return null;
+    }
+
+    const matchedUser = this.users.find((user) => {
+      const name = (user.name || '').trim().toLowerCase();
+      return name === normalizedDefaultUser;
+    });
+
+    return matchedUser ? matchedUser.id : null;
+  }
+
+  isDashboardPathAvailable(path) {
+    const normalizedPath = this.normalizeDashboardPath(path);
+    if (!normalizedPath || !Array.isArray(this.dashboards) || this.dashboards.length === 0) {
+      return false;
+    }
+
+    return this.dashboards.some((dashboard) => dashboard.url_path === normalizedPath);
+  }
+
+  applyTokenDefaults() {
+    if (this.isDashboardPathAvailable(this.defaultDashboard)) {
+      this.dashboard = this.normalizeDashboardPath(this.defaultDashboard);
+    }
+
+    if (this.createUser) {
+      return;
+    }
+
+    const defaultUserId = this.findDefaultUserId();
+    if (defaultUserId) {
+      this.user = defaultUserId;
+    }
+  }
+
+  async getTokenDefaults() {
+    try {
+      const defaults = await this.hass.callWS({ type: 'ha_guest_mode/get_token_defaults' });
+      this.defaultUser = typeof defaults?.default_user === 'string' ? defaults.default_user : '';
+      this.defaultDashboard = this.normalizeDashboardPath(defaults?.default_dashboard);
+      this.applyTokenDefaults();
+    } catch (err) {
+      console.error('Error fetching token defaults:', err);
+      this.defaultUser = '';
+      this.defaultDashboard = '';
     }
   }
 
@@ -182,6 +244,7 @@ class GuestModePanel extends LitElement {
 
       const nestedDashboards = await Promise.all(dashboardPromises);
       this.dashboards = nestedDashboards.flat();
+      this.applyTokenDefaults();
     }
     catch (err) {
       console.error('Error fetching dashboards:', err);
@@ -234,7 +297,8 @@ class GuestModePanel extends LitElement {
         const matched = this.users.find(u => u.id === previousUser);
         this.user = matched ? matched.id : null;
       } else if (!this.createUser) {
-        this.user = null;
+        const defaultUserId = this.findDefaultUserId();
+        this.user = defaultUserId || null;
       }
     });
   }
@@ -245,6 +309,7 @@ class GuestModePanel extends LitElement {
       this.getUrls();
       this.getDashboards();
       this.getCopyLinkMode();
+      this.getTokenDefaults();
       this.getGroups();
     }
     super.update(changedProperties);
@@ -264,6 +329,7 @@ class GuestModePanel extends LitElement {
       this.newUserLocalOnly = false;
       this.selectedGroups = [];
       this.groupSelection = '';
+      this.applyTokenDefaults();
     }
   }
 
@@ -646,6 +712,7 @@ class GuestModePanel extends LitElement {
   }
 
   openCreateDialog() {
+    this.applyTokenDefaults();
     this.isCreateDialogOpen = true;
     this.modalAlert = '';
   }

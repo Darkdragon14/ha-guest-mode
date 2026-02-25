@@ -7,7 +7,13 @@
                     "tab_name": "Tab naam",
                     "path_to_admin_ui": "Pad naar admin-interface",
                     "login_path": "Gast login-pad",
-                    "copy_link_mode": "Kopieer de link direct (slaat delen over)"
+                    "copy_link_mode": "Kopieer de link direct (slaat delen over)",
+                    "default_user": "Standaard gebruikersnaam",
+                    "default_dashboard": "Standaard dashboard-/viewpad"
+                },
+                "data_description": {
+                    "default_user": "Komt overeen met het veld Naam van de Home Assistant-gebruiker.",
+                    "default_dashboard": "Gebruik dashboard of dashboard/view (bijv. lovelace-guest of lovelace-guest/entree). Voeg geen voorloopslash toe."
                 }
             }
         },
@@ -24,7 +30,13 @@
                     "tab_name": "Tab naam",
                     "path_to_admin_ui": "Pad naar admin-interface",
                     "login_path": "Gast login-pad",
-                    "copy_link_mode": "Kopieer de link direct (slaat delen over)"
+                    "copy_link_mode": "Kopieer de link direct (slaat delen over)",
+                    "default_user": "Standaard gebruikersnaam",
+                    "default_dashboard": "Standaard dashboard-/viewpad"
+                },
+                "data_description": {
+                    "default_user": "Komt overeen met het veld Naam van de Home Assistant-gebruiker.",
+                    "default_dashboard": "Gebruik dashboard of dashboard/view (bijv. lovelace-guest of lovelace-guest/entree). Voeg geen voorloopslash toe."
                 }
             }
         }

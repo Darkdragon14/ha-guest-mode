@@ -33,6 +33,8 @@ To install Guest Mode using [HACS](https://hacs.xyz/):
 |**Path for Admin UI**|Custom URL path for accessing the admin interface|No|`/guest-mode`|
 |**Login Path**|Custom URL path for guest to access the login page|No|`/guest-mode/login`|
 |**Copy link directly (skips sharing)**|If checked, clicking the share button will copy the link directly to the clipboard instead of opening the native share dialog.|No|Unchecked|
+|**Default User Name** (`default_user`)|Preselects the user when creating a token. This matches the Home Assistant user's **Name** field.|No|Empty|
+|**Default Dashboard/View Path** (`default_dashboard`)|Preselects dashboard or dashboard view when creating a token. Use `dashboard` or `dashboard/view` (examples: `lovelace-guest`, `lovelace-guest/entry`) and do not include a leading slash.|No|Empty|
 
 
 # Difference with the fork
