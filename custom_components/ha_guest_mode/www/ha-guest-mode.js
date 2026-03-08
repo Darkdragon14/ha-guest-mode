@@ -619,7 +619,7 @@ class GuestModePanel extends LitElement {
 
     // Dialog
     const dialog = document.createElement('ha-dialog');
-    dialog.heading = `QR — ${token.name}`;
+    dialog.setAttribute('header-title', `QR — ${token.name}`);
     dialog.style.setProperty('--dialog-content-padding', '16px');
 
     const container = document.createElement('div');
@@ -639,6 +639,9 @@ class GuestModePanel extends LitElement {
     linkEl.style.textAlign = 'center';
     container.appendChild(linkEl);
 
+    const footer = document.createElement('ha-dialog-footer');
+    footer.slot = 'footer';
+
     const copyBtn = document.createElement('ha-button');
     copyBtn.slot = 'primaryAction';
     copyBtn.textContent = this.translate("copy") || "Copy";
@@ -654,8 +657,9 @@ class GuestModePanel extends LitElement {
     closeBtn.addEventListener('click', () => dialog.close());
 
     dialog.appendChild(container);
-    dialog.appendChild(copyBtn);
-    dialog.appendChild(closeBtn);
+    footer.appendChild(closeBtn);
+    footer.appendChild(copyBtn);
+    dialog.appendChild(footer);
     this.shadowRoot.appendChild(dialog);
     dialog.open = true;
 
@@ -675,8 +679,11 @@ class GuestModePanel extends LitElement {
   async showConfirmationDialog(title, text, buttons) {
     return new Promise((resolve) => {
       const dialog = document.createElement('ha-dialog');
-      dialog.heading = title;
+      dialog.setAttribute('header-title', title);
       dialog.textContent = text;
+
+      const footer = document.createElement('ha-dialog-footer');
+      footer.slot = 'footer';
 
       const confirmButton = document.createElement('ha-button');
       confirmButton.slot = 'primaryAction';
@@ -696,8 +703,9 @@ class GuestModePanel extends LitElement {
         dialog.close();
       });
 
-      dialog.appendChild(confirmButton);
-      dialog.appendChild(cancelButton);
+      footer.appendChild(cancelButton);
+      footer.appendChild(confirmButton);
+      dialog.appendChild(footer);
       this.shadowRoot.appendChild(dialog);
       dialog.open = true;
 
@@ -1039,7 +1047,7 @@ class GuestModePanel extends LitElement {
 
         <div class="mdc-top-app-bar--fixed-adjust flex content">
           ${this.isCreateDialogOpen ? html`
-            <ha-dialog class="create-token-dialog" open .heading=${this.translate("create_token") || "Create token"} @closed=${this.closeCreateDialog}>
+            <ha-dialog class="create-token-dialog" open width="large" header-title=${this.translate("create_token") || "Create token"} @closed=${this.closeCreateDialog}>
               <div class="dialog-content">
                 ${this.renderCreateTokenForm(userSchema, groupSchema, dashboardSchema)}
               </div>
@@ -1052,12 +1060,14 @@ class GuestModePanel extends LitElement {
                     </div>
                   `
                 : null}
-              <ha-button slot="secondaryAction" @click=${this.closeCreateDialog}>
-                ${this.translate("close") || "Close"}
-              </ha-button>
-              <ha-button slot="primaryAction" @click=${this.addClick}>
-                ${this.translate("add")}
-              </ha-button>
+              <ha-dialog-footer slot="footer">
+                <ha-button slot="secondaryAction" @click=${this.closeCreateDialog}>
+                  ${this.translate("close") || "Close"}
+                </ha-button>
+                <ha-button slot="primaryAction" @click=${this.addClick}>
+                  ${this.translate("add")}
+                </ha-button>
+              </ha-dialog-footer>
             </ha-dialog>
           ` : null}
 
@@ -1324,8 +1334,8 @@ class GuestModePanel extends LitElement {
         max-width: 100%;
       }
       .create-token-dialog {
-        --mdc-dialog-min-width: min(1080px, 92vw);
-        --mdc-dialog-max-width: min(1080px, 92vw);
+        --ha-dialog-width-lg: min(1080px, 92vw);
+        --ha-dialog-max-width: min(1080px, 92vw);
       }
       .modal-alert-footer {
         margin-top: 10px;
