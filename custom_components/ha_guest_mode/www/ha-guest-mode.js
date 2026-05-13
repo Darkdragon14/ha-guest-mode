@@ -751,6 +751,7 @@ class GuestModePanel extends LitElement {
       tagName === "input" ||
       tagName === "textarea" ||
       tagName === "select" ||
+      tagName === "ha-input" ||
       tagName === "ha-textfield" ||
       tagName === "ha-combo-box";
 
@@ -791,24 +792,24 @@ class GuestModePanel extends LitElement {
           <section class="form-section">
             <h3 class="section-title">${this.translate("section_token") || "Token"}</h3>
             <div class="section-grid">
-              <ha-textfield
+              <ha-input
                 .label=${this.translate("key_name")}
                 .value=${this.name || ""}
                 @input=${this.nameChanged}
-              ></ha-textfield>
+              ></ha-input>
               <ha-form
                 .hass=${this.hass}
                 .schema=${dashboardSchema}
                 .data=${{ dashboard: this.dashboard || "" }}
                 @value-changed=${this.dashboardChanged}
               ></ha-form>
-              <ha-textfield
+              <ha-input
                 .label=${this.translate("usage_limit")}
                 type="number"
                 min="0"
                 .value=${this.usage_limit || ""}
                 @input=${this.usageLimitChanged}
-              ></ha-textfield>
+              ></ha-input>
             </div>
           </section>
 
@@ -825,11 +826,11 @@ class GuestModePanel extends LitElement {
 
               ${this.createUser
                 ? html`
-                    <ha-textfield
+                    <ha-input
                       .label=${this.translate("new_user_name")}
                       .value=${this.newUserName}
                       @input=${this.newUserNameChanged}
-                    ></ha-textfield>
+                    ></ha-input>
                     <div class="checkbox-row">
                       <mwc-checkbox
                         .checked=${this.newUserLocalOnly}
@@ -932,12 +933,12 @@ class GuestModePanel extends LitElement {
 
                     ${this.useDuration
                       ? html`
-                          <ha-textfield
+                          <ha-input
                             .label=${this.translate("duration_in_hours")}
                             .value=${this.duration}
                             @input=${this.durationChanged}
                             type="number"
-                          ></ha-textfield>
+                          ></ha-input>
                         `
                       : html`
                           <div class="span-2">
@@ -1367,6 +1368,12 @@ class GuestModePanel extends LitElement {
         margin: 16px;
       }
 
+      ha-input,
+      ha-textfield {
+        width: 100%;
+      }
+
+      ha-input[id="sec"],
       ha-textfield[id="sec"] {
         display: none;
       }
