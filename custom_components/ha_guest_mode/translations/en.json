@@ -102,6 +102,9 @@
             "add": {
                 "name": "Add"
             },
+            "close": {
+                "name": "Close"
+            },
             "for": {
                 "name": "For"
             },

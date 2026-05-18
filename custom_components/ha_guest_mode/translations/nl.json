@@ -102,6 +102,9 @@
             "add": {
                 "name": "Toevoegen"
             },
+            "close": {
+                "name": "Sluiten"
+            },
             "for": {
                 "name": "voor"
             },
