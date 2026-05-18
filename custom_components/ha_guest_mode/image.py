@@ -6,7 +6,7 @@ import io
 from homeassistant.components.image import ImageEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.network import get_url, NoURLAvailableError
-from .const import DOMAIN, DATABASE
+from .const import DOMAIN, DATABASE, QR_CODE_UNIQUE_ID
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class GuestQRCodeImage(ImageEntity):
         self.hass = hass
         self._config_entry = config_entry
         self._attr_name = "Guest QR Code"
-        self._attr_unique_id = f"{DOMAIN}_guest_qr_code"
+        self._attr_unique_id = QR_CODE_UNIQUE_ID
         self._attr_should_poll = True
         self._image_bytes = None
         self._token_attributes = {}
@@ -139,4 +139,3 @@ class GuestQRCodeImage(ImageEntity):
         buf = io.BytesIO()
         img.save(buf, "PNG")
         return buf.getvalue()
-

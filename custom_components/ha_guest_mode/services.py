@@ -1,5 +1,4 @@
 import voluptuous as vol
-from datetime import timedelta, datetime
 import jwt
 import uuid
 import sqlite3
@@ -9,6 +8,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.translation import async_get_translations
 
 from .const import DOMAIN, DATABASE
+from .utils import as_utc_datetime, async_update_qr_code_entity, utcnow
 
 async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
     translations = await async_get_translations(hass, hass.config.language, "config")
@@ -50,18 +50,18 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
         endDate_iso = None
     else:
         is_never_expire = False
-        now = datetime.now()
-        
+        now = utcnow()
+
         if start_date:
-            startDate = start_date
+            startDate = as_utc_datetime(start_date)
         else:
             startDate = now
 
         if expiration_duration:
             endDate = startDate + expiration_duration
         else:
-            endDate = expiration_date
-        
+            endDate = as_utc_datetime(expiration_date)
+
         startDate_iso = startDate.isoformat()
         endDate_iso = endDate.isoformat()
 
@@ -122,7 +122,7 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
     conn.commit()
     conn.close()
 
-    await hass.services.async_call("homeassistant", "update_entity", {"entity_id": "image.guest_qr_code"}, blocking=True)
+    await async_update_qr_code_entity(hass)
 
 async def async_register_services(hass: HomeAssistant):
     SERVICE_CREATE_TOKEN_SCHEMA = vol.Schema({
