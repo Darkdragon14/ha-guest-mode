@@ -406,7 +406,10 @@ class GuestModePanel extends LitElement {
     return group ? (group.name || group.id) : groupId;
   }
 
-  addClick() {
+  addClick(e) {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
     const payload = {
       type: 'ha_guest_mode/create_token',
       name: this.name,
@@ -596,7 +599,7 @@ class GuestModePanel extends LitElement {
             .catch((error) => console.error("Erreur de partage :", error));
     } else {
         navigator.clipboard.writeText(this.getLoginUrl(token, baseUrl));
-        this.showAlert('Copied to clipboard ' + token.name);
+        this.showAlert(`${this.translate("copied_to_clipboard") || "Copied to clipboard"} ${token.name}`);
     }
   }
 
@@ -648,13 +651,15 @@ class GuestModePanel extends LitElement {
     copyBtn.addEventListener('click', async () => {
       await navigator.clipboard.writeText(url);
       this.alertType = "info";
-      this.showAlert('Copied to clipboard');
+      this.showAlert(this.translate("copied_to_clipboard") || "Copied to clipboard");
     });
 
     const closeBtn = document.createElement('ha-button');
     closeBtn.slot = 'secondaryAction';
     closeBtn.textContent = this.translate("close") || "Close";
-    closeBtn.addEventListener('click', () => dialog.close());
+    closeBtn.addEventListener('click', () => {
+      dialog.open = false;
+    });
 
     dialog.appendChild(container);
     footer.appendChild(closeBtn);
@@ -691,7 +696,7 @@ class GuestModePanel extends LitElement {
       confirmButton.textContent = buttons.confirm;
       confirmButton.addEventListener('click', () => {
         resolve(true);
-        dialog.close();
+        dialog.open = false;
       });
 
       const cancelButton = document.createElement('ha-button');
@@ -700,7 +705,7 @@ class GuestModePanel extends LitElement {
       cancelButton.textContent = buttons.cancel;
       cancelButton.addEventListener('click', () => {
         resolve(false);
-        dialog.close();
+        dialog.open = false;
       });
 
       footer.appendChild(cancelButton);
@@ -719,13 +724,19 @@ class GuestModePanel extends LitElement {
     return this.hass.localize(`component.ha_guest_mode.entity.frontend.${key}.name`);
   }
 
-  openCreateDialog() {
+  openCreateDialog(e) {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
     this.applyTokenDefaults();
     this.isCreateDialogOpen = true;
     this.modalAlert = '';
   }
 
-  closeCreateDialog() {
+  closeCreateDialog(e) {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
     this.isCreateDialogOpen = false;
     this.modalAlert = '';
   }
@@ -1037,7 +1048,7 @@ class GuestModePanel extends LitElement {
                 class="header-create-button"
                 title=${`${this.translate("create_token") || "Create token"} (${this.getCreateTokenShortcutLabel()})`}
                 aria-label=${this.translate("create_token") || "Create token"}
-                @click=${this.openCreateDialog}
+                @click=${(e) => this.openCreateDialog(e)}
               >
                 <ha-icon icon="mdi:plus"></ha-icon>
               </mwc-icon-button>
@@ -1048,7 +1059,7 @@ class GuestModePanel extends LitElement {
 
         <div class="mdc-top-app-bar--fixed-adjust flex content">
           ${this.isCreateDialogOpen ? html`
-            <ha-dialog class="create-token-dialog" open width="large" header-title=${this.translate("create_token") || "Create token"} @closed=${this.closeCreateDialog}>
+            <ha-dialog class="create-token-dialog" open width="large" header-title=${this.translate("create_token") || "Create token"} @closed=${(e) => this.closeCreateDialog(e)}>
               <div class="dialog-content">
                 ${this.renderCreateTokenForm(userSchema, groupSchema, dashboardSchema)}
               </div>
@@ -1062,10 +1073,10 @@ class GuestModePanel extends LitElement {
                   `
                 : null}
               <ha-dialog-footer slot="footer">
-                <ha-button slot="secondaryAction" @click=${this.closeCreateDialog}>
+                <ha-button slot="secondaryAction" @click=${(e) => this.closeCreateDialog(e)}>
                   ${this.translate("close") || "Close"}
                 </ha-button>
-                <ha-button slot="primaryAction" @click=${this.addClick}>
+                <ha-button slot="primaryAction" @click=${(e) => this.addClick(e)}>
                   ${this.translate("add")}
                 </ha-button>
               </ha-dialog-footer>
@@ -1134,7 +1145,7 @@ class GuestModePanel extends LitElement {
                 <div class="empty-state-content">
                   <h3>${this.translate("no_tokens_title") || "No active tokens"}</h3>
                   <p>${this.translate("no_tokens_description") || "Create one now to share guest access."}</p>
-                  <ha-button @click=${this.openCreateDialog}>
+                  <ha-button @click=${(e) => this.openCreateDialog(e)}>
                     ${this.translate("create_token") || "Create token"}
                   </ha-button>
                 </div>
