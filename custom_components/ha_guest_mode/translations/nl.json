@@ -105,6 +105,12 @@
             "close": {
                 "name": "Sluiten"
             },
+            "copy": {
+                "name": "Kopiëren"
+            },
+            "copied_to_clipboard": {
+                "name": "Gekopieerd naar klembord"
+            },
             "for": {
                 "name": "voor"
             },

@@ -599,7 +599,7 @@ class GuestModePanel extends LitElement {
             .catch((error) => console.error("Erreur de partage :", error));
     } else {
         navigator.clipboard.writeText(this.getLoginUrl(token, baseUrl));
-        this.showAlert('Copied to clipboard ' + token.name);
+        this.showAlert(`${this.translate("copied_to_clipboard") || "Copied to clipboard"} ${token.name}`);
     }
   }
 
@@ -651,7 +651,7 @@ class GuestModePanel extends LitElement {
     copyBtn.addEventListener('click', async () => {
       await navigator.clipboard.writeText(url);
       this.alertType = "info";
-      this.showAlert('Copied to clipboard');
+      this.showAlert(this.translate("copied_to_clipboard") || "Copied to clipboard");
     });
 
     const closeBtn = document.createElement('ha-button');

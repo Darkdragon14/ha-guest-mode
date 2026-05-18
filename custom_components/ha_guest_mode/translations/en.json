@@ -105,6 +105,12 @@
             "close": {
                 "name": "Close"
             },
+            "copy": {
+                "name": "Copy"
+            },
+            "copied_to_clipboard": {
+                "name": "Copied to clipboard"
+            },
             "for": {
                 "name": "For"
             },

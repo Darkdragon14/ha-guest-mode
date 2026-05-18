@@ -105,6 +105,12 @@
             "close": {
                 "name": "Fermer"
             },
+            "copy": {
+                "name": "Copier"
+            },
+            "copied_to_clipboard": {
+                "name": "Copié dans le presse-papiers"
+            },
             "for": {
                 "name": "Pour"
             },
