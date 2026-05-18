@@ -1,6 +1,6 @@
 import jwt
 import sqlite3
-from datetime import timedelta, datetime
+from datetime import timedelta
 from aiohttp import web
 from typing import Any
 import json
@@ -11,6 +11,7 @@ from homeassistant.components.http import HomeAssistantView
 from homeassistant.helpers.translation import async_get_translations
 
 from .const import DATABASE, DOMAIN
+from .utils import parse_utc_datetime, utcnow, utcnow_isoformat
 
 class ValidateTokenView(HomeAssistantView):
     name = "guest-mode:login"
@@ -109,7 +110,7 @@ class ValidateTokenView(HomeAssistantView):
             if usage_limit is not None and usage_limit > 0 and times_used >= usage_limit:
                 return web.Response(status=403, text=self.get_translations(translations, "usage_limit_reached"))
             
-            now_iso = datetime.now().isoformat()
+            now_iso = utcnow_isoformat()
             new_times_used = times_used + 1
             
             update_query = "UPDATE tokens SET last_used = ?, times_used = ?"
@@ -137,8 +138,8 @@ class ValidateTokenView(HomeAssistantView):
             start_date = None
             end_date = None
             if not is_never_expire:
-                start_date = datetime.fromisoformat(decoded_token.get("startDate"))
-                end_date = datetime.fromisoformat(decoded_token.get("endDate"))
+                start_date = parse_utc_datetime(decoded_token.get("startDate"))
+                end_date = parse_utc_datetime(decoded_token.get("endDate"))
         except jwt.ExpiredSignatureError:
             return web.Response(status=401, text=self.get_translations(translations, "expired_token"))
         except jwt.InvalidTokenError:
@@ -146,7 +147,7 @@ class ValidateTokenView(HomeAssistantView):
         except Exception as e:
             return web.Response(status=400, text=str(e))
 
-        now = datetime.now()
+        now = utcnow()
         if not is_never_expire and (now < start_date or now > end_date):
             return web.Response(status=403, text=self.get_translations(translations, "not_yet_or_expired"))
         

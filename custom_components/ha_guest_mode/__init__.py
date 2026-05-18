@@ -2,6 +2,7 @@ import sqlite3
 import os
 import aiofiles
 import json
+from contextlib import suppress
 from pathlib import Path
 
 from homeassistant.core import HomeAssistant
@@ -30,6 +31,11 @@ def get_version():
 
 VERSION = get_version()
 
+def _set_database_permissions(path: str) -> None:
+    """Allow HA and its group to write the database file."""
+    with suppress(OSError):
+        os.chmod(path, 0o664)
+
 def _ensure_database_location(hass: HomeAssistant) -> str:
     """Make sure the DB lives in .storage and migrate existing files."""
     new_path = hass.config.path(DATABASE)
@@ -38,6 +44,9 @@ def _ensure_database_location(hass: HomeAssistant) -> str:
     legacy_path = hass.config.path(LEGACY_DATABASE)
     if os.path.exists(legacy_path) and not os.path.exists(new_path):
         os.replace(legacy_path, new_path)
+
+    if os.path.exists(new_path):
+        _set_database_permissions(new_path)
 
     return new_path
 
@@ -95,6 +104,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     connection.commit()
     connection.close()
+    _set_database_permissions(database_path)
     source_path = hass.config.path(SOURCE_PATH_SCRIPT_JS)
     dest_dir = hass.config.path(DEST_PATH_SCRIPT_JS)
     dest_path = os.path.join(dest_dir, SCRIPT_JS)
@@ -148,7 +158,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     hass.http.register_view(ValidateTokenView(hass))
 
-    hass.async_create_task(hass.config_entries.async_forward_entry_setups(config_entry, ["image"]))
+    await hass.config_entries.async_forward_entry_setups(config_entry, ["image"])
 
     return True
 

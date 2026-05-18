@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta
 from typing import Any
 from collections import defaultdict
 import voluptuous as vol
@@ -11,11 +11,11 @@ import json
 from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import TOKEN_TYPE_LONG_LIVED_ACCESS_TOKEN
 from homeassistant.components import websocket_api
-from homeassistant.util import dt as dt_util
 from homeassistant.helpers.network import NoURLAvailableError, get_url
 from homeassistant.helpers import config_validation as cv
 
 from .const import DATABASE
+from .utils import async_update_qr_code_entity, parse_utc_datetime, utcnow
 
 
 async def _async_get_all_groups(hass: HomeAssistant):
@@ -48,7 +48,7 @@ async def list_users(
     hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
 ) -> None:
     result = []
-    now = dt_util.utcnow()
+    now = utcnow()
 
     conn = sqlite3.connect(hass.config.path(DATABASE))
     conn.row_factory = sqlite3.Row
@@ -76,7 +76,7 @@ async def list_users(
         end_date_str = token.get("end_date")
 
         if not is_never_expire and end_date_str:
-            end_date = datetime.fromisoformat(end_date_str).replace(tzinfo=timezone.utc)
+            end_date = parse_utc_datetime(end_date_str)
 
             if end_date < now:
                 refresh_token_id = token.get("token_ha_id")
@@ -162,7 +162,7 @@ async def list_users(
             remaining_seconds = None
             if not is_never_expire and token["end_date"]:
                 remaining_seconds = int(
-                    (datetime.fromisoformat(token["end_date"]).replace(tzinfo=timezone.utc) - now).total_seconds()
+                    (parse_utc_datetime(token["end_date"]) - now).total_seconds()
                 )
 
             tokens.append(
@@ -264,7 +264,7 @@ async def create_token(
                     )
                 )
                 return
-            now = datetime.now()
+            now = utcnow()
             startDate = now + timedelta(minutes=msg["startDate"])
             endDate = now + timedelta(minutes=msg["expirationDate"])
             startDate_iso = startDate.isoformat()
@@ -380,7 +380,7 @@ async def create_token(
         conn.commit()
         conn.close()
 
-        await hass.services.async_call("homeassistant", "update_entity", {"entity_id": "image.guest_qr_code"}, blocking=True)
+        await async_update_qr_code_entity(hass)
 
     except ValueError as err:
         connection.send_message(

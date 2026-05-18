@@ -1,4 +1,5 @@
 DOMAIN = "ha_guest_mode"
+QR_CODE_UNIQUE_ID = f"{DOMAIN}_guest_qr_code"
 
 BASE_PATH = "custom_components/ha_guest_mode"
 SCRIPT_JS = "ha-guest-mode.js"
