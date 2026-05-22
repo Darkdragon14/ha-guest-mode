@@ -8,7 +8,7 @@
 
 Generate secure login links for [Home Assistant](https://www.home-assistant.io/) to share with your guests.
 
-It's based on the code of [@kcsoft](https://github.com/kcsoft), I forked it and I work on it to have one repository and a start date. Other changes are coming
+Guest Mode started as a fork of [Virtual Keys](https://github.com/kcsoft/virtual-keys) by [@kcsoft](https://github.com/kcsoft), but is now maintained as an independent Home Assistant integration with its own UI, configuration flow, release cycle, and roadmap.
 
 # Installation
 
