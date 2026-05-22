@@ -39,16 +39,22 @@ To install Guest Mode using [HACS](https://hacs.xyz/):
 |**Default Dashboard/View Path** (`default_dashboard`)|Preselects dashboard or dashboard view when creating a token. Use `dashboard` or `dashboard/view` (examples: `lovelace-guest`, `lovelace-guest/entry`) and do not include a leading slash.|No|Empty|
 
 
-# Difference with the fork
+# What Guest Mode provides
 
-In this version, all configurations are handled exclusively through the Home Assistant interface, allowing users to easily modify options as needed without manual edits.
+Guest Mode lets you create and manage temporary Home Assistant access links from a dedicated Home Assistant UI, without manually editing YAML or configuration files.
 
-You can set the link to be active immediately (default mode) or enable a date selector to specify a start date. Additionally, the Home Assistant token is generated only if the guest accesses the link within the defined time frame.
+The integration provides:
 
-If you want to know whether your guest has used the link, you can check the icon next to the token's name:
+* A redesigned admin interface to create, view, share, and manage guest access links.
+* Temporary links with optional start date, expiration date, or duration.
+* Native Home Assistant login using a selected guest user.
+* Optional dashboard or dashboard view redirection after login.
+* QR code generation for the latest guest link, exposed through the `image.guest_qr_code` entity.
+* Share options, including native sharing or direct copy to clipboard depending on your configuration.
+* Token status tracking, so you can see whether a guest link has already been used.
+* Home Assistant services, allowing guest tokens to be created from automations.
 
-* Red: The link has not been used.
-* Green: The link has been used, and the Home Assistant token has been created.
+For security, the Home Assistant long-lived access token is created only when the guest opens a valid link during the allowed time window.
 
 # Use case
 
