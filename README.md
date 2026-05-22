@@ -46,7 +46,7 @@ Guest Mode lets you create and manage temporary Home Assistant access links from
 The integration provides:
 
 * A redesigned admin interface to create, view, share, and manage guest access links.
-* Temporary links with optional start date, expiration date, or duration.
+* Temporary links with optional start date, expiration date, duration, and usage limit.
 * Native Home Assistant login using a selected guest user.
 * Optional dashboard or dashboard view redirection after login.
 * QR code generation for the latest guest link, exposed through the `image.guest_qr_code` entity.
@@ -54,7 +54,7 @@ The integration provides:
 * Token status tracking, so you can see whether a guest link has already been used.
 * Home Assistant services, allowing guest tokens to be created from automations.
 
-For security, the Home Assistant long-lived access token is created only when the guest opens a valid link during the allowed time window.
+For security, the Home Assistant long-lived access token is created only when the guest opens a valid link during the allowed time window and before the usage limit is reached.
 
 # Use case
 
