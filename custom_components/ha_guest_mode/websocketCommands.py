@@ -15,7 +15,7 @@ from homeassistant.helpers.network import NoURLAvailableError, get_url
 from homeassistant.helpers import config_validation as cv
 
 from .const import DATABASE
-from .utils import async_update_qr_code_entity, parse_utc_datetime, utcnow
+from .utils import async_sync_acm_dashboards, async_update_qr_code_entity, parse_utc_datetime, utcnow
 
 
 async def _async_get_all_groups(hass: HomeAssistant):
@@ -55,8 +55,11 @@ async def list_users(
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM tokens')
     token_rows = cursor.fetchall()
+    sync_acm_needed = False
 
     async def remove_managed_user_if_needed(user_id: str, managed: bool) -> None:
+        nonlocal sync_acm_needed
+
         if not managed:
             return
 
@@ -68,6 +71,7 @@ async def list_users(
         user = await hass.auth.async_get_user(user_id)
         if user and not user.system_generated:
             await hass.auth.async_remove_user(user)
+        sync_acm_needed = True
 
     active_tokens = []
     for row in token_rows:
@@ -145,6 +149,7 @@ async def list_users(
 
             token["managed_user_groups"] = stored_group_value
             token["managed_user_local_only"] = managed_user_local_only_value
+            sync_acm_needed = True
 
         conn.commit()
         existing_users = {user.id: user for user in await hass.auth.async_get_users()}
@@ -199,6 +204,8 @@ async def list_users(
 
     conn.commit()
     conn.close()
+    if sync_acm_needed:
+        await async_sync_acm_dashboards(hass)
     connection.send_result(msg["id"], result)
 
 
@@ -380,6 +387,9 @@ async def create_token(
         conn.commit()
         conn.close()
 
+        if managed_user:
+            await async_sync_acm_dashboards(hass)
+
         await async_update_qr_code_entity(hass)
 
     except ValueError as err:
@@ -423,6 +433,7 @@ async def delete_token(
     
     cursor.execute('DELETE FROM tokens WHERE id = ?', (msg["token_id"],))
 
+    sync_acm_needed = False
     if token["managed_user"]:
         cursor.execute('SELECT COUNT(*) FROM tokens WHERE userId = ?', (token["userId"],))
         remaining = cursor.fetchone()[0]
@@ -430,9 +441,12 @@ async def delete_token(
             user = await hass.auth.async_get_user(token["userId"])
             if user and not user.system_generated:
                 await hass.auth.async_remove_user(user)
+            sync_acm_needed = True
 
     conn.commit()
     conn.close()
+    if sync_acm_needed:
+        await async_sync_acm_dashboards(hass)
     connection.send_result(msg["id"], True)
 
 @websocket_api.websocket_command({vol.Required("type"): "ha_guest_mode/get_path_to_login"})
