@@ -1,10 +1,16 @@
 from datetime import datetime, timezone
+from inspect import isawaitable
+import logging
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN, QR_CODE_UNIQUE_ID
+
+
+_LOGGER = logging.getLogger(__name__)
+ACM_DOMAIN = "ha_access_control_manager"
 
 
 def utcnow() -> datetime:
@@ -52,3 +58,21 @@ async def async_update_qr_code_entity(hass: HomeAssistant) -> None:
         {"entity_id": entity_id},
         blocking=True,
     )
+
+
+async def async_sync_acm_dashboards(hass: HomeAssistant) -> None:
+    """Ask Access Control Manager to sync dashboard view visibility if available."""
+    acm_data = hass.data.get(ACM_DOMAIN)
+    if not isinstance(acm_data, dict):
+        return
+
+    sync = acm_data.get("async_sync_group_dashboards_to_users")
+    if not callable(sync):
+        return
+
+    try:
+        result = sync(hass)
+        if isawaitable(result):
+            await result
+    except Exception:
+        _LOGGER.exception("Failed to synchronize Access Control Manager dashboards")

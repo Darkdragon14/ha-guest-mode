@@ -11,7 +11,7 @@ from homeassistant.components.http import HomeAssistantView
 from homeassistant.helpers.translation import async_get_translations
 
 from .const import DATABASE, DOMAIN
-from .utils import parse_utc_datetime, utcnow, utcnow_isoformat
+from .utils import async_sync_acm_dashboards, parse_utc_datetime, utcnow, utcnow_isoformat
 
 class ValidateTokenView(HomeAssistantView):
     name = "guest-mode:login"
@@ -172,6 +172,7 @@ class ValidateTokenView(HomeAssistantView):
                 user = await self._restore_managed_user(cursor, result)
                 if user:
                     conn.commit()
+                    await async_sync_acm_dashboards(self.hass)
                     users = await self.hass.auth.async_get_users()
 
             if user is None:
