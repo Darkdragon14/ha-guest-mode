@@ -80,7 +80,6 @@ class ValidateTokenView(HomeAssistantView):
             """,
             (user.id, user.name, json.dumps(group_ids) if group_ids else None, local_only_value, token_row["id"]),
         )
-        await async_sync_acm_dashboards(self.hass)
         return user
 
     async def get(self, request):
@@ -173,6 +172,7 @@ class ValidateTokenView(HomeAssistantView):
                 user = await self._restore_managed_user(cursor, result)
                 if user:
                     conn.commit()
+                    await async_sync_acm_dashboards(self.hass)
                     users = await self.hass.auth.async_get_users()
 
             if user is None:
