@@ -69,6 +69,10 @@
                 "dashboard": {
                     "name": "Dashboard",
                     "description": "Der URL-Pfad des gewünschten Dashboards (z. B. 'lovelace-guest'). Fügen Sie den führenden Schrägstrich nicht hinzu."
+                },
+                "schedule_entity_id": {
+                    "name": "Zeitplan-Entität",
+                    "description": "Optionale schedule.*-Entität. Wenn gesetzt, wird der Gastzugriff widerrufen, sobald der Zeitplan nicht an ist."
                 }
             }
         }
@@ -146,6 +150,15 @@
             },
             "dashboard": {
                 "name": "Dashboard (optional)"
+            },
+            "schedule_entity": {
+                "name": "Zeitplan-Entität (optional)"
+            },
+            "schedule": {
+                "name": "Zeitplan"
+            },
+            "schedule_placeholder": {
+                "name": "Zeitplan auswählen (optional)"
             },
             "default_dashboard": {
                 "name": "Standard-Dashboard"
@@ -235,6 +248,9 @@
             },
             "usage_limit_reached": {
                 "name": "Das Nutzungslimit für dieses Token wurde erreicht."
+            },
+            "schedule_not_active": {
+                "name": "Der Gastzugriff liegt derzeit außerhalb des erlaubten Zeitplans."
             }
         }
     }

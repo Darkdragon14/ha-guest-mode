@@ -69,6 +69,10 @@
                 "dashboard": {
                     "name": "Dashboard",
                     "description": "The URL path of the desired dashboard (e.g., 'lovelace-guest'). Do not include the leading slash."
+                },
+                "schedule_entity_id": {
+                    "name": "Schedule entity",
+                    "description": "Optional schedule.* entity. If set, guest access is revoked when the schedule is not on."
                 }
             }
         }
@@ -146,6 +150,15 @@
             },
             "dashboard": {
                 "name": "Dashboard (optional)"
+            },
+            "schedule_entity": {
+                "name": "Schedule entity (optional)"
+            },
+            "schedule": {
+                "name": "Schedule"
+            },
+            "schedule_placeholder": {
+                "name": "Select a schedule (optional)"
             },
             "default_dashboard": {
                 "name": "Default Dashboard"
@@ -235,6 +248,9 @@
             },
             "usage_limit_reached": {
                 "name": "The usage limit for this token has been reached."
+            },
+            "schedule_not_active": {
+                "name": "Guest access is currently outside the allowed schedule."
             }
         }
     }

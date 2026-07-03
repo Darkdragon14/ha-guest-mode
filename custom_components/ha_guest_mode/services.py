@@ -8,7 +8,8 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.translation import async_get_translations
 
 from .const import DOMAIN, DATABASE
-from .utils import as_utc_datetime, async_update_qr_code_entity, utcnow
+from .schedule_access import async_refresh_schedule_listeners
+from .utils import as_utc_datetime, async_update_qr_code_entity, normalize_schedule_entity_id, utcnow
 
 async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
     translations = await async_get_translations(hass, hass.config.language, "config")
@@ -19,6 +20,10 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
     expiration_date = call.data.get("expiration_date")
     start_date = call.data.get("start_date")
     dashboard = call.data.get("dashboard", "lovelace")
+    try:
+        schedule_entity_id = normalize_schedule_entity_id(call.data.get("schedule_entity_id"))
+    except ValueError as err:
+        raise vol.Invalid(str(err)) from err
 
     users = await hass.auth.async_get_users()
     user_id = None
@@ -93,9 +98,10 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
             managed_user,
             managed_user_name,
             managed_user_groups,
-            managed_user_local_only
+            managed_user_local_only,
+            schedule_entity_id
         )
-        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
     conn = sqlite3.connect(hass.config.path(DATABASE))
     cursor = conn.cursor()
@@ -117,11 +123,13 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
             None,
             None,
             None,
+            schedule_entity_id,
         ),
     )
     conn.commit()
     conn.close()
 
+    await async_refresh_schedule_listeners(hass)
     await async_update_qr_code_entity(hass)
 
 async def async_register_services(hass: HomeAssistant):
@@ -132,6 +140,7 @@ async def async_register_services(hass: HomeAssistant):
         vol.Exclusive("expiration_date", "expiration"): cv.datetime,
         vol.Optional("start_date"): cv.datetime,
         vol.Optional("dashboard"): cv.string,
+        vol.Optional("schedule_entity_id"): vol.Any(None, cv.entity_id),
     })
 
     async def async_handle_create_token(call: ServiceCall):

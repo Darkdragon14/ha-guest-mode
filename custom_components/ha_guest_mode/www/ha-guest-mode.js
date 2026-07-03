@@ -55,6 +55,7 @@ class GuestModePanel extends LitElement {
       urls: { type: Object },
       dashboards: { type: Array },
       dashboard: { type: String },
+      scheduleEntityId: { type: String },
       copyLinkMode: { type: Boolean },
       defaultUser: { type: String },
       defaultDashboard: { type: String },
@@ -80,6 +81,7 @@ class GuestModePanel extends LitElement {
     this.urls = {};
     this.dashboards = [];
     this.dashboard = '';
+    this.scheduleEntityId = '';
     this.copyLinkMode = false;
     this.defaultUser = '';
     this.defaultDashboard = '';
@@ -289,6 +291,7 @@ class GuestModePanel extends LitElement {
               last_used: token.last_used ? new Date(token.last_used).toLocaleString(userLocale).replace(/:\d{2}$/, "") : this.translate("never"),
               times_used: token.times_used || 0,
               usage_limit: token.usage_limit,
+              schedule_entity_id: token.schedule_entity_id || '',
             });
           });
       });
@@ -382,6 +385,11 @@ class GuestModePanel extends LitElement {
     this.dashboard = value || "";
   }
 
+  scheduleChanged(e) {
+    const value = e.detail?.value;
+    this.scheduleEntityId = value || "";
+  }
+
   groupSelected(e) {
     const value = e.detail?.value?.group;
     if (!value) {
@@ -427,6 +435,10 @@ class GuestModePanel extends LitElement {
 
     if (this.dashboard) {
       payload.dashboard = this.dashboard;
+    }
+
+    if (this.scheduleEntityId) {
+      payload.schedule_entity_id = this.scheduleEntityId;
     }
 
     if (!this.name) {
@@ -814,6 +826,14 @@ class GuestModePanel extends LitElement {
                 .data=${{ dashboard: this.dashboard || "" }}
                 @value-changed=${this.dashboardChanged}
               ></ha-form>
+              <ha-entity-picker
+                .hass=${this.hass}
+                .label=${""}
+                .placeholder=${this.translate("schedule_placeholder") || "Select a schedule (optional)"}
+                .value=${this.scheduleEntityId || ""}
+                .includeDomains=${["schedule"]}
+                @value-changed=${this.scheduleChanged}
+              ></ha-entity-picker>
               <ha-input
                 .label=${this.translate("usage_limit")}
                 type="number"
@@ -1114,6 +1134,7 @@ class GuestModePanel extends LitElement {
                       `}
                       ${this.translate("used")}: ${token.isUsed ? this.translate("yes").toLowerCase() : this.translate("no").toLowerCase() } <br>
                       ${this.translate("dashboard")}: ${dashboardTitle} <br>
+                      ${token.schedule_entity_id ? html`${this.translate("schedule")}: ${token.schedule_entity_id} <br>` : ''}
                       ${this.translate("first_used")}: ${token.first_used} <br>
                       ${this.translate("last_used")}: ${token.last_used} <br>
                       ${this.translate("times_used")}: ${token.times_used}${token.usage_limit ? ` / ${token.usage_limit}` : ''} <br>
