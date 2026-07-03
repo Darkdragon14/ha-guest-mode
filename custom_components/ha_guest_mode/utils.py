@@ -3,6 +3,7 @@ from inspect import isawaitable
 import logging
 
 from homeassistant.core import HomeAssistant
+from homeassistant.const import STATE_ON
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
@@ -43,6 +44,36 @@ def parse_utc_datetime(value: str) -> datetime:
     """
     parsed = dt_util.parse_datetime(value) or datetime.fromisoformat(value)
     return as_utc_datetime(parsed)
+
+
+def normalize_schedule_entity_id(value) -> str | None:
+    """Normalize and validate an optional schedule entity id."""
+    if value is None:
+        return None
+
+    entity_id = str(value).strip()
+    if not entity_id:
+        return None
+
+    domain, separator, object_id = entity_id.partition(".")
+    if domain != "schedule" or not separator or not object_id:
+        raise ValueError("schedule_entity_id must be a schedule entity")
+
+    return entity_id
+
+
+def is_schedule_entity_active(hass: HomeAssistant, value) -> bool:
+    """Return true only when the configured schedule exists and is on."""
+    try:
+        schedule_entity_id = normalize_schedule_entity_id(value)
+    except ValueError:
+        return False
+
+    if schedule_entity_id is None:
+        return True
+
+    schedule_state = hass.states.get(schedule_entity_id)
+    return schedule_state is not None and schedule_state.state == STATE_ON
 
 
 async def async_update_qr_code_entity(hass: HomeAssistant) -> None:

@@ -47,6 +47,7 @@ The integration provides:
 
 * A redesigned admin interface to create, view, share, and manage guest access links.
 * Temporary links with optional start date, expiration date, duration, and usage limit.
+* Optional schedule-based access, allowing guest access only while a `schedule.*` entity is `on`.
 * Native Home Assistant login using a selected guest user.
 * Optional dashboard or dashboard view redirection after login.
 * QR code generation for the latest guest link, exposed through the `image.guest_qr_code` entity.
@@ -54,7 +55,7 @@ The integration provides:
 * Token status tracking, so you can see whether a guest link has already been used.
 * Home Assistant services, allowing guest tokens to be created from automations.
 
-For security, the Home Assistant long-lived access token is created only when the guest opens a valid link during the allowed time window and before the usage limit is reached.
+For security, the Home Assistant long-lived access token is created only when the guest opens a valid link during the allowed time window, while the optional schedule is active, and before the usage limit is reached. When a configured schedule turns off, Guest Mode revokes the Home Assistant refresh token it created for that guest token. It does not disable or remove the Home Assistant user.
 
 # Use case
 
@@ -82,12 +83,13 @@ Creates a new guest mode token.
 
 | Parameter | Description | Required |
 |---|---|---|
-| `user_id` | The name of the user to create the token for. | Yes |
+| `username` | The name of the user to create the token for. | Yes |
 | `token_name` | The name of the token. | No |
 | `expiration_duration` | The duration until the token expires (e.g., '02:00:00'). | No |
 | `expiration_date` | The date when the token expires. | No |
 | `start_date` | The date when the token becomes valid. | No |
 | `dashboard` | The URL path of the desired dashboard (e.g., 'lovelace-guest'). Do not include the leading slash. | No |
+| `schedule_entity_id` | Optional `schedule.*` entity. If set, guests can only access while this schedule is `on`; access tokens created by Guest Mode are revoked when it turns off. | No |
 
 **Note:** If neither `expiration_duration` nor `expiration_date` is provided, the token will never expire.
 
@@ -96,7 +98,7 @@ Creates a new guest mode token.
 ```yaml
 - service: ha_guest_mode.create_token
   data:
-    user_id: "guest"
+    username: "guest"
     token_name: "My Guest Token"
     expiration_duration: "01:00:00" # 1 hour
 ```

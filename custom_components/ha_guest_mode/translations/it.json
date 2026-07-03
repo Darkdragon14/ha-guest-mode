@@ -69,6 +69,10 @@
                 "dashboard": {
                     "name": "Cruscotto",
                     "description": "Il percorso URL del cruscotto desiderato (ad es. 'lovelace-guest'). Non includere la barra iniziale."
+                },
+                "schedule_entity_id": {
+                    "name": "Entità pianificazione",
+                    "description": "Entità schedule.* opzionale. Se impostata, l'accesso ospite viene revocato quando la pianificazione non è attiva."
                 }
             }
         }
@@ -146,6 +150,15 @@
             },
             "dashboard": {
                 "name": "Cruscotto (opzionale)"
+            },
+            "schedule_entity": {
+                "name": "Entità pianificazione (opzionale)"
+            },
+            "schedule": {
+                "name": "Pianificazione"
+            },
+            "schedule_placeholder": {
+                "name": "Seleziona una pianificazione (opzionale)"
             },
             "default_dashboard": {
                 "name": "Cruscotto predefinito"
@@ -235,6 +248,9 @@
             },
             "usage_limit_reached": {
                 "name": "Il limite di utilizzo per questo token è stato raggiunto."
+            },
+            "schedule_not_active": {
+                "name": "L'accesso ospite è attualmente fuori dall'orario consentito."
             }
         }
     }

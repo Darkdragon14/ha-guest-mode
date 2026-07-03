@@ -11,7 +11,7 @@ from homeassistant.components.http import HomeAssistantView
 from homeassistant.helpers.translation import async_get_translations
 
 from .const import DATABASE, DOMAIN
-from .utils import async_sync_acm_dashboards, parse_utc_datetime, utcnow, utcnow_isoformat
+from .utils import async_sync_acm_dashboards, is_schedule_entity_active, parse_utc_datetime, utcnow, utcnow_isoformat
 
 class ValidateTokenView(HomeAssistantView):
     name = "guest-mode:login"
@@ -24,6 +24,12 @@ class ValidateTokenView(HomeAssistantView):
     def get_translations(self, translations: dict[str, Any], label: str):
         key = f"component.{DOMAIN}.entity.guest_error.{label}.name"
         return translations.get(key, f"Missing translation: {key}")
+
+    def _is_schedule_active(self, token_row: sqlite3.Row) -> bool:
+        if "schedule_entity_id" not in token_row.keys():
+            return True
+
+        return is_schedule_entity_active(self.hass, token_row["schedule_entity_id"])
 
     async def _restore_managed_user(self, cursor, token_row: sqlite3.Row):
         available_groups = []
@@ -102,6 +108,10 @@ class ValidateTokenView(HomeAssistantView):
         
         if result is None:
             return web.Response(status=404, text=self.get_translations(translations, "token_not_found"))
+
+        if not self._is_schedule_active(result):
+            conn.close()
+            return web.Response(status=403, text=self.get_translations(translations, "schedule_not_active"))
 
         try:
             first_used = result["first_used"]

@@ -69,6 +69,10 @@
                 "dashboard": {
                     "name": "Dashboard",
                     "description": "Het URL-pad van het gewenste dashboard (bijv. 'lovelace-guest'). Voeg de voorloop-slash niet toe."
+                },
+                "schedule_entity_id": {
+                    "name": "Schema-entiteit",
+                    "description": "Optionele schedule.*-entiteit. Indien ingesteld, wordt gasttoegang ingetrokken wanneer het schema niet aan staat."
                 }
             }
         }
@@ -146,6 +150,15 @@
             },
             "dashboard": {
                 "name": "Dashboard (optioneel)"
+            },
+            "schedule_entity": {
+                "name": "Schema-entiteit (optioneel)"
+            },
+            "schedule": {
+                "name": "Schema"
+            },
+            "schedule_placeholder": {
+                "name": "Schema selecteren (optioneel)"
             },
             "default_dashboard": {
                 "name": "Standaard dashboard"
@@ -235,6 +248,9 @@
             },
             "usage_limit_reached": {
                 "name": "De gebruikslimiet voor deze token is bereikt."
+            },
+            "schedule_not_active": {
+                "name": "Gasttoegang valt momenteel buiten het toegestane schema."
             }
         }
     }

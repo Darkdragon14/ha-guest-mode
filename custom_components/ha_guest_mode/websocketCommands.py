@@ -15,7 +15,8 @@ from homeassistant.helpers.network import NoURLAvailableError, get_url
 from homeassistant.helpers import config_validation as cv
 
 from .const import DATABASE
-from .utils import async_sync_acm_dashboards, async_update_qr_code_entity, parse_utc_datetime, utcnow
+from .schedule_access import async_refresh_schedule_listeners
+from .utils import async_sync_acm_dashboards, async_update_qr_code_entity, normalize_schedule_entity_id, parse_utc_datetime, utcnow
 
 
 async def _async_get_all_groups(hass: HomeAssistant):
@@ -56,6 +57,7 @@ async def list_users(
     cursor.execute('SELECT * FROM tokens')
     token_rows = cursor.fetchall()
     sync_acm_needed = False
+    schedule_listeners_needed = False
 
     async def remove_managed_user_if_needed(user_id: str, managed: bool) -> None:
         nonlocal sync_acm_needed
@@ -91,6 +93,7 @@ async def list_users(
                             hass.auth.async_remove_refresh_token(refresh_token)
 
                 cursor.execute('DELETE FROM tokens WHERE id = ?', (token["id"],))
+                schedule_listeners_needed = True
                 await remove_managed_user_if_needed(token["userId"], bool(token.get("managed_user")))
                 continue
 
@@ -186,6 +189,7 @@ async def list_users(
                     "last_used": token["last_used"],
                     "times_used": token["times_used"] or 0,
                     "usage_limit": token["usage_limit"],
+                    "schedule_entity_id": token.get("schedule_entity_id"),
                 }
             )
 
@@ -204,6 +208,8 @@ async def list_users(
 
     conn.commit()
     conn.close()
+    if schedule_listeners_needed:
+        await async_refresh_schedule_listeners(hass)
     if sync_acm_needed:
         await async_sync_acm_dashboards(hass)
     connection.send_result(msg["id"], result)
@@ -241,6 +247,7 @@ async def list_groups(
         vol.Optional("new_user_name"): str,
         vol.Optional("group_ids"): vol.All(cv.ensure_list, [cv.string]),
         vol.Optional("new_user_local_only", default=False): bool,
+        vol.Optional("schedule_entity_id"): vol.Any(str, None),
     }
 )
 @websocket_api.require_admin
@@ -260,6 +267,16 @@ async def create_token(
         managed_user_name = None
         managed_user_groups = None
         managed_user_local_only = None
+
+        try:
+            schedule_entity_id = normalize_schedule_entity_id(msg.get("schedule_entity_id"))
+        except ValueError as err:
+            connection.send_message(
+                websocket_api.error_message(
+                    msg["id"], websocket_api.const.ERR_INVALID_FORMAT, str(err)
+                )
+            )
+            return
 
         if not is_never_expire:
             if "startDate" not in msg or "expirationDate" not in msg:
@@ -358,9 +375,10 @@ async def create_token(
                 managed_user,
                 managed_user_name,
                 managed_user_groups,
-                managed_user_local_only
+                managed_user_local_only,
+                schedule_entity_id
             )
-            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         conn = sqlite3.connect(hass.config.path(DATABASE))
         cursor = conn.cursor()
@@ -382,10 +400,13 @@ async def create_token(
                 managed_user_name,
                 managed_user_groups,
                 managed_user_local_only,
+                schedule_entity_id,
             ),
         )
         conn.commit()
         conn.close()
+
+        await async_refresh_schedule_listeners(hass)
 
         if managed_user:
             await async_sync_acm_dashboards(hass)
@@ -445,6 +466,7 @@ async def delete_token(
 
     conn.commit()
     conn.close()
+    await async_refresh_schedule_listeners(hass)
     if sync_acm_needed:
         await async_sync_acm_dashboards(hass)
     connection.send_result(msg["id"], True)
