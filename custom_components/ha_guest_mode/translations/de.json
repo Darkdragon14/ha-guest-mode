@@ -73,6 +73,10 @@
                 "access_entity_id": {
                     "name": "Zugriffssteuerungsentität",
                     "description": "Optionale schedule.*- oder input_boolean.*-Entität. Gastzugriff ist nur erlaubt, solange sie eingeschaltet ist."
+                },
+                "schedule_entity_id": {
+                    "name": "Zeitplan-Entität (veraltet)",
+                    "description": "Veralteter Alias für access_entity_id, der zur Kompatibilität mit bestehenden Automatisierungen beibehalten wird."
                 }
             }
         }

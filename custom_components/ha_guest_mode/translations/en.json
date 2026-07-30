@@ -73,6 +73,10 @@
                 "access_entity_id": {
                     "name": "Access control entity",
                     "description": "Optional schedule.* or input_boolean.* entity. Guest access is allowed only while it is on."
+                },
+                "schedule_entity_id": {
+                    "name": "Schedule entity (deprecated)",
+                    "description": "Deprecated alias for access_entity_id, kept for compatibility with existing automations."
                 }
             }
         }

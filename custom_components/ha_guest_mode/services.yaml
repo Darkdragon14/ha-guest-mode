@@ -29,3 +29,8 @@ create_token:
           domain:
             - schedule
             - input_boolean
+    schedule_entity_id:
+      example: "schedule.guest_access"
+      selector:
+        entity:
+          domain: schedule

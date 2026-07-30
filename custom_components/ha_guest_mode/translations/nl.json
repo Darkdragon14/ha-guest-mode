@@ -73,6 +73,10 @@
                 "access_entity_id": {
                     "name": "Toegangsbeheerentiteit",
                     "description": "Optionele schedule.*- of input_boolean.*-entiteit. Gasttoegang is alleen toegestaan zolang deze aan staat."
+                },
+                "schedule_entity_id": {
+                    "name": "Schema-entiteit (verouderd)",
+                    "description": "Verouderde alias voor access_entity_id, behouden voor compatibiliteit met bestaande automatiseringen."
                 }
             }
         }

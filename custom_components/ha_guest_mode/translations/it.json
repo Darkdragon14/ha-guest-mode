@@ -73,6 +73,10 @@
                 "access_entity_id": {
                     "name": "Entità di controllo accesso",
                     "description": "Entità schedule.* o input_boolean.* opzionale. L'accesso ospite è consentito solo mentre è attiva."
+                },
+                "schedule_entity_id": {
+                    "name": "Entità pianificazione (deprecata)",
+                    "description": "Alias deprecato di access_entity_id, mantenuto per la compatibilità con le automazioni esistenti."
                 }
             }
         }

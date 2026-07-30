@@ -73,6 +73,10 @@
                 "access_entity_id": {
                     "name": "Entidad de control de acceso",
                     "description": "Entidad schedule.* o input_boolean.* opcional. El acceso de invitado solo se permite mientras esté activada."
+                },
+                "schedule_entity_id": {
+                    "name": "Entidad de horario (obsoleta)",
+                    "description": "Alias obsoleto de access_entity_id, conservado para mantener la compatibilidad con automatizaciones existentes."
                 }
             }
         }
