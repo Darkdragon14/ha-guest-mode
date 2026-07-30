@@ -70,9 +70,9 @@
                     "name": "Tablero",
                     "description": "La ruta de la URL del tablero deseado (por ejemplo, 'lovelace-guest'). No incluya la barra inclinada inicial."
                 },
-                "schedule_entity_id": {
-                    "name": "Entidad de horario",
-                    "description": "Entidad schedule.* opcional. Si se define, el acceso de invitado se revoca cuando el horario no está activado."
+                "access_entity_id": {
+                    "name": "Entidad de control de acceso",
+                    "description": "Entidad schedule.* o input_boolean.* opcional. El acceso de invitado solo se permite mientras esté activada."
                 }
             }
         }
@@ -151,14 +151,11 @@
             "dashboard": {
                 "name": "Tablero (opcional)"
             },
-            "schedule_entity": {
-                "name": "Entidad de horario (opcional)"
+            "access_entity": {
+                "name": "Entidad de control de acceso"
             },
-            "schedule": {
-                "name": "Horario"
-            },
-            "schedule_placeholder": {
-                "name": "Seleccionar un horario (opcional)"
+            "access_entity_placeholder": {
+                "name": "Seleccionar una entidad de control de acceso (opcional)"
             },
             "default_dashboard": {
                 "name": "Tablero predeterminado"
@@ -249,8 +246,8 @@
             "usage_limit_reached": {
                 "name": "Se ha alcanzado el límite de uso para este token."
             },
-            "schedule_not_active": {
-                "name": "El acceso de invitado está actualmente fuera del horario permitido."
+            "access_disabled": {
+                "name": "El acceso de invitado está desactivado actualmente."
             }
         }
     }

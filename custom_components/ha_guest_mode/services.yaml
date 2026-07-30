@@ -22,8 +22,10 @@ create_token:
       example: "lovelace-guest"
       selector:
         text: {}
-    schedule_entity_id:
-      example: "schedule.guest_access"
+    access_entity_id:
+      example: "input_boolean.guest_access"
       selector:
         entity:
-          domain: schedule
+          domain:
+            - schedule
+            - input_boolean

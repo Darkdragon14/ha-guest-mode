@@ -70,9 +70,9 @@
                     "name": "Tableau de bord",
                     "description": "Le chemin de l'URL du tableau de bord souhaité (par exemple, 'lovelace-guest'). N'incluez pas le slash au début."
                 },
-                "schedule_entity_id": {
-                    "name": "Entité planning",
-                    "description": "Entité schedule.* optionnelle. Si elle est définie, l'accès invité est révoqué lorsque le planning n'est pas activé."
+                "access_entity_id": {
+                    "name": "Entité de contrôle d'accès",
+                    "description": "Entité schedule.* ou input_boolean.* optionnelle. L'accès invité est autorisé uniquement lorsqu'elle est activée."
                 }
             }
         }
@@ -151,14 +151,11 @@
             "dashboard": {
                 "name": "Tableau de bord (optionnel)"
             },
-            "schedule_entity": {
-                "name": "Entité planning (optionnelle)"
+            "access_entity": {
+                "name": "Entité de contrôle d'accès"
             },
-            "schedule": {
-                "name": "Planning"
-            },
-            "schedule_placeholder": {
-                "name": "Sélectionner un planning (optionnel)"
+            "access_entity_placeholder": {
+                "name": "Sélectionner une entité de contrôle d'accès (optionnel)"
             },
             "default_dashboard": {
                 "name": "Tableau de bord par défaut"
@@ -249,8 +246,8 @@
             "usage_limit_reached": {
                 "name": "La limite d'utilisation pour ce jeton a été atteinte."
             },
-            "schedule_not_active": {
-                "name": "L'accès invité est actuellement hors des plages horaires autorisées."
+            "access_disabled": {
+                "name": "L'accès invité est actuellement désactivé."
             }
         }   
     }

@@ -55,7 +55,7 @@ class GuestModePanel extends LitElement {
       urls: { type: Object },
       dashboards: { type: Array },
       dashboard: { type: String },
-      scheduleEntityId: { type: String },
+      accessEntityId: { type: String },
       copyLinkMode: { type: Boolean },
       defaultUser: { type: String },
       defaultDashboard: { type: String },
@@ -81,7 +81,7 @@ class GuestModePanel extends LitElement {
     this.urls = {};
     this.dashboards = [];
     this.dashboard = '';
-    this.scheduleEntityId = '';
+    this.accessEntityId = '';
     this.copyLinkMode = false;
     this.defaultUser = '';
     this.defaultDashboard = '';
@@ -291,7 +291,7 @@ class GuestModePanel extends LitElement {
               last_used: token.last_used ? new Date(token.last_used).toLocaleString(userLocale).replace(/:\d{2}$/, "") : this.translate("never"),
               times_used: token.times_used || 0,
               usage_limit: token.usage_limit,
-              schedule_entity_id: token.schedule_entity_id || '',
+              access_entity_id: token.access_entity_id || token.schedule_entity_id || '',
             });
           });
       });
@@ -385,9 +385,9 @@ class GuestModePanel extends LitElement {
     this.dashboard = value || "";
   }
 
-  scheduleChanged(e) {
+  accessEntityChanged(e) {
     const value = e.detail?.value;
-    this.scheduleEntityId = value || "";
+    this.accessEntityId = value || "";
   }
 
   groupSelected(e) {
@@ -437,8 +437,8 @@ class GuestModePanel extends LitElement {
       payload.dashboard = this.dashboard;
     }
 
-    if (this.scheduleEntityId) {
-      payload.schedule_entity_id = this.scheduleEntityId;
+    if (this.accessEntityId) {
+      payload.access_entity_id = this.accessEntityId;
     }
 
     if (!this.name) {
@@ -482,6 +482,7 @@ class GuestModePanel extends LitElement {
 
     this.hass.callWS(payload).then(() => {
       this.fetchUsers();
+      this.accessEntityId = '';
       this.isCreateDialogOpen = false;
       this.modalAlert = '';
     }).catch(err => {
@@ -829,10 +830,10 @@ class GuestModePanel extends LitElement {
               <ha-entity-picker
                 .hass=${this.hass}
                 .label=${""}
-                .placeholder=${this.translate("schedule_placeholder") || "Select a schedule (optional)"}
-                .value=${this.scheduleEntityId || ""}
-                .includeDomains=${["schedule"]}
-                @value-changed=${this.scheduleChanged}
+                .placeholder=${this.translate("access_entity_placeholder") || "Select an access control entity (optional)"}
+                .value=${this.accessEntityId || ""}
+                .includeDomains=${["schedule", "input_boolean"]}
+                @value-changed=${this.accessEntityChanged}
               ></ha-entity-picker>
               <ha-input
                 .label=${this.translate("usage_limit")}
@@ -1134,7 +1135,7 @@ class GuestModePanel extends LitElement {
                       `}
                       ${this.translate("used")}: ${token.isUsed ? this.translate("yes").toLowerCase() : this.translate("no").toLowerCase() } <br>
                       ${this.translate("dashboard")}: ${dashboardTitle} <br>
-                      ${token.schedule_entity_id ? html`${this.translate("schedule")}: ${token.schedule_entity_id} <br>` : ''}
+                      ${token.access_entity_id ? html`${this.translate("access_entity")}: ${token.access_entity_id} <br>` : ''}
                       ${this.translate("first_used")}: ${token.first_used} <br>
                       ${this.translate("last_used")}: ${token.last_used} <br>
                       ${this.translate("times_used")}: ${token.times_used}${token.usage_limit ? ` / ${token.usage_limit}` : ''} <br>

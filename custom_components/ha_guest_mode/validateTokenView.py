@@ -11,7 +11,7 @@ from homeassistant.components.http import HomeAssistantView
 from homeassistant.helpers.translation import async_get_translations
 
 from .const import DATABASE, DOMAIN
-from .utils import async_sync_acm_dashboards, is_schedule_entity_active, parse_utc_datetime, utcnow, utcnow_isoformat
+from .utils import async_sync_acm_dashboards, is_access_entity_active, parse_utc_datetime, utcnow, utcnow_isoformat
 
 class ValidateTokenView(HomeAssistantView):
     name = "guest-mode:login"
@@ -25,11 +25,11 @@ class ValidateTokenView(HomeAssistantView):
         key = f"component.{DOMAIN}.entity.guest_error.{label}.name"
         return translations.get(key, f"Missing translation: {key}")
 
-    def _is_schedule_active(self, token_row: sqlite3.Row) -> bool:
+    def _is_access_enabled(self, token_row: sqlite3.Row) -> bool:
         if "schedule_entity_id" not in token_row.keys():
             return True
 
-        return is_schedule_entity_active(self.hass, token_row["schedule_entity_id"])
+        return is_access_entity_active(self.hass, token_row["schedule_entity_id"])
 
     async def _restore_managed_user(self, cursor, token_row: sqlite3.Row):
         available_groups = []
@@ -107,17 +107,19 @@ class ValidateTokenView(HomeAssistantView):
 
         
         if result is None:
+            conn.close()
             return web.Response(status=404, text=self.get_translations(translations, "token_not_found"))
 
-        if not self._is_schedule_active(result):
+        if not self._is_access_enabled(result):
             conn.close()
-            return web.Response(status=403, text=self.get_translations(translations, "schedule_not_active"))
+            return web.Response(status=403, text=self.get_translations(translations, "access_disabled"))
 
         try:
             first_used = result["first_used"]
             times_used = result["times_used"] or 0
             usage_limit = result["usage_limit"]
             if usage_limit is not None and usage_limit > 0 and times_used >= usage_limit:
+                conn.close()
                 return web.Response(status=403, text=self.get_translations(translations, "usage_limit_reached"))
             
             now_iso = utcnow_isoformat()
@@ -142,6 +144,7 @@ class ValidateTokenView(HomeAssistantView):
         try:
             public_key = self.hass.data.get("public_key")
             if public_key is None:
+                conn.close()
                 return web.Response(status=500, text=self.get_translations(translations, "internal_server_error"))
             decoded_token = jwt.decode(result["token_ha_guest_mode"], public_key, algorithms=["RS256"])
             is_never_expire = bool(result["is_never_expire"])
@@ -151,14 +154,18 @@ class ValidateTokenView(HomeAssistantView):
                 start_date = parse_utc_datetime(decoded_token.get("startDate"))
                 end_date = parse_utc_datetime(decoded_token.get("endDate"))
         except jwt.ExpiredSignatureError:
+            conn.close()
             return web.Response(status=401, text=self.get_translations(translations, "expired_token"))
         except jwt.InvalidTokenError:
+            conn.close()
             return web.Response(status=401, text=self.get_translations(translations, "invalid_token"))
         except Exception as e:
+            conn.close()
             return web.Response(status=400, text=str(e))
 
         now = utcnow()
         if not is_never_expire and (now < start_date or now > end_date):
+            conn.close()
             return web.Response(status=403, text=self.get_translations(translations, "not_yet_or_expired"))
         
         token = result["token_ha"]
@@ -186,6 +193,7 @@ class ValidateTokenView(HomeAssistantView):
                     users = await self.hass.auth.async_get_users()
 
             if user is None:
+                conn.close()
                 return web.Response(status=404, text=self.get_translations(translations, "user_not_found"))
             
             token_args = {
@@ -207,6 +215,7 @@ class ValidateTokenView(HomeAssistantView):
                     None,
                 )
                 if refresh_token is None:
+                    conn.close()
                     return web.Response(status=500, text=self.get_translations(translations, "internal_server_error"))
 
             token = self.hass.auth.async_create_access_token(refresh_token)
