@@ -70,9 +70,13 @@
                     "name": "Dashboard",
                     "description": "The URL path of the desired dashboard (e.g., 'lovelace-guest'). Do not include the leading slash."
                 },
+                "access_entity_id": {
+                    "name": "Access control entity",
+                    "description": "Optional schedule.* or input_boolean.* entity. Guest access is allowed only while it is on."
+                },
                 "schedule_entity_id": {
-                    "name": "Schedule entity",
-                    "description": "Optional schedule.* entity. If set, guest access is revoked when the schedule is not on."
+                    "name": "Schedule entity (deprecated)",
+                    "description": "Deprecated alias for access_entity_id, kept for compatibility with existing automations."
                 }
             }
         }
@@ -151,14 +155,11 @@
             "dashboard": {
                 "name": "Dashboard (optional)"
             },
-            "schedule_entity": {
-                "name": "Schedule entity (optional)"
+            "access_entity": {
+                "name": "Access control entity"
             },
-            "schedule": {
-                "name": "Schedule"
-            },
-            "schedule_placeholder": {
-                "name": "Select a schedule (optional)"
+            "access_entity_placeholder": {
+                "name": "Select an access control entity (optional)"
             },
             "default_dashboard": {
                 "name": "Default Dashboard"
@@ -249,8 +250,8 @@
             "usage_limit_reached": {
                 "name": "The usage limit for this token has been reached."
             },
-            "schedule_not_active": {
-                "name": "Guest access is currently outside the allowed schedule."
+            "access_disabled": {
+                "name": "Guest access is currently disabled."
             }
         }
     }

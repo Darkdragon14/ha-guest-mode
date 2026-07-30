@@ -46,8 +46,8 @@ def parse_utc_datetime(value: str) -> datetime:
     return as_utc_datetime(parsed)
 
 
-def normalize_schedule_entity_id(value) -> str | None:
-    """Normalize and validate an optional schedule entity id."""
+def normalize_access_entity_id(value) -> str | None:
+    """Normalize and validate an optional access control entity id."""
     if value is None:
         return None
 
@@ -56,24 +56,43 @@ def normalize_schedule_entity_id(value) -> str | None:
         return None
 
     domain, separator, object_id = entity_id.partition(".")
-    if domain != "schedule" or not separator or not object_id:
-        raise ValueError("schedule_entity_id must be a schedule entity")
+    if domain not in {"schedule", "input_boolean"} or not separator or not object_id:
+        raise ValueError(
+            "access_entity_id must be a schedule or input_boolean entity"
+        )
 
     return entity_id
 
 
-def is_schedule_entity_active(hass: HomeAssistant, value) -> bool:
-    """Return true only when the configured schedule exists and is on."""
+def resolve_access_entity_id(access_value, legacy_schedule_value) -> str | None:
+    """Resolve the current and legacy access entity fields."""
+    access_entity_id = normalize_access_entity_id(access_value)
+    schedule_entity_id = normalize_access_entity_id(legacy_schedule_value)
+
+    if (
+        access_entity_id is not None
+        and schedule_entity_id is not None
+        and access_entity_id != schedule_entity_id
+    ):
+        raise ValueError(
+            "access_entity_id and schedule_entity_id must reference the same entity"
+        )
+
+    return access_entity_id or schedule_entity_id
+
+
+def is_access_entity_active(hass: HomeAssistant, value) -> bool:
+    """Return true only when the configured access entity exists and is on."""
     try:
-        schedule_entity_id = normalize_schedule_entity_id(value)
+        access_entity_id = normalize_access_entity_id(value)
     except ValueError:
         return False
 
-    if schedule_entity_id is None:
+    if access_entity_id is None:
         return True
 
-    schedule_state = hass.states.get(schedule_entity_id)
-    return schedule_state is not None and schedule_state.state == STATE_ON
+    access_state = hass.states.get(access_entity_id)
+    return access_state is not None and access_state.state == STATE_ON
 
 
 async def async_update_qr_code_entity(hass: HomeAssistant) -> None:

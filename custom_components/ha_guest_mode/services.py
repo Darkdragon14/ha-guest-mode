@@ -8,8 +8,8 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.translation import async_get_translations
 
 from .const import DOMAIN, DATABASE
-from .schedule_access import async_refresh_schedule_listeners
-from .utils import as_utc_datetime, async_update_qr_code_entity, normalize_schedule_entity_id, utcnow
+from .access_control import async_refresh_access_listeners
+from .utils import as_utc_datetime, async_update_qr_code_entity, resolve_access_entity_id, utcnow
 
 async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
     translations = await async_get_translations(hass, hass.config.language, "config")
@@ -21,7 +21,9 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
     start_date = call.data.get("start_date")
     dashboard = call.data.get("dashboard", "lovelace")
     try:
-        schedule_entity_id = normalize_schedule_entity_id(call.data.get("schedule_entity_id"))
+        access_entity_id = resolve_access_entity_id(
+            call.data.get("access_entity_id"), call.data.get("schedule_entity_id")
+        )
     except ValueError as err:
         raise vol.Invalid(str(err)) from err
 
@@ -123,13 +125,13 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
             None,
             None,
             None,
-            schedule_entity_id,
+            access_entity_id,
         ),
     )
     conn.commit()
     conn.close()
 
-    await async_refresh_schedule_listeners(hass)
+    await async_refresh_access_listeners(hass)
     await async_update_qr_code_entity(hass)
 
 async def async_register_services(hass: HomeAssistant):
@@ -140,6 +142,7 @@ async def async_register_services(hass: HomeAssistant):
         vol.Exclusive("expiration_date", "expiration"): cv.datetime,
         vol.Optional("start_date"): cv.datetime,
         vol.Optional("dashboard"): cv.string,
+        vol.Optional("access_entity_id"): vol.Any(None, cv.entity_id),
         vol.Optional("schedule_entity_id"): vol.Any(None, cv.entity_id),
     })
 

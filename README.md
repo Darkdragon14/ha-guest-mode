@@ -47,7 +47,7 @@ The integration provides:
 
 * A redesigned admin interface to create, view, share, and manage guest access links.
 * Temporary links with optional start date, expiration date, duration, and usage limit.
-* Optional schedule-based access, allowing guest access only while a `schedule.*` entity is `on`.
+* Optional entity-controlled access, allowing guest access only while a `schedule.*` or `input_boolean.*` entity is `on`.
 * Native Home Assistant login using a selected guest user.
 * Optional dashboard or dashboard view redirection after login.
 * QR code generation for the latest guest link, exposed through the `image.guest_qr_code` entity.
@@ -55,7 +55,7 @@ The integration provides:
 * Token status tracking, so you can see whether a guest link has already been used.
 * Home Assistant services, allowing guest tokens to be created from automations.
 
-For security, the Home Assistant long-lived access token is created only when the guest opens a valid link during the allowed time window, while the optional schedule is active, and before the usage limit is reached. When a configured schedule turns off, Guest Mode revokes the Home Assistant refresh token it created for that guest token. It does not disable or remove the Home Assistant user.
+For security, the Home Assistant long-lived access token is created only when the guest opens a valid link during the allowed time window, while the optional access control entity is `on`, and before the usage limit is reached. When that entity turns off, becomes unavailable, or is removed, Guest Mode revokes the Home Assistant refresh token it created for that guest token. It does not disable or remove the Home Assistant user.
 
 # Use case
 
@@ -89,7 +89,7 @@ Creates a new guest mode token.
 | `expiration_date` | The date when the token expires. | No |
 | `start_date` | The date when the token becomes valid. | No |
 | `dashboard` | The URL path of the desired dashboard (e.g., 'lovelace-guest'). Do not include the leading slash. | No |
-| `schedule_entity_id` | Optional `schedule.*` entity. If set, guests can only access while this schedule is `on`; access tokens created by Guest Mode are revoked when it turns off. | No |
+| `access_entity_id` | Optional `schedule.*` or `input_boolean.*` entity. Guests can only access while this entity is `on`; credentials created by Guest Mode are revoked when it stops being `on`. | No |
 
 **Note:** If neither `expiration_duration` nor `expiration_date` is provided, the token will never expire.
 
@@ -102,6 +102,18 @@ Creates a new guest mode token.
     token_name: "My Guest Token"
     expiration_duration: "01:00:00" # 1 hour
 ```
+
+For a reusable link controlled by a helper, omit the expiration fields and set an input boolean:
+
+```yaml
+- service: ha_guest_mode.create_token
+  data:
+    username: "guest"
+    token_name: "Recurring Guest"
+    access_entity_id: input_boolean.guest_access
+```
+
+The previous `schedule_entity_id` service field remains accepted for compatibility with existing automations.
 
 # Entities
 

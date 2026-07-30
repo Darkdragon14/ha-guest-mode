@@ -18,7 +18,7 @@ from .keyManager import KeyManager
 from .const import DOMAIN, DATABASE, DEST_PATH_SCRIPT_JS, LEGACY_DATABASE, SOURCE_PATH_SCRIPT_JS, SCRIPT_JS
 from .services import async_register_services
 from .migrations import migration
-from .schedule_access import async_setup_schedule_access, async_unload_schedule_access
+from .access_control import async_setup_access_control, async_unload_access_control
 
 CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
 
@@ -160,7 +160,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     hass.http.register_view(ValidateTokenView(hass))
 
-    await async_setup_schedule_access(hass)
+    await async_setup_access_control(hass)
 
     await hass.config_entries.async_forward_entry_setups(config_entry, ["image"])
 
@@ -176,7 +176,7 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     if path in panels:
         frontend.async_remove_panel(hass, path)
 
-    await async_unload_schedule_access(hass)
+    await async_unload_access_control(hass)
 
     await hass.config_entries.async_unload_platforms(config_entry, ["image"])
     return True
