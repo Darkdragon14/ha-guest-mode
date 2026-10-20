@@ -47,6 +47,7 @@ The integration provides:
 
 * A redesigned admin interface to create, view, share, and manage guest access links.
 * Temporary links with optional start date, expiration date, duration, and usage limit.
+* Optional caller-provided URL tokens for workflows that must prepare links in advance.
 * Optional entity-controlled access, allowing guest access only while a `schedule.*` or `input_boolean.*` entity is `on`.
 * Native Home Assistant login using a selected guest user.
 * Optional dashboard or dashboard view redirection after login.
@@ -85,6 +86,7 @@ Creates a new guest mode token.
 |---|---|---|
 | `username` | The name of the user to create the token for. | Yes |
 | `token_name` | The name of the token. | No |
+| `custom_token` | A caller-provided URL token using 1–128 letters, numbers, underscores, or hyphens. A random UUID is generated when omitted. | No |
 | `expiration_duration` | The duration until the token expires (e.g., '02:00:00'). | No |
 | `expiration_date` | The date when the token expires. | No |
 | `start_date` | The date when the token becomes valid. | No |
@@ -100,8 +102,12 @@ Creates a new guest mode token.
   data:
     username: "guest"
     token_name: "My Guest Token"
+    custom_token: "booking-12345-20261020"
     expiration_duration: "01:00:00" # 1 hour
 ```
+
+> [!WARNING]
+> A custom token is the secret contained in the guest access URL. Predictable values are easier to guess, and a static prefix does not make a short code significantly safer. Use a value that is unique to each stay. Reusing a deleted value makes every old copy of that URL valid again while the new token is active. Duplicate values belonging to existing tokens are rejected.
 
 For a reusable link controlled by a helper, omit the expiration fields and set an input boolean:
 

@@ -3,6 +3,7 @@ import logging
 import sqlite3
 import qrcode
 import io
+from urllib.parse import urlencode
 from homeassistant.components.image import ImageEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.network import get_url, NoURLAvailableError
@@ -133,7 +134,7 @@ class GuestQRCodeImage(ImageEntity):
         except NoURLAvailableError:
             base_url = get_url(self.hass)
         guest_login_path = self.hass.data.get("get_path_to_login", "/guest-mode/login")
-        full_url = f"{base_url}{guest_login_path}?token={uid}"
+        full_url = f"{base_url}{guest_login_path}?{urlencode({'token': uid})}"
         
         img = qrcode.make(full_url)
         buf = io.BytesIO()

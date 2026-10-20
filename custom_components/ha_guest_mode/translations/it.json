@@ -54,6 +54,10 @@
                     "name": "Nome del token",
                     "description": "Il nome del token."
                 },
+                "custom_token": {
+                    "name": "Token personalizzato",
+                    "description": "Token URL facoltativo fornito dal chiamante con 1–128 lettere, numeri, trattini bassi o trattini. I valori prevedibili sono più facili da indovinare. Usa un valore univoco per soggiorno; riutilizzare un valore eliminato riattiva i vecchi link."
+                },
                 "expiration_duration": {
                     "name": "Durata della scadenza",
                     "description": "La durata fino alla scadenza del token (ad es. '02:00:00')."
@@ -205,6 +209,12 @@
             },
             "invalid_usage_limit": {
                 "name": "Il limite di utilizzo deve essere un numero"
+            },
+            "custom_token": {
+                "name": "Token personalizzato (facoltativo)"
+            },
+            "custom_token_warning": {
+                "name": "I valori prevedibili sono più facili da indovinare. Usa un valore univoco per ogni soggiorno; il riutilizzo riattiva i vecchi link."
             },
             "section_token": {
                 "name": "Token"

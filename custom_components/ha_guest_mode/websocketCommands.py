@@ -5,7 +5,6 @@ from collections import defaultdict
 import voluptuous as vol
 from contextlib import suppress
 import jwt
-import uuid
 import json
 
 from homeassistant.core import HomeAssistant
@@ -16,6 +15,8 @@ from homeassistant.helpers import config_validation as cv
 
 from .const import DATABASE
 from .access_control import async_refresh_access_listeners
+from .token_store import remove_created_user
+from .token_utils import generate_token_uid
 from .utils import async_sync_acm_dashboards, async_update_qr_code_entity, parse_utc_datetime, resolve_access_entity_id, utcnow
 
 
@@ -250,6 +251,7 @@ async def list_groups(
         vol.Optional("new_user_local_only", default=False): bool,
         vol.Optional("access_entity_id"): vol.Any(str, None),
         vol.Optional("schedule_entity_id"): vol.Any(str, None),
+        vol.Optional("custom_token"): str,
     }
 )
 @websocket_api.require_admin
@@ -269,6 +271,33 @@ async def create_token(
         managed_user_name = None
         managed_user_groups = None
         managed_user_local_only = None
+        created_user = None
+
+        try:
+            uid = generate_token_uid(msg.get("custom_token"))
+        except ValueError as err:
+            connection.send_message(
+                websocket_api.error_message(
+                    msg["id"], websocket_api.const.ERR_INVALID_FORMAT, str(err)
+                )
+            )
+            return
+
+        if "custom_token" in msg:
+            conn = sqlite3.connect(hass.config.path(DATABASE))
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1 FROM tokens WHERE uid = ?", (uid,))
+            uid_exists = cursor.fetchone() is not None
+            conn.close()
+            if uid_exists:
+                connection.send_message(
+                    websocket_api.error_message(
+                        msg["id"],
+                        websocket_api.const.ERR_INVALID_FORMAT,
+                        "custom_token is already in use",
+                    )
+                )
+                return
 
         try:
             access_entity_id = resolve_access_entity_id(
@@ -297,8 +326,6 @@ async def create_token(
             endDate = now + timedelta(minutes=msg["expirationDate"])
             startDate_iso = startDate.isoformat()
             endDate_iso = endDate.isoformat()
-
-        uid = str(uuid.uuid4())
 
         if create_user:
             new_user_name = msg.get("new_user_name")
@@ -336,6 +363,7 @@ async def create_token(
                 return
 
             user_id = user.id
+            created_user = user
             managed_user = True
             managed_user_name = user.name
             managed_user_groups = json.dumps(group_ids) if group_ids else None
@@ -356,7 +384,7 @@ async def create_token(
             connection.send_message(msg["id"],  websocket_api.const.ERR_NOT_FOUND, "private key not found")
             return
 
-        token_payload = {"id": msg["id"], "isNeverExpire": is_never_expire}
+        token_payload = {"id": uid, "isNeverExpire": is_never_expire}
         if not is_never_expire:
             token_payload["startDate"] = startDate_iso
             token_payload["endDate"] = endDate_iso
@@ -386,29 +414,43 @@ async def create_token(
         """
         conn = sqlite3.connect(hass.config.path(DATABASE))
         cursor = conn.cursor()
-        cursor.execute(
-            query,
-            (
-                user_id,
-                msg["name"],
-                startDate_iso,
-                endDate_iso,
-                "",
-                "",
-                tokenGenerated,
-                uid,
-                is_never_expire,
-                dashboard,
-                usage_limit,
-                1 if managed_user else 0,
-                managed_user_name,
-                managed_user_groups,
-                managed_user_local_only,
-                access_entity_id,
-            ),
-        )
-        conn.commit()
-        conn.close()
+        try:
+            cursor.execute(
+                query,
+                (
+                    user_id,
+                    msg["name"],
+                    startDate_iso,
+                    endDate_iso,
+                    "",
+                    "",
+                    tokenGenerated,
+                    uid,
+                    is_never_expire,
+                    dashboard,
+                    usage_limit,
+                    1 if managed_user else 0,
+                    managed_user_name,
+                    managed_user_groups,
+                    managed_user_local_only,
+                    access_entity_id,
+                ),
+            )
+            conn.commit()
+        except sqlite3.IntegrityError:
+            conn.close()
+            await remove_created_user(hass.auth, created_user)
+            connection.send_message(
+                websocket_api.error_message(
+                    msg["id"],
+                    websocket_api.const.ERR_INVALID_FORMAT,
+                    "custom_token is already in use",
+                )
+            )
+            return
+        finally:
+            if conn:
+                conn.close()
 
         await async_refresh_access_listeners(hass)
 

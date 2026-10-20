@@ -1,6 +1,5 @@
 import voluptuous as vol
 import jwt
-import uuid
 import sqlite3
 
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -9,6 +8,7 @@ from homeassistant.helpers.translation import async_get_translations
 
 from .const import DOMAIN, DATABASE
 from .access_control import async_refresh_access_listeners
+from .token_utils import generate_token_uid
 from .utils import as_utc_datetime, async_update_qr_code_entity, resolve_access_entity_id, utcnow
 
 async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
@@ -20,6 +20,10 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
     expiration_date = call.data.get("expiration_date")
     start_date = call.data.get("start_date")
     dashboard = call.data.get("dashboard", "lovelace")
+    try:
+        uid = generate_token_uid(call.data.get("custom_token"))
+    except ValueError as err:
+        raise vol.Invalid(str(err)) from err
     try:
         access_entity_id = resolve_access_entity_id(
             call.data.get("access_entity_id"), call.data.get("schedule_entity_id")
@@ -72,7 +76,6 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
         startDate_iso = startDate.isoformat()
         endDate_iso = endDate.isoformat()
 
-    uid = str(uuid.uuid4())
     private_key = hass.data.get("private_key")
     if private_key is None:
         return
@@ -107,29 +110,33 @@ async def async_create_token_service(hass: HomeAssistant, call: ServiceCall):
     """
     conn = sqlite3.connect(hass.config.path(DATABASE))
     cursor = conn.cursor()
-    cursor.execute(
-        query,
-        (
-            user_id,
-            token_name,
-            startDate_iso,
-            endDate_iso,
-            "",
-            "",
-            tokenGenerated,
-            uid,
-            is_never_expire,
-            dashboard,
-            None,
-            0,
-            None,
-            None,
-            None,
-            access_entity_id,
-        ),
-    )
-    conn.commit()
-    conn.close()
+    try:
+        cursor.execute(
+            query,
+            (
+                user_id,
+                token_name,
+                startDate_iso,
+                endDate_iso,
+                "",
+                "",
+                tokenGenerated,
+                uid,
+                is_never_expire,
+                dashboard,
+                None,
+                0,
+                None,
+                None,
+                None,
+                access_entity_id,
+            ),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError as err:
+        raise vol.Invalid("custom_token is already in use") from err
+    finally:
+        conn.close()
 
     await async_refresh_access_listeners(hass)
     await async_update_qr_code_entity(hass)
@@ -142,6 +149,7 @@ async def async_register_services(hass: HomeAssistant):
         vol.Exclusive("expiration_date", "expiration"): cv.datetime,
         vol.Optional("start_date"): cv.datetime,
         vol.Optional("dashboard"): cv.string,
+        vol.Optional("custom_token"): cv.string,
         vol.Optional("access_entity_id"): vol.Any(None, cv.entity_id),
         vol.Optional("schedule_entity_id"): vol.Any(None, cv.entity_id),
     })
