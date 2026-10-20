@@ -54,6 +54,10 @@
                     "name": "Token-Name",
                     "description": "Der Name des Tokens."
                 },
+                "custom_token": {
+                    "name": "Benutzerdefiniertes Token",
+                    "description": "Optionales URL-Token des Aufrufers mit 1–128 Buchstaben, Zahlen, Unterstrichen oder Bindestrichen. Vorhersehbare Werte sind leichter zu erraten. Verwenden Sie pro Aufenthalt einen eindeutigen Wert; die Wiederverwendung eines gelöschten Werts reaktiviert alte Links."
+                },
                 "expiration_duration": {
                     "name": "Ablaufdauer",
                     "description": "Die Dauer bis zum Ablauf des Tokens (z. B. '02:00:00')."
@@ -205,6 +209,12 @@
             },
             "invalid_usage_limit": {
                 "name": "Nutzungslimit muss eine Zahl sein"
+            },
+            "custom_token": {
+                "name": "Benutzerdefiniertes Token (optional)"
+            },
+            "custom_token_warning": {
+                "name": "Vorhersehbare Werte sind leichter zu erraten. Verwenden Sie pro Aufenthalt einen eindeutigen Wert; Wiederverwendung reaktiviert alte Links."
             },
             "section_token": {
                 "name": "Token"

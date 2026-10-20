@@ -54,6 +54,10 @@
                     "name": "Tokennaam",
                     "description": "De naam van het token."
                 },
+                "custom_token": {
+                    "name": "Aangepast token",
+                    "description": "Optioneel URL-token van de aanroeper met 1–128 letters, cijfers, underscores of koppeltekens. Voorspelbare waarden zijn eenvoudiger te raden. Gebruik een unieke waarde per verblijf; hergebruik van een verwijderde waarde activeert oude links opnieuw."
+                },
                 "expiration_duration": {
                     "name": "Vervaltijd",
                     "description": "De duur totdat het token verloopt (bijv. '02:00:00')."
@@ -205,6 +209,12 @@
             },
             "invalid_usage_limit": {
                 "name": "Gebruikslimiet moet een getal zijn"
+            },
+            "custom_token": {
+                "name": "Aangepast token (optioneel)"
+            },
+            "custom_token_warning": {
+                "name": "Voorspelbare waarden zijn eenvoudiger te raden. Gebruik een unieke waarde per verblijf; hergebruik activeert oude links opnieuw."
             },
             "section_token": {
                 "name": "Token"

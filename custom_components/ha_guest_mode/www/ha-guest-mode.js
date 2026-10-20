@@ -52,6 +52,7 @@ class GuestModePanel extends LitElement {
       useDuration: { type: Boolean },
       duration: { type: Number },
       usage_limit: { type: Number },
+      customToken: { type: String },
       urls: { type: Object },
       dashboards: { type: Array },
       dashboard: { type: String },
@@ -94,6 +95,7 @@ class GuestModePanel extends LitElement {
     this.isCreateDialogOpen = false;
     this.modalAlert = '';
     this.modalAlertType = 'warning';
+    this.customToken = '';
 
     // form inputs
     this.name = null;
@@ -380,6 +382,10 @@ class GuestModePanel extends LitElement {
     this.usage_limit = e.target.value;
   }
 
+  customTokenChanged(e) {
+    this.customToken = e.target.value;
+  }
+
   dashboardChanged(e) {
     const value = e.detail?.value?.dashboard;
     this.dashboard = value || "";
@@ -433,6 +439,10 @@ class GuestModePanel extends LitElement {
       payload.usage_limit = limitValue;
     }
 
+    if (this.customToken) {
+      payload.custom_token = this.customToken;
+    }
+
     if (this.dashboard) {
       payload.dashboard = this.dashboard;
     }
@@ -483,11 +493,12 @@ class GuestModePanel extends LitElement {
     this.hass.callWS(payload).then(() => {
       this.fetchUsers();
       this.accessEntityId = '';
+      this.customToken = '';
       this.isCreateDialogOpen = false;
       this.modalAlert = '';
     }).catch(err => {
       let messageDisplay = err.message;
-      if (err.code === 'invalid_format') {
+      if (err.code === 'invalid_format' && !err.message.includes('custom_token')) {
         const errorMessage = err.message;
         messageDisplay= 'Element(s) missing to create a token:';
         if (errorMessage.includes('name')) {
@@ -554,7 +565,7 @@ class GuestModePanel extends LitElement {
     const base = (baseUrl || '').replace(/\/$/, '');
     const path = this.loginPath.replace(/^\//, '');
     const loginUrl = `${base}/${path}`;
-    return `${loginUrl}?token=${token.uid}`;
+    return `${loginUrl}?token=${encodeURIComponent(token.uid)}`;
   }
 
   async listItemClick(e, token) {
@@ -752,6 +763,7 @@ class GuestModePanel extends LitElement {
 
     this.isCreateDialogOpen = false;
     this.modalAlert = '';
+    this.customToken = '';
   }
 
   isMacOS() {
@@ -821,6 +833,17 @@ class GuestModePanel extends LitElement {
                 .value=${this.name || ""}
                 @input=${this.nameChanged}
               ></ha-input>
+              <div class="custom-token-field">
+                <ha-input
+                  .label=${this.translate("custom_token") || "Custom token (optional)"}
+                  .value=${this.customToken || ""}
+                  maxlength="128"
+                  @input=${this.customTokenChanged}
+                ></ha-input>
+                <div class="field-hint">
+                  ${this.translate("custom_token_warning") || "Predictable values are easier to guess. Use a value unique to each stay; reusing one reactivates old links."}
+                </div>
+              </div>
               <ha-form
                 .hass=${this.hass}
                 .schema=${dashboardSchema}
@@ -1314,6 +1337,19 @@ class GuestModePanel extends LitElement {
       }
       .section-grid > * {
         min-width: 0;
+      }
+      .custom-token-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .custom-token-field ha-input {
+        width: 100%;
+      }
+      .field-hint {
+        color: var(--secondary-text-color);
+        font-size: 0.82rem;
+        line-height: 1.3;
       }
       .span-2 {
         grid-column: 1 / -1;

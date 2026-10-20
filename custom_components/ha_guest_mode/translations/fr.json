@@ -54,6 +54,10 @@
                     "name": "Nom du jeton",
                     "description": "Le nom du jeton."
                 },
+                "custom_token": {
+                    "name": "Jeton personnalisé",
+                    "description": "Jeton d’URL facultatif fourni par l’appelant, avec 1 à 128 lettres, chiffres, tirets bas ou tirets. Les valeurs prévisibles sont plus faciles à deviner. Utilisez une valeur unique par séjour ; réutiliser une valeur supprimée réactive les anciens liens."
+                },
                 "expiration_duration": {
                     "name": "Durée d'expiration",
                     "description": "La durée avant l'expiration du jeton (par exemple, '02:00:00')."
@@ -205,6 +209,12 @@
             },
             "invalid_usage_limit": {
                 "name": "La limite d'utilisation doit être un nombre"
+            },
+            "custom_token": {
+                "name": "Jeton personnalisé (facultatif)"
+            },
+            "custom_token_warning": {
+                "name": "Les valeurs prévisibles sont plus faciles à deviner. Utilisez une valeur unique par séjour ; sa réutilisation réactive les anciens liens."
             },
             "section_token": {
                 "name": "Jeton"

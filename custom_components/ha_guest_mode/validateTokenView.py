@@ -11,6 +11,7 @@ from homeassistant.components.http import HomeAssistantView
 from homeassistant.helpers.translation import async_get_translations
 
 from .const import DATABASE, DOMAIN
+from .token_store import consume_usage
 from .utils import async_sync_acm_dashboards, is_access_entity_active, parse_utc_datetime, utcnow, utcnow_isoformat
 
 class ValidateTokenView(HomeAssistantView):
@@ -115,33 +116,6 @@ class ValidateTokenView(HomeAssistantView):
             return web.Response(status=403, text=self.get_translations(translations, "access_disabled"))
 
         try:
-            first_used = result["first_used"]
-            times_used = result["times_used"] or 0
-            usage_limit = result["usage_limit"]
-            if usage_limit is not None and usage_limit > 0 and times_used >= usage_limit:
-                conn.close()
-                return web.Response(status=403, text=self.get_translations(translations, "usage_limit_reached"))
-            
-            now_iso = utcnow_isoformat()
-            new_times_used = times_used + 1
-            
-            update_query = "UPDATE tokens SET last_used = ?, times_used = ?"
-            params = [now_iso, new_times_used]
-
-            if not first_used:
-                update_query += ", first_used = ?"
-                params.append(now_iso)
-            
-            update_query += " WHERE id = ?"
-            params.append(result["id"])
-
-            cursor.execute(update_query, tuple(params))
-            conn.commit()
-        except (ValueError, IndexError):
-            # Columns not present, do nothing
-            pass
-
-        try:
             public_key = self.hass.data.get("public_key")
             if public_key is None:
                 conn.close()
@@ -167,6 +141,15 @@ class ValidateTokenView(HomeAssistantView):
         if not is_never_expire and (now < start_date or now > end_date):
             conn.close()
             return web.Response(status=403, text=self.get_translations(translations, "not_yet_or_expired"))
+
+        now_iso = utcnow_isoformat()
+        if not consume_usage(cursor, result["id"], now_iso):
+            conn.close()
+            return web.Response(
+                status=403,
+                text=self.get_translations(translations, "usage_limit_reached"),
+            )
+        conn.commit()
         
         token = result["token_ha"]
         if token:
