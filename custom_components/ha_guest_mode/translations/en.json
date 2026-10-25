@@ -54,6 +54,10 @@
                     "name": "Token Name",
                     "description": "The name of the token."
                 },
+                "custom_token": {
+                    "name": "Custom token",
+                    "description": "Optional caller-provided URL token using 1–128 letters, numbers, underscores, or hyphens. Predictable values are easier to guess. Use a unique value per stay; reusing a deleted value reactivates old links."
+                },
                 "expiration_duration": {
                     "name": "Expiration Duration",
                     "description": "The duration until the token expires (e.g., '02:00:00')."
@@ -205,6 +209,12 @@
             },
             "invalid_usage_limit": {
                 "name": "Usage limit must be a number"
+            },
+            "custom_token": {
+                "name": "Custom token (optional)"
+            },
+            "custom_token_warning": {
+                "name": "Predictable values are easier to guess. Use a value unique to each stay; reusing one reactivates old links."
             },
             "section_token": {
                 "name": "Token"

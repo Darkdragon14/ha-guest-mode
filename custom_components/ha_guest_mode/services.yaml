@@ -7,6 +7,10 @@ create_token:
     token_name:
       selector:
         text: {}
+    custom_token:
+      example: "booking-12345-20261020"
+      selector:
+        text: {}
     expiration_duration:
       example: "12h"
       selector:

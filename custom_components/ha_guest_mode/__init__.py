@@ -86,7 +86,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             token_ha_id TEXT,
             token_ha TEXT,
             token_ha_guest_mode TEXT NOT NULL,
-            uid TEXT,
+            uid TEXT NOT NULL,
             is_never_expire BOOLEAN,
             dashboard TEXT,
             first_used TEXT,

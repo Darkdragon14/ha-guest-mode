@@ -54,6 +54,10 @@
                     "name": "Nombre del token",
                     "description": "El nombre del token."
                 },
+                "custom_token": {
+                    "name": "Token personalizado",
+                    "description": "Token de URL opcional proporcionado por el solicitante con entre 1 y 128 letras, números, guiones bajos o guiones. Los valores predecibles son más fáciles de adivinar. Use un valor único por estancia; reutilizar un valor eliminado reactiva enlaces antiguos."
+                },
                 "expiration_duration": {
                     "name": "Duración de la expiración",
                     "description": "La duración hasta que el token expire (por ejemplo, '02:00:00')."
@@ -205,6 +209,12 @@
             },
             "invalid_usage_limit": {
                 "name": "El límite de uso debe ser un número"
+            },
+            "custom_token": {
+                "name": "Token personalizado (opcional)"
+            },
+            "custom_token_warning": {
+                "name": "Los valores predecibles son más fáciles de adivinar. Use un valor único para cada estancia; reutilizarlo reactiva enlaces antiguos."
             },
             "section_token": {
                 "name": "Token"
